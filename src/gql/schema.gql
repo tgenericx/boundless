@@ -2,23 +2,39 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Input for creating a new post"""
 input CreatePostInput {
-  content: String!
-  title: String!
+  """Media URLs (photos/videos)"""
+  mediaUrls: [String!]
+
+  """Text content of the post"""
+  textContent: String
 }
 
 type Mutation {
+  """Create a new post"""
   createPost(input: CreatePostInput!): Post!
+
+  """Delete a post by ID"""
   deletePost(id: String!): Boolean!
 }
 
+"""A social media post that can contain text, media, or both"""
 type Post {
-  content: String!
+  """When the post was created"""
   createdAt: String!
+
+  """Unique identifier for the post"""
   id: ID!
-  title: String!
+
+  """List of media URLs (photos/videos)"""
+  mediaUrls: [String!]
+
+  """Text content of the post (optional if media is present)"""
+  textContent: String
 }
 
 type Query {
+  """Get all posts"""
   posts: [Post!]!
 }
