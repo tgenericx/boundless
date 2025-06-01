@@ -35,4 +35,4 @@ interface IGraphQLFormattedError {
     }),
   ],
 })
-export class GqlModule { }
+export class GqlModule {}

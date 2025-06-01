@@ -7,7 +7,7 @@ import { Kind, ValueNode } from 'graphql';
  * This scalar serializes `Date` instances to Unix timestamps (milliseconds),
  * and parses incoming values (both variable-based and inline) as timestamps into `Date` objects.
  */
-@Scalar('Date', (type) => Date)
+@Scalar('Date', (_type) => Date)
 export class DateScalar implements CustomScalar<number, Date> {
   /**
    * Description of the custom scalar, shown in the GraphQL schema documentation.
