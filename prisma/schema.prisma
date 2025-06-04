@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+  output   = "../../docs"
+}
+
+generator markdown {
+  provider = "prisma-markdown"
+  output   = "./ERD.md"
+  title    = "Playing "
+}
+
+generator nestgraphql {
+  provider = "node node_modules/prisma-nestjs-graphql"
+  output   = "../src/@generated"
+  reExport = "All"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+/// Defines the Post model for social media posts
+model Post {
+  /// Unique identifier (maps to MongoDB's _id)
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  /// Optional text content of the post
+  textContent String?
+
+  /// Array of media URLs (photos/videos)
+  mediaUrls String[]
+
+  /// Timestamp of post creation
+  createdAt DateTime @default(now())
+
+  /// Timestamp of last update
+  updatedAt DateTime @updatedAt
+
+  /// Index for better query performance
+  @@index([createdAt])
+}
