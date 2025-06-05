@@ -58,19 +58,4 @@ export class PostsService {
       return false;
     }
   }
-
-  /**
-   * Retrieves posts with pagination
-   * @async
-   * @param {number} skip - Number of posts to skip
-   * @param {number} take - Number of posts to take
-   * @returns {Promise<Post[]>} Paginated array of posts
-   */
-  async findPaginated(skip: number, take: number): Promise<Post[]> {
-    return this.prisma.post.findMany({
-      skip,
-      take,
-      orderBy: { createdAt: 'desc' },
-    });
-  }
 }
