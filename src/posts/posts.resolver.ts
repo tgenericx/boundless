@@ -1,41 +1,69 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './entities/post.entity';
 import { CreatePostInput } from './dto/create-post.input';
+import { UpdatePostInput } from './dto/update-post.input';
 
 /**
- * GraphQL resolver for post operations
+ * Resolver for GraphQL operations related to Posts.
  */
 @Resolver(() => Post)
 export class PostsResolver {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(private readonly postService: PostsService) {}
 
   /**
-   * Retrieves all posts
-   * @returns Promise resolving to an array of posts
+   * Creates a new Post.
+   *
+   * @param input - Input data for the new Post
+   * @returns The created Post
    */
-  @Query(() => [Post], { name: 'posts', description: 'Get all posts' })
-  findAll() {
-    return this.postsService.findAll();
+  @Mutation(() => Post, { name: 'createPost' })
+  async createPost(@Args('input') input: CreatePostInput): Promise<Post> {
+    return this.postService.create(input);
   }
 
   /**
-   * Creates a new post
-   * @param input - Data for the new post
-   * @returns Promise resolving to the created post
+   * Retrieves all Posts.
+   *
+   * @returns An array of all Posts
    */
-  @Mutation(() => Post, { description: 'Create a new post' })
-  createPost(@Args('input') input: CreatePostInput) {
-    return this.postsService.create(input);
+  @Query(() => [Post], { name: 'posts' })
+  async findAllPosts(): Promise<Post[]> {
+    return this.postService.findAll();
   }
 
   /**
-   * Deletes a post by ID
-   * @param id - ID of the post to delete
-   * @returns Promise resolving to boolean indicating success
+   * Retrieves a single Post by its ID.
+   *
+   * @param id - The ID of the Post
+   * @returns The Post with the specified ID
    */
-  @Mutation(() => Boolean, { description: 'Delete a post by ID' })
-  deletePost(@Args('id') id: string) {
-    return this.postsService.delete(id);
+  @Query(() => Post, { name: 'post', nullable: true })
+  async findPostById(
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<Post | null> {
+    return this.postService.findOne(id);
+  }
+
+  /**
+   * Updates an existing Post.
+   *
+   * @param input - Updated data for the Post, including ID
+   * @returns The updated Post
+   */
+  @Mutation(() => Post, { name: 'updatePost' })
+  async updatePost(@Args('input') input: UpdatePostInput): Promise<Post> {
+    return this.postService.update(input);
+  }
+
+  /**
+   * Deletes a Post by its ID.
+   *
+   * @param id - The ID of the Post to delete
+   * @returns The deleted Post
+   */
+  @Mutation(() => Post, { name: 'deletePost' })
+  async deletePost(@Args('id', { type: () => ID }) id: string): Promise<Post> {
+    return this.postService.delete(id);
   }
 }
