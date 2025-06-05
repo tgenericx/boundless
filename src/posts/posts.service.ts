@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { Post, Prisma } from '@prisma/client';
+import { PrismaClient, Post, Prisma } from '@prisma/client';
 import { BaseService } from '../common/base.service';
 
 /**
@@ -22,7 +22,7 @@ export class PostsService extends BaseService<
   /**
    * Provides the Prisma delegate for the Post model.
    */
-  protected get prismaDelegate() {
+  protected get prismaDelegate(): PrismaClient['post'] {
     return this.prismaService.post;
   }
 
