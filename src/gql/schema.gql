@@ -11,6 +11,11 @@ input CreatePostInput {
   textContent: String
 }
 
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Mutation {
   """Create a new post"""
   createPost(input: CreatePostInput!): Post!
@@ -19,19 +24,45 @@ type Mutation {
   deletePost(id: String!): Boolean!
 }
 
-"""A social media post that can contain text, media, or both"""
+"""Defines the Post model for social media posts"""
 type Post {
-  """When the post was created"""
-  createdAt: String!
+  """Timestamp of post creation"""
+  createdAt: DateTime!
 
-  """Unique identifier for the post"""
+  """Unique identifier (maps to MongoDB's _id)"""
   id: ID!
 
-  """List of media URLs (photos/videos)"""
+  """Array of media URLs (photos/videos)"""
   mediaUrls: [String!]
 
-  """Text content of the post (optional if media is present)"""
+  """Optional text content of the post"""
   textContent: String
+
+  """Timestamp of last update"""
+  updatedAt: DateTime!
+}
+
+type PostCountAggregate {
+  _all: Int!
+  createdAt: Int!
+  id: Int!
+  mediaUrls: Int!
+  textContent: Int!
+  updatedAt: Int!
+}
+
+type PostMaxAggregate {
+  createdAt: DateTime
+  id: String
+  textContent: String
+  updatedAt: DateTime
+}
+
+type PostMinAggregate {
+  createdAt: DateTime
+  id: String
+  textContent: String
+  updatedAt: DateTime
 }
 
 type Query {
