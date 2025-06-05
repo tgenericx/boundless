@@ -1,61 +1,160 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📦 GraphQL API with NestJS, Prisma & MongoDB
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A simple GraphQL API built using **NestJS**, **Apollo Server**, **Prisma ORM**, and **MongoDB** for managing social media-style posts. The project includes validation, modular architecture, and auto-generated GraphQL types.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🛠 Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+* 📡 GraphQL API with `@nestjs/graphql` & `Apollo`
+* ⚙️ Schema-first development with auto-generated types
+* 🟔 MongoDB database with Prisma ORM
+* ✅ Class-validator for input validation
+* ♻️ Prisma client exception handling
+* 📁 Modular structure for scalability
+* 🧪 E2E tests with Jest
+* 📄 Docs generation support via Prisma generators
 
-## Project setup
+---
 
-```bash
-$ npm install
+## 📁 Project Structure
+
+```
+.
+├── src/                     # Source code
+│   ├── gql/                # GraphQL config (auto-schema)
+│   ├── posts/              # Post module (entity, service, resolver, DTOs, validators)
+│   └── app.module.ts       # Root module
+├── prisma/                 # Prisma schema
+├── test/                   # E2E tests
+├── Dockerfile              # Docker container config
+├── .env                    # Environment variables (ignored in Git)
+├── package.json            # Scripts and dependencies
 ```
 
-## Compile and run the project
+---
+
+## 🚀 Getting Started
+
+### 1. Clone & Install
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/your-username/graphql-nestjs-api.git
+cd graphql-nestjs-api
+npm install
 ```
 
-## Run tests
+### 2. Set up Environment
+
+Create a `.env` file in the root:
+
+```env
+DATABASE_URL="mongodb+srv://<user>:<password>@cluster.mongodb.net/mydb?retryWrites=true&w=majority"
+PORT=3000
+```
+
+### 3. Prisma Setup
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Generate client & push schema to database
+npm run postinstall
 ```
+
+Or run individually:
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+---
+
+## 🥪 Running the App
+
+```bash
+# Start in dev mode
+npm run dev
+
+# Production build
+npm run build && npm start
+```
+
+Visit GraphQL Playground:
+
+```
+http://localhost:3000/graphql
+```
+
+---
+
+## 🔍 Sample Queries
+
+### Query All Posts
+
+```graphql
+query {
+  posts {
+    id
+    textContent
+    mediaUrls
+    createdAt
+  }
+}
+```
+
+### Create Post
+
+```graphql
+mutation {
+  createPost(input: {
+    textContent: "Hello World",
+    mediaUrls: ["https://example.com/image.png"]
+  }) {
+    id
+    textContent
+  }
+}
+```
+
+### Delete Post
+
+```graphql
+mutation {
+  deletePost(id: "some-mongodb-object-id")
+}
+```
+
+---
+
+## 🧰 Useful Commands
+
+| Command                 | Description                     |
+| ----------------------- | ------------------------------- |
+| `npm run dev`           | Run in dev mode with file watch |
+| `npm run lint`          | Run ESLint with auto-fix        |
+| `npm run test`          | Run unit tests                  |
+| `npm run test:e2e`      | Run end-to-end tests            |
+| `npm run prisma:studio` | Open Prisma Studio              |
+
+---
+
+## 📚 Documentation
+
+* Auto-generated GraphQL schema: `src/gql/schema.gql`
+* Prisma-generated types: `src/@generated`
+* ERD markdown: `prisma/ERD.md`
+* Additional docs: `docs/` (auto-generated by `prisma-docs-generator`)
+
+---
+
+## 🐳 Docker
+
+```bash
+docker build -t graphql-api .
+docker run -p 3000:3000 --env-file .env graphql-api
+```
+
+---
 
 ## Deployment
 
@@ -70,6 +169,8 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+---
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
@@ -83,9 +184,13 @@ Check out a few resources that may come in handy when working with NestJS:
 - To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
 - Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
+---
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+---
 
 ## Stay in touch
 
@@ -93,6 +198,10 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📄 License
+
+UNLICENSED
+
+---
