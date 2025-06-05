@@ -1,61 +1,66 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { Post } from './entities/post.entity';
-import { CreatePostInput } from './dto/create-post.input';
+import { Post, Prisma } from '@prisma/client';
+import { BaseService } from '../common/base.service';
 
 /**
- * Service for managing social media posts
- *
- * @description Handles all business logic related to post creation, retrieval, and deletion
+ * Service for managing Post entities.
  */
 @Injectable()
-export class PostsService {
+export class PostsService extends BaseService<
+  Post,
+  Prisma.PostCreateInput,
+  Prisma.PostUpdateInput
+> {
   /**
-   * Creates an instance of PostsService
-   * @param prisma - The Prisma service for database access
+   * @param prismaService - The Prisma service injected by NestJS DI
    */
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(protected readonly prismaService: PrismaService) {
+    super(prismaService);
+  }
 
   /**
-   * Retrieves all posts from the database
-   * @async
-   * @returns {Promise<Post[]>} Array of posts sorted by creation date (newest first)
+   * Provides the Prisma delegate for the Post model.
    */
-  async findAll(): Promise<Post[]> {
-    return this.prisma.post.findMany({
-      orderBy: { createdAt: 'desc' },
+  protected get prismaDelegate() {
+    return this.prismaService.post;
+  }
+
+  /**
+   * Creates a new Post entity.
+   *
+   * @param data - Data used to create the Post
+   * @returns A promise that resolves with the created Post
+   */
+  async create(data: Prisma.PostCreateInput): Promise<Post> {
+    return await this.prismaDelegate.create({
+      data,
     });
   }
 
   /**
-   * Creates a new post in the database
-   * @async
-   * @param {CreatePostInput} input - Data for the new post
-   * @returns {Promise<Post>} The newly created post
+   * Retrieves all Post entities.
+   *
+   * @param args - Optional Prisma query arguments
+   * @returns A promise that resolves with an array of Posts
    */
-  async create(input: CreatePostInput): Promise<Post> {
-    return this.prisma.post.create({
-      data: {
-        textContent: input.textContent,
-        mediaUrls: input.mediaUrls || [],
-      },
+  async findAll(args: Prisma.PostFindManyArgs = {}): Promise<Post[]> {
+    return await this.prismaDelegate.findMany({
+      ...args,
     });
   }
 
   /**
-   * Deletes a post by its ID
-   * @async
-   * @param {string} id - The ID of the post to delete
-   * @returns {Promise<boolean>} True if deletion was successful, false otherwise
+   * Updates a Post entity.
+   *
+   * @param data - Data used to update the Post (must include `id`)
+   * @returns A promise that resolves with the updated Post
    */
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.post.delete({
-        where: { id },
-      });
-      return true;
-    } catch {
-      return false;
-    }
+  async update(data: Prisma.PostUpdateInput & { id: string }): Promise<Post> {
+    const { id, ...rest } = data;
+    return await this.prismaDelegate.update({
+      where: { id },
+      data: rest,
+    });
   }
 }
