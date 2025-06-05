@@ -59,6 +59,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # generated GraphQL types
 /src/@generated
+/src/gql/schema.gql
 # docs & diagrams
 /docs
 /prisma/ERD.md
