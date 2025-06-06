@@ -6,6 +6,7 @@ import {
   PrismaModule,
   providePrismaClientExceptionFilter,
 } from 'nestjs-prisma';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import {
     }),
     GqlModule,
     PostsModule,
+    CloudinaryModule,
   ],
   providers: [
     providePrismaClientExceptionFilter({
