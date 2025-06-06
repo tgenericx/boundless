@@ -17,7 +17,10 @@ export class PostsResolver {
    * @param input - Input data for the new Post
    * @returns The created Post
    */
-  @Mutation(() => Post, { name: 'createPost' })
+  @Mutation(() => Post, { 
+    name: 'createPost', 
+    description: 'Creates a new post with the provided input data.' 
+  })
   async createPost(@Args('input') input: CreatePostInput): Promise<Post> {
     return this.postService.create(input);
   }
@@ -27,7 +30,10 @@ export class PostsResolver {
    *
    * @returns An array of all Posts
    */
-  @Query(() => [Post], { name: 'posts' })
+  @Query(() => [Post], { 
+    name: 'posts', 
+    description: 'Returns all posts in the system.' 
+  })
   async findAllPosts(): Promise<Post[]> {
     return this.postService.findAll();
   }
@@ -38,7 +44,11 @@ export class PostsResolver {
    * @param id - The ID of the Post
    * @returns The Post with the specified ID
    */
-  @Query(() => Post, { name: 'post', nullable: true })
+  @Query(() => Post, { 
+    name: 'post', 
+    nullable: true, 
+    description: 'Returns a single post identified by its unique ID.' 
+  })
   async findPostById(
     @Args('id', { type: () => ID }) id: string,
   ): Promise<Post | null> {
@@ -51,7 +61,10 @@ export class PostsResolver {
    * @param input - Updated data for the Post, including ID
    * @returns The updated Post
    */
-  @Mutation(() => Post, { name: 'updatePost' })
+  @Mutation(() => Post, { 
+    name: 'updatePost', 
+    description: 'Updates an existing post with the provided data.' 
+  })
   async updatePost(@Args('input') input: UpdatePostInput): Promise<Post> {
     return this.postService.update({ where: { id: input.id }, data: input });
   }
@@ -62,7 +75,10 @@ export class PostsResolver {
    * @param id - The ID of the Post to delete
    * @returns The deleted Post
    */
-  @Mutation(() => Post, { name: 'deletePost' })
+  @Mutation(() => Post, { 
+    name: 'deletePost', 
+    description: 'Deletes a post identified by its unique ID.' 
+  })
   async deletePost(@Args('id', { type: () => ID }) id: string): Promise<Post> {
     return this.postService.delete({ id });
   }
