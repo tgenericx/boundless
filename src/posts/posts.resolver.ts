@@ -42,7 +42,7 @@ export class PostsResolver {
   async findPostById(
     @Args('id', { type: () => ID }) id: string,
   ): Promise<Post | null> {
-    return this.postService.findOne(id);
+    return this.postService.findUnique({ id });
   }
 
   /**
@@ -53,7 +53,7 @@ export class PostsResolver {
    */
   @Mutation(() => Post, { name: 'updatePost' })
   async updatePost(@Args('input') input: UpdatePostInput): Promise<Post> {
-    return this.postService.update(input);
+    return this.postService.update({ where: { id: input.id }, data: input });
   }
 
   /**
@@ -64,6 +64,6 @@ export class PostsResolver {
    */
   @Mutation(() => Post, { name: 'deletePost' })
   async deletePost(@Args('id', { type: () => ID }) id: string): Promise<Post> {
-    return this.postService.delete(id);
+    return this.postService.delete({ id });
   }
 }

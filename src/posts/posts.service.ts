@@ -15,15 +15,15 @@ export class PostsService extends BaseService<
   /**
    * @param prismaService - The Prisma service injected by NestJS DI
    */
-  constructor(protected readonly prismaService: PrismaService) {
-    super(prismaService);
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
   }
 
   /**
    * Provides the Prisma delegate for the Post model.
    */
-  protected get prismaDelegate(): PrismaClient['post'] {
-    return this.prismaService.post;
+  protected get delegate(): PrismaClient['post'] {
+    return this.prisma.post;
   }
 
   /**
@@ -33,7 +33,7 @@ export class PostsService extends BaseService<
    * @returns A promise that resolves with the created Post
    */
   async create(data: Prisma.PostCreateInput): Promise<Post> {
-    return await this.prismaDelegate.create({
+    return await this.delegate.create({
       data,
     });
   }
@@ -45,7 +45,7 @@ export class PostsService extends BaseService<
    * @returns A promise that resolves with an array of Posts
    */
   async findAll(args: Prisma.PostFindManyArgs = {}): Promise<Post[]> {
-    return await this.prismaDelegate.findMany({
+    return await this.delegate.findMany({
       ...args,
     });
   }
@@ -56,11 +56,10 @@ export class PostsService extends BaseService<
    * @param data - Data used to update the Post (must include `id`)
    * @returns A promise that resolves with the updated Post
    */
-  async update(data: Prisma.PostUpdateInput & { id: string }): Promise<Post> {
-    const { id, ...rest } = data;
-    return await this.prismaDelegate.update({
-      where: { id },
-      data: rest,
-    });
+  update(args: {
+    where: Prisma.PostWhereUniqueInput;
+    data: Prisma.PostUpdateInput;
+  }): Promise<Post> {
+    return this.delegate.update(args);
   }
 }

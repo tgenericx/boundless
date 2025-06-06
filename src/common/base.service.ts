@@ -14,6 +14,7 @@ export abstract class BaseService<
   TEntity,
   TCreateInput = any,
   TUpdateInput = any,
+  TWhereUniqueInput extends { id: string | number } = { id: string },
 > {
   /**
    * @param prismaService - The Prisma service injected by NestJS DI
@@ -24,7 +25,7 @@ export abstract class BaseService<
    * Provides the Prisma delegate for the specific model (e.g., this.prismaService.post).
    * Must be implemented by subclasses.
    */
-  protected abstract get prismaDelegate(): any;
+  protected abstract get delegate(): any;
 
   /**
    * Creates a new entity using the provided input data.
@@ -45,39 +46,38 @@ export abstract class BaseService<
   /**
    * Updates an entity based on the provided input data.
    *
-   * @param data - Data used to update the entity
+   * @param args - Data used to update the entity and a unique field in the entity
    * @returns A promise that resolves with the updated entity
    */
-  abstract update(data: TUpdateInput): Promise<TEntity>;
+  abstract update(args: {
+    where: TWhereUniqueInput;
+    data: TUpdateInput;
+  }): Promise<TEntity>;
 
   /**
    * Retrieves a single entity by its ID.
    *
-   * @param id - The ID of the entity to retrieve
+   * @param where - The unique field of the entity to retrieve
    * @returns A promise that resolves with the entity or throws if not found
-   * @throws NotFoundException if no entity is found with the given ID
+   * @throws NotFoundException if no entity is found with the given unique field
    */
-  async findOne(id: string): Promise<TEntity> {
-    const entity = await this.prismaDelegate.findUnique({
-      where: { id },
-    });
-
+  async findUnique(where: TWhereUniqueInput): Promise<TEntity> {
+    const entity = await this.delegate.findUnique({ where });
     if (!entity) {
-      throw new NotFoundException(`Entity with ID ${id} not found`);
+      throw new NotFoundException(
+        `${this.constructor.name.replace('sService', '')} not found`,
+      );
     }
-
     return entity;
   }
 
   /**
    * Deletes an entity by its ID.
    *
-   * @param id - The ID of the entity to delete
+   * @param where - The unique field of the entity to delete
    * @returns A promise that resolves with the deleted entity
    */
-  async delete(id: string): Promise<TEntity> {
-    return await this.prismaDelegate.delete({
-      where: { id },
-    });
+  async delete(where: TWhereUniqueInput): Promise<TEntity> {
+    return this.delegate.delete({ where });
   }
 }
