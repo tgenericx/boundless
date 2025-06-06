@@ -5,8 +5,10 @@ import { join } from 'path';
 import { GraphQLFormattedError } from 'graphql';
 
 interface IGraphQLFormattedError {
+  error?: string;
   message: string;
   code: object;
+  status: unknown;
 }
 
 @Module({
@@ -20,16 +22,19 @@ interface IGraphQLFormattedError {
       },
       graphiql: true,
       formatError: (error: GraphQLFormattedError): IGraphQLFormattedError => {
-        const originalError = error.extensions?.originalError as Error;
+        const originalError = error.extensions?.originalError as any;
         if (!originalError) {
           return {
             message: error.message,
             code: error.extensions?.code || 'UNKNOWN_ERROR',
+            status: error.extensions?.status,
           };
         }
         return {
+          error: originalError.error,
           message: originalError.message,
           code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
+          status: error.extensions?.status,
         };
       },
     }),
