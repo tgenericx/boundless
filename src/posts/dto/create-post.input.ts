@@ -13,7 +13,6 @@ export class CreatePostInput {
    */
   @Field(() => String, {
     description: 'Text content of the post',
-    nullable: true,
   })
   @IsString()
   @MaxLength(5000, {
