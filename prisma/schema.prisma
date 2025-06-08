@@ -35,11 +35,8 @@ model Post {
   /// Unique identifier (maps to MongoDB's _id)
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  /// Optional text content of the post
-  textContent String?
-
-  /// Array of media URLs (photos/videos)
-  mediaUrls String[]
+  ///  text content of the post
+  textContent String
 
   /// Timestamp of post creation
   createdAt DateTime @default(now())
