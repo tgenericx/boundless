@@ -156,6 +156,12 @@ docker run -p 3000:3000 --env-file .env graphql-api
 
 ---
 
+## Planned features
+
+- image/video upload support
+- pagination for posts
+- User authentication & authorization
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
