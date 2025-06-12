@@ -15,10 +15,12 @@ interface IGraphQLFormattedError {
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/gql/schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'src/@generated/schema.gql'),
       sortSchema: true,
       subscriptions: {
-        'graphql-ws': true,
+        'graphql-ws': {
+          path: '/graphql',
+        },
       },
       graphiql: true,
       formatError: (error: GraphQLFormattedError): IGraphQLFormattedError => {
@@ -40,4 +42,4 @@ interface IGraphQLFormattedError {
     }),
   ],
 })
-export class GqlModule {}
+export class GqlModule { }
