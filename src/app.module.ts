@@ -6,6 +6,7 @@ import {
   PrismaModule,
   providePrismaClientExceptionFilter,
 } from 'nestjs-prisma';
+import { PubSubModule } from './pub-sub/pub-sub.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import {
     }),
     GqlModule,
     PostsModule,
+    PubSubModule,
   ],
   providers: [
     providePrismaClientExceptionFilter({
