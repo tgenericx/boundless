@@ -21,7 +21,7 @@ export class PostsResolver {
   constructor(
     private readonly postService: PostsService,
     @Inject('PUB_SUB') private pubSub: PubSub,
-  ) { }
+  ) {}
 
   /**
    * Creates a new Post.
@@ -37,6 +37,11 @@ export class PostsResolver {
     return this.postService.create(input);
   }
 
+  /**
+   * subscription that emits an event when a new post is created.
+   *
+   * @returns An async iterator that can be used to listen for 'postCreated' events
+   */
   @Subscription(() => Post, {
     name: 'postCreated',
     description: 'Triggers when a new post is created',
@@ -44,14 +49,6 @@ export class PostsResolver {
   postCreated() {
     return this.pubSub.asyncIterableIterator('postCreated');
   }
-
-  // @Subscription(() => Post, {
-  //   name: 'postCreated',
-  //   description: 'Triggers when a new post is created',
-  // })
-  // postCreated(@Root() payload: { postCreated: Post }): Post {
-  //   return payload.postCreated;
-  // }
 
   /**
    * Retrieves all Posts.

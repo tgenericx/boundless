@@ -38,9 +38,7 @@ export class PostsService extends BaseService<
    */
   async create(data: Prisma.PostCreateInput): Promise<Post> {
     const post = await this.delegate.create({ data });
-    const sub = await this.pubSub.publish('postCreated', { postCreated: post });
-    console.log(sub);
-
+    await this.pubSub.publish('postCreated', { postCreated: post });
     return post;
   }
 
