@@ -1,15 +1,27 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  Subscription,
+} from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './entities/post.entity';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
+import { Inject } from '@nestjs/common';
+import { PubSub } from 'graphql-subscriptions';
 
 /**
  * Resolver for GraphQL operations related to Posts.
  */
 @Resolver(() => Post)
 export class PostsResolver {
-  constructor(private readonly postService: PostsService) {}
+  constructor(
+    private readonly postService: PostsService,
+    @Inject('PUB_SUB') private pubSub: PubSub,
+  ) { }
 
   /**
    * Creates a new Post.
@@ -24,6 +36,22 @@ export class PostsResolver {
   async createPost(@Args('input') input: CreatePostInput): Promise<Post> {
     return this.postService.create(input);
   }
+
+  @Subscription(() => Post, {
+    name: 'postCreated',
+    description: 'Triggers when a new post is created',
+  })
+  postCreated() {
+    return this.pubSub.asyncIterableIterator('postCreated');
+  }
+
+  // @Subscription(() => Post, {
+  //   name: 'postCreated',
+  //   description: 'Triggers when a new post is created',
+  // })
+  // postCreated(@Root() payload: { postCreated: Post }): Post {
+  //   return payload.postCreated;
+  // }
 
   /**
    * Retrieves all Posts.

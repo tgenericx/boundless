@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { PrismaClient, Post, Prisma } from '@prisma/client';
 import { BaseService } from '../common/base.service';
+import { PubSub } from 'graphql-subscriptions';
 
 /**
  * Service for managing Post entities.
@@ -15,15 +16,18 @@ export class PostsService extends BaseService<
   /**
    * @param prismaService - The Prisma service injected by NestJS DI
    */
-  constructor(protected readonly prisma: PrismaService) {
-    super(prisma);
+  constructor(
+    protected readonly prismaService: PrismaService,
+    @Inject('PUB_SUB') private pubSub: PubSub,
+  ) {
+    super(prismaService);
   }
 
   /**
    * Provides the Prisma delegate for the Post model.
    */
   protected get delegate(): PrismaClient['post'] {
-    return this.prisma.post;
+    return this.prismaService.post;
   }
 
   /**
@@ -33,9 +37,11 @@ export class PostsService extends BaseService<
    * @returns A promise that resolves with the created Post
    */
   async create(data: Prisma.PostCreateInput): Promise<Post> {
-    return await this.delegate.create({
-      data,
-    });
+    const post = await this.delegate.create({ data });
+    const sub = await this.pubSub.publish('postCreated', { postCreated: post });
+    console.log(sub);
+
+    return post;
   }
 
   /**
