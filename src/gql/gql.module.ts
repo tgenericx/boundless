@@ -17,6 +17,7 @@ interface IGraphQLFormattedError {
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/@generated/schema.gql'),
       sortSchema: true,
+      introspection: true,
       subscriptions: {
         'graphql-ws': {
           path: '/graphql',
