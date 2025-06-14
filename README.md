@@ -1,35 +1,41 @@
 # 📦 GraphQL API with NestJS, Prisma & MongoDB
 
-A simple GraphQL API built using **NestJS**, **Apollo Server**, **Prisma ORM**, and **MongoDB** for managing social media-style posts. The project includes validation, modular architecture, and auto-generated GraphQL types.
+A robust GraphQL API built using **NestJS**, **Apollo Server**, **Prisma ORM**, and **MongoDB** for managing social media-style posts. The project features a modular architecture, real-time subscriptions, and a generic base service pattern for efficient CRUD operations.
 
 ---
 
 ## 🛠 Features
 
-* 📡 GraphQL API with `@nestjs/graphql` & `Apollo`
-* ⚙️ Schema-first development with auto-generated types
+* 📡 GraphQL API with `@nestjs/graphql` & `Apollo Server`
+* 🔔 Real-time subscriptions with `graphql-subscriptions`
+* ⚙️ Code-first development with auto-generated schema
 * 🟔 MongoDB database with Prisma ORM
 * ✅ Class-validator for input validation
-* ♻️ Prisma client exception handling
+* ♻️ Generic `BaseService` for reusable CRUD operations
 * 📁 Modular structure for scalability
-* 🧪 E2E tests with Jest
-* 📄 Docs generation support via Prisma generators
+* 🧪 Jest testing setup
+* 📄 Error handling with formatted GraphQL errors
 
 ---
 
 ## 📁 Project Structure
 
 ```
-.
-├── src/                     # Source code
-│   ├── gql/                # GraphQL config (auto-schema)
-│   ├── posts/              # Post module (entity, service, resolver, DTOs, validators)
-│   └── app.module.ts       # Root module
-├── prisma/                 # Prisma schema
-├── test/                   # E2E tests
-├── Dockerfile              # Docker container config
-├── .env                    # Environment variables (ignored in Git)
-├── package.json            # Scripts and dependencies
+src/
+├── app.module.ts           # Root application module
+├── common/
+│   └── base.service.ts     # Generic CRUD service
+├── gql/
+│   └── gql.module.ts       # GraphQL configuration
+├── main.ts                 # Application entry point
+├── posts/                  # Post module
+│   ├── dto/                # Data transfer objects
+│   ├── entities/           # GraphQL entity definitions
+│   ├── posts.module.ts     # Post feature module
+│   ├── posts.resolver.ts   # GraphQL resolvers
+│   └── posts.service.ts    # Business logic
+└── pub-sub/                # PubSub module for subscriptions
+    └── pub-sub.module.ts   # PubSub configuration
 ```
 
 ---
@@ -39,9 +45,8 @@ A simple GraphQL API built using **NestJS**, **Apollo Server**, **Prisma ORM**, 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-username/graphql-nestjs-api.git
+git clone https://github.com/phastboy/graphql.git
 cd graphql-nestjs-api
-npm install
 ```
 
 ### 2. Set up Environment
@@ -53,18 +58,11 @@ DATABASE_URL="mongodb+srv://<user>:<password>@cluster.mongodb.net/mydb?retryWrit
 PORT=3000
 ```
 
-### 3. Prisma Setup
+### 3. Database Setup
 
 ```bash
-# Generate client & push schema to database
-npm run postinstall
-```
-
-Or run individually:
-
-```bash
-npx prisma generate
-npx prisma db push
+# Generate Prisma client & push schema to database
+npm install
 ```
 
 ---
@@ -72,43 +70,62 @@ npx prisma db push
 ## 🥪 Running the App
 
 ```bash
-# Start in dev mode
+# Development mode with hot reload
 npm run dev
 
 # Production build
 npm run build && npm start
 ```
 
-Visit GraphQL Playground:
-
-```
-http://localhost:3000/graphql
-```
+Access GraphQL Playground at: `http://localhost:3000/graphql`
 
 ---
 
-## 🔍 Sample Queries
+## 🔍 Sample Operations
 
-### Query All Posts
+### Create Post with Subscription
+
+```graphql
+mutation {
+  createPost(input: {
+    textContent: "Hello World!"
+  }) {
+    id
+    textContent
+  }
+}
+
+subscription {
+  postCreated {
+    id
+    textContent
+  }
+}
+```
+
+### Query Posts
 
 ```graphql
 query {
   posts {
     id
     textContent
-    mediaUrls
     createdAt
+  }
+  
+  post(id: "some-id") {
+    textContent
   }
 }
 ```
 
-### Create Post
+### Update Post
 
 ```graphql
 mutation {
-  createPost(input: {
-    textContent: "Hello World",
-    mediaUrls: ["https://example.com/image.png"]
+  updatePost(input: {
+    id: "some-id",
+    textContent: "Updated content"
   }) {
     id
     textContent
@@ -116,93 +133,59 @@ mutation {
 }
 ```
 
-### Delete Post
+---
 
-```graphql
-mutation {
-  deletePost(id: "some-mongodb-object-id")
-}
-```
+## 🧰 Development Commands
+
+| Command                 | Description                          |
+|-------------------------|--------------------------------------|
+| `npm run dev`           | Run in dev mode with file watching   |
+| `npm run lint`          | Run ESLint with auto-fix             |
+| `npm run test`          | Run unit tests                       |
+| `npm run prisma:studio` | Open Prisma Studio for data browsing |
+| `npm run migrate:dev`   | Create and apply database migration  |
 
 ---
 
-## 🧰 Useful Commands
+## 🛠 Technical Highlights
 
-| Command                 | Description                     |
-| ----------------------- | ------------------------------- |
-| `npm run dev`           | Run in dev mode with file watch |
-| `npm run lint`          | Run ESLint with auto-fix        |
-| `npm run test`          | Run unit tests                  |
-| `npm run test:e2e`      | Run end-to-end tests            |
-| `npm run prisma:studio` | Open Prisma Studio              |
+- **Generic Base Service**: The `BaseService` provides reusable CRUD operations that can be extended by specific entity services.
+- **Real-time Updates**: GraphQL subscriptions notify clients when new posts are created.
+- **Error Handling**: Custom error formatting for consistent API responses.
+- **Validation**: Input validation using `class-validator` decorators.
+
+---
+
+## Planned Features
+
+- [ ] User authentication & authorization
+- [ ] Pagination for posts
+- [ ] File upload support
+- [ ] Advanced filtering and sorting
 
 ---
 
 ## 📚 Documentation
 
-* Auto-generated GraphQL schema: `src/gql/schema.gql`
-* Prisma-generated types: `src/@generated`
-* ERD markdown: `prisma/ERD.md`
-* Additional docs: `docs/` (auto-generated by `prisma-docs-generator`)
+- Auto-generated GraphQL schema: `src/@generated/schema.gql`
+- Prisma-generated types: `src/@generated`
 
 ---
 
-## 🐳 Docker
+## 🐳 Docker Deployment
 
 ```bash
-docker build -t graphql-api .
-docker run -p 3000:3000 --env-file .env graphql-api
+docker build -t graphql .
+docker run -p 3000:3000 --env-file .env graphql
 ```
-
----
-
-## Planned features
-
-- image/video upload support
-- pagination for posts
-- User authentication & authorization
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
 ---
 
 ## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
----
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
----
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- [NestJS Documentation](https://docs.nestjs.com)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [GraphQL Subscriptions](https://www.apollographql.com/docs/graphql-subscriptions/)
 
 ---
 
