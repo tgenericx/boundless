@@ -51,7 +51,7 @@ export class PostsService extends BaseService<
   async findAll(args: Prisma.PostFindManyArgs = {}): Promise<Post[]> {
     return await this.delegate.findMany({
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       ...args,
     });
