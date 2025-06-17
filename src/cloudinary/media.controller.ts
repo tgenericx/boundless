@@ -97,8 +97,19 @@ export class MediaController {
           return {
             filename: file.originalname,
             success: true,
-            url: upload.data.secure_url,
             public_id: upload.data.public_id,
+            secure_url: upload.data.secure_url,
+            resource_type: upload.data.resource_type,
+            format: upload.data.format,
+            width: upload.data.width,
+            height: upload.data.height,
+            bytes: upload.data.bytes,
+            created_at: upload.data.created_at,
+            original_filename: upload.data.original_filename,
+            url: upload.data.url,
+            type: upload.data.type,
+            etag: upload.data.etag,
+            eager: upload.data.eager,
           };
         } else {
           this.cloudinaryService['logger'].error(
@@ -109,6 +120,9 @@ export class MediaController {
           return {
             filename: file.originalname,
             success: false,
+            public_id: '',
+            secure_url: '',
+            resource_type: '',
             error:
               upload.error?.message ||
               `Unknown Cloudinary error for file: ${file.originalname}`,
@@ -117,18 +131,23 @@ export class MediaController {
       }),
     );
 
-    const typedResults: MediaUploadResultDto[] = results.map((res, i) =>
-      res.status === 'fulfilled'
-        ? res.value
-        : {
-            filename: files[i]?.originalname || `file-${i}`,
-            success: false,
-            error:
-              res.reason instanceof Error
-                ? res.reason.message
-                : `Unhandled error uploading ${files[i]?.originalname || `file-${i}`}`,
-          },
-    );
+    const typedResults: MediaUploadResultDto[] = results.map((res, i) => {
+      if (res.status === 'fulfilled') {
+        return res.value;
+      } else {
+        return {
+          filename: files[i]?.originalname || `file-${i}`,
+          success: false,
+          public_id: '',
+          secure_url: '',
+          resource_type: '',
+          error:
+            res.reason instanceof Error
+              ? res.reason.message
+              : `Unhandled error uploading ${files[i]?.originalname || `file-${i}`}`,
+        };
+      }
+    });
 
     return { results: typedResults };
   }

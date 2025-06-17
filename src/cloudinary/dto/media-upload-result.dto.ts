@@ -1,18 +1,37 @@
+import { Expose, Exclude, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+@Exclude()
+export class EagerTransformationDto {
+  @ApiProperty() @Expose() transformation: string;
+  @ApiProperty() @Expose() width: number;
+  @ApiProperty() @Expose() height: number;
+  @ApiProperty() @Expose() bytes: number;
+  @ApiProperty() @Expose() format: string;
+  @ApiProperty() @Expose() secure_url: string;
+}
+
+@Exclude()
 export class MediaUploadResultDto {
-  @ApiProperty({ description: 'Original filename of the uploaded media' })
-  filename: string;
+  @ApiProperty() @Expose() filename: string;
+  @ApiProperty() @Expose() success: boolean;
+  @ApiProperty() @Expose() public_id: string;
+  @ApiProperty() @Expose() secure_url: string;
+  @ApiProperty() @Expose() resource_type: string;
+  @ApiPropertyOptional() @Expose() format?: string;
+  @ApiPropertyOptional() @Expose() width?: number;
+  @ApiPropertyOptional() @Expose() height?: number;
+  @ApiPropertyOptional() @Expose() bytes?: number;
+  @ApiPropertyOptional() @Expose() created_at?: string;
+  @ApiPropertyOptional() @Expose() original_filename?: string;
+  @ApiPropertyOptional() @Expose() url?: string;
+  @ApiPropertyOptional() @Expose() type?: string;
+  @ApiPropertyOptional() @Expose() etag?: string;
 
-  @ApiProperty({ description: 'Indicates whether the upload was successful' })
-  success: boolean;
+  @ApiPropertyOptional({ type: [EagerTransformationDto] })
+  @Expose()
+  @Type(() => EagerTransformationDto)
+  eager?: EagerTransformationDto[];
 
-  @ApiPropertyOptional({ description: 'Secure URL to the uploaded media' })
-  url?: string;
-
-  @ApiPropertyOptional({ description: 'Cloudinary public ID of the file' })
-  public_id?: string;
-
-  @ApiPropertyOptional({ description: 'Error message if upload failed' })
-  error?: string;
+  @ApiPropertyOptional() @Expose() error?: string;
 }
