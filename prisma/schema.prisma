@@ -11,8 +11,8 @@ generator docs {
 
 generator markdown {
   provider = "prisma-markdown"
-  output   = "./ERD.md"
-  title    = "Playing "
+  output   = "../docs/ERD.md"
+  title    = "QuickPost"
 }
 
 generator nestgraphql {
@@ -35,8 +35,11 @@ model Post {
   /// Unique identifier (maps to MongoDB's _id)
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  ///  text content of the post
-  textContent String
+  /// Optional text content of the post
+  textContent String?
+
+  /// Array of media URLs (photos/videos)
+  mediaUrls String[]
 
   /// Timestamp of post creation
   createdAt DateTime @default(now())
