@@ -16,12 +16,15 @@ export class MediaUploadResultDto {
   @ApiPropertyOptional({ description: 'Error message if upload failed' })
   error?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'File format (e.g., jpg, png)' })
   format?: string;
-  @ApiPropertyOptional()
+
+  @ApiPropertyOptional({ description: 'Media width in pixels' })
   width?: number;
-  @ApiPropertyOptional()
+
+  @ApiPropertyOptional({ description: 'Media height in pixels' })
   height?: number;
-  @ApiPropertyOptional()
+
+  @ApiPropertyOptional({ description: 'File size in bytes' })
   bytes?: number;
 }

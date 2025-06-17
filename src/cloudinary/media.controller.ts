@@ -37,7 +37,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 @ApiExtraModels(MediaUploadResultDto)
 @Controller('media')
 export class MediaController {
-  constructor(private readonly cloudinaryService: CloudinaryService) { }
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
   public readonly logger = new Logger(CloudinaryService.name);
 
   @Post('upload')
