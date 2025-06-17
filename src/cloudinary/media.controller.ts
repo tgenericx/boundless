@@ -6,20 +6,20 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+  ApiTags,
+  ApiExtraModels,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import {
   CloudinaryService,
   CloudinaryUploadResult,
 } from '../cloudinary/cloudinary.service';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
-
-export interface MediaUploadResult {
-  filename: string;
-  success: boolean;
-  url?: string;
-  public_id?: string;
-  error?: string;
-}
+import { MediaUploadResultDto } from './dto/media-upload-result.dto';
 
 const SUPPORTED_MIME_TYPES = [
   'image/jpeg',
@@ -33,6 +33,7 @@ const SUPPORTED_MIME_TYPES = [
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 @ApiTags('Media Uploads')
+@ApiExtraModels(MediaUploadResultDto)
 @Controller('media')
 export class MediaController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
@@ -58,7 +59,15 @@ export class MediaController {
   @ApiResponse({
     status: 201,
     description: 'Files uploaded with per-file success/failure',
-    type: Object, // could add @ApiExtraModels if using class-based DTOs
+    schema: {
+      type: 'object',
+      properties: {
+        results: {
+          type: 'array',
+          items: { $ref: getSchemaPath(MediaUploadResultDto) },
+        },
+      },
+    },
   })
   async uploadFiles(
     @UploadedFiles(
@@ -67,13 +76,13 @@ export class MediaController {
         .build({ fileIsRequired: true }),
     )
     files: Express.Multer.File[],
-  ): Promise<{ results: MediaUploadResult[] }> {
+  ): Promise<{ results: MediaUploadResultDto[] }> {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
     }
 
     const results = await Promise.allSettled(
-      files.map(async (file): Promise<MediaUploadResult> => {
+      files.map(async (file): Promise<MediaUploadResultDto> => {
         const isSupported = SUPPORTED_MIME_TYPES.includes(file.mimetype);
         if (!isSupported) {
           throw new BadRequestException(
@@ -92,22 +101,32 @@ export class MediaController {
             public_id: upload.data.public_id,
           };
         } else {
+          this.cloudinaryService['logger'].error(
+            `Upload failed for file "${file.originalname}"`,
+            upload.error,
+          );
+
           return {
             filename: file.originalname,
             success: false,
-            error: upload.error?.message || 'Unknown Cloudinary error',
+            error:
+              upload.error?.message ||
+              `Unknown Cloudinary error for file: ${file.originalname}`,
           };
         }
       }),
     );
 
-    const typedResults: MediaUploadResult[] = results.map((res, i) =>
+    const typedResults: MediaUploadResultDto[] = results.map((res, i) =>
       res.status === 'fulfilled'
         ? res.value
         : {
             filename: files[i]?.originalname || `file-${i}`,
             success: false,
-            error: res.reason?.message || 'Unhandled upload error',
+            error:
+              res.reason instanceof Error
+                ? res.reason.message
+                : `Unhandled error uploading ${files[i]?.originalname || `file-${i}`}`,
           },
     );
 

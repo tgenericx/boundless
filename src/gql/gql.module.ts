@@ -3,6 +3,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { GraphQLFormattedError } from 'graphql';
+import { GqlCustomError } from 'src/common/errors/gql-custom.error';
 
 interface IGraphQLFormattedError {
   error?: string;
@@ -25,18 +26,23 @@ interface IGraphQLFormattedError {
       },
       graphiql: true,
       formatError: (error: GraphQLFormattedError): IGraphQLFormattedError => {
-        const originalError = error.extensions?.originalError as any;
-        if (!originalError) {
+        const originalError = error.extensions?.originalError;
+
+        if (originalError instanceof GqlCustomError) {
           return {
-            message: error.message,
-            code: error.extensions?.code || 'UNKNOWN_ERROR',
-            status: error.extensions?.status,
+            error: originalError.error,
+            message: originalError.message,
+            code:
+              originalError.code ||
+              error.extensions?.code ||
+              'INTERNAL_SERVER_ERROR',
+            status: originalError.status || error.extensions?.status,
           };
         }
+
         return {
-          error: originalError.error,
-          message: originalError.message,
-          code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
+          message: error.message,
+          code: error.extensions?.code || 'UNKNOWN_ERROR',
           status: error.extensions?.status,
         };
       },

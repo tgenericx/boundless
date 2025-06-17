@@ -17,14 +17,17 @@ export class EitherTextOrMedia implements ValidatorConstraintInterface {
    * @returns true if either textContent or mediaUrls is provided
    */
   validate(_value: never, args: ValidationArguments): boolean {
-    const { textContent, mediaUrls } = args.object as CreatePostInput;
-    return !!(textContent?.trim() || (mediaUrls && mediaUrls.length > 0));
+    const post = args.object as CreatePostInput;
+    return !!(
+      post.textContent?.trim() ||
+      (post.mediaUrls && post.mediaUrls.length > 0)
+    );
   }
 
   /**
    * Default error message when validation fails
    */
-  defaultMessage(_args: ValidationArguments): string {
+  defaultMessage(): string {
     return 'Post must contain either text content or media URLs';
   }
 }
