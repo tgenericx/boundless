@@ -1,17 +1,11 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  ID,
-  Subscription,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './entities/post.entity';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { FindManyPostArgs, FindUniquePostArgs } from 'src/@generated';
 
 /**
  * Resolver for GraphQL operations related to Posts.
@@ -59,8 +53,11 @@ export class PostsResolver {
     name: 'posts',
     description: 'Returns all posts in the system.',
   })
-  async findAllPosts(): Promise<Post[]> {
-    return this.postService.findAll();
+  async findAllPosts(@Args() args: FindManyPostArgs): Promise<{
+    data: Post[];
+    nextCursor: string | null;
+  }> {
+    return this.postService.findAll(args);
   }
 
   /**
@@ -74,10 +71,8 @@ export class PostsResolver {
     nullable: true,
     description: 'Returns a single post identified by its unique ID.',
   })
-  async findPostById(
-    @Args('id', { type: () => ID }) id: string,
-  ): Promise<Post | null> {
-    return this.postService.findUnique({ id });
+  async findUniquePost(@Args() args: FindUniquePostArgs): Promise<Post | null> {
+    return this.postService.findUnique(args.where);
   }
 
   /**
@@ -91,7 +86,11 @@ export class PostsResolver {
     description: 'Updates an existing post with the provided data.',
   })
   async updatePost(@Args('input') input: UpdatePostInput): Promise<Post> {
-    return this.postService.update({ where: { id: input.id }, data: input });
+    const { id, ...rest } = input;
+    return this.postService.update({
+      where: { id },
+      data: { ...rest },
+    });
   }
 
   /**
@@ -104,7 +103,7 @@ export class PostsResolver {
     name: 'deletePost',
     description: 'Deletes a post identified by its unique ID.',
   })
-  async deletePost(@Args('id', { type: () => ID }) id: string): Promise<Post> {
-    return this.postService.delete({ id });
+  async deletePost(@Args() args: FindUniquePostArgs): Promise<Post> {
+    return this.postService.delete(args.where);
   }
 }

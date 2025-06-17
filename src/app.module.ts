@@ -7,6 +7,8 @@ import {
   providePrismaClientExceptionFilter,
 } from 'nestjs-prisma';
 import { PubSubModule } from './pub-sub/pub-sub.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { SwaggerConfigModule } from './swagger-config/swagger-config.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { PubSubModule } from './pub-sub/pub-sub.module';
     GqlModule,
     PostsModule,
     PubSubModule,
+    CloudinaryModule,
+    SwaggerConfigModule,
   ],
   providers: [
     providePrismaClientExceptionFilter({
