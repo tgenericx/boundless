@@ -6,6 +6,7 @@ import { UpdatePostInput } from './dto/update-post.input';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { FindManyPostArgs, FindUniquePostArgs } from 'src/@generated';
+import { PaginatedPosts } from './dto/paginated-posts.response';
 
 /**
  * Resolver for GraphQL operations related to Posts.
@@ -49,9 +50,9 @@ export class PostsResolver {
    *
    * @returns An array of all Posts
    */
-  @Query(() => [Post], {
+  @Query(() => PaginatedPosts, {
     name: 'posts',
-    description: 'Returns all posts in the system.',
+    description: 'Returns all paginated posts in the system.',
   })
   async findAllPosts(@Args() args: FindManyPostArgs): Promise<{
     data: Post[];
