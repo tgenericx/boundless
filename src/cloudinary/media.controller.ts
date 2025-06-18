@@ -4,6 +4,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
@@ -37,6 +38,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 @Controller('media')
 export class MediaController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
+  public readonly logger = new Logger(CloudinaryService.name);
 
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files', 10))
@@ -98,21 +100,14 @@ export class MediaController {
             filename: file.originalname,
             success: true,
             public_id: upload.data.public_id,
-            secure_url: upload.data.secure_url,
-            resource_type: upload.data.resource_type,
+            url: upload.data.secure_url,
             format: upload.data.format,
             width: upload.data.width,
             height: upload.data.height,
             bytes: upload.data.bytes,
-            created_at: upload.data.created_at,
-            original_filename: upload.data.original_filename,
-            url: upload.data.url,
-            type: upload.data.type,
-            etag: upload.data.etag,
-            eager: upload.data.eager,
           };
         } else {
-          this.cloudinaryService['logger'].error(
+          this.logger.error(
             `Upload failed for file "${file.originalname}"`,
             upload.error,
           );
@@ -120,9 +115,6 @@ export class MediaController {
           return {
             filename: file.originalname,
             success: false,
-            public_id: '',
-            secure_url: '',
-            resource_type: '',
             error:
               upload.error?.message ||
               `Unknown Cloudinary error for file: ${file.originalname}`,
@@ -138,9 +130,6 @@ export class MediaController {
         return {
           filename: files[i]?.originalname || `file-${i}`,
           success: false,
-          public_id: '',
-          secure_url: '',
-          resource_type: '',
           error:
             res.reason instanceof Error
               ? res.reason.message
