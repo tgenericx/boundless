@@ -27,6 +27,9 @@ export class CloudinaryService {
         {
           resource_type: 'auto',
           folder: 'posts',
+          eager: [{ format: 'jpg', quality: 'auto' }],
+          eager_async: true,
+          transformation: [{ quality: 'auto', fetch_format: 'auto' }],
         },
         (error, result) => {
           if (error || !result) {
