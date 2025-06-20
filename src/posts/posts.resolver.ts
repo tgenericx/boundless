@@ -31,7 +31,7 @@ export class PostsResolver {
     name: 'createPost',
     description: 'Creates a new post with the provided input data.',
   })
-  async createPost(@Args() input: PostCreateInput): Promise<Post> {
+  async createPost(@Args('input') input: PostCreateInput): Promise<Post> {
     return this.postService.create(input);
   }
 
