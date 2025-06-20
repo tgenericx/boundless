@@ -1,11 +1,14 @@
 import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './entities/post.entity';
-import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { FindManyPostArgs, FindUniquePostArgs } from 'src/@generated';
+import {
+  FindManyPostArgs,
+  FindUniquePostArgs,
+  PostCreateInput,
+} from 'src/@generated';
 import { PaginatedPosts } from './dto/paginated-posts.response';
 
 /**
@@ -28,7 +31,7 @@ export class PostsResolver {
     name: 'createPost',
     description: 'Creates a new post with the provided input data.',
   })
-  async createPost(@Args('input') input: CreatePostInput): Promise<Post> {
+  async createPost(@Args() input: PostCreateInput): Promise<Post> {
     return this.postService.create(input);
   }
 
