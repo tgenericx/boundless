@@ -2,7 +2,6 @@ import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Post, Prisma } from '@prisma/client';
 import { PubSub } from 'graphql-subscriptions';
-import { CreatePostInput } from './dto/create-post.input';
 
 @Injectable()
 export class PostsService {
@@ -13,12 +12,9 @@ export class PostsService {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  async create(data: CreatePostInput): Promise<Post> {
+  async create(data: Prisma.PostCreateInput): Promise<Post> {
     const post = await this.prisma.post.create({
-      data: {
-        textContent: data.textContent,
-        mediaUrls: data.mediaUrls ?? [],
-      },
+      data,
     });
 
     await this.pubSub.publish('postCreated', { postCreated: post });
