@@ -1,4 +1,4 @@
-FROM node:24 AS builder
+FROM node:latest AS builder
 
 # Create app directory
 WORKDIR /app
@@ -8,13 +8,13 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install app dependencies
-RUN npm ci --only-production
+RUN npm ci
 
 COPY . .
 
 RUN npm run build
 
-FROM node:24
+FROM node:latest
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
