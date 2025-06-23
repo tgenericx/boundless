@@ -1,7 +1,7 @@
 {
-  "name": "graphql",
-  "version": "1.0.0",
-  "description": "",
+  "name": "boundless",
+  "version": "0.0.1",
+  "description": "A social media backend with Graphql.",
   "main": "index.js",
   "author": "tgenericx",
   "license": "ISC",
