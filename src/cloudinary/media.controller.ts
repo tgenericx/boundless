@@ -5,14 +5,18 @@ import {
   UploadedFiles,
   BadRequestException,
   Logger,
+  Inject,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { CloudinaryUploadMapped } from './response.types';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
-const SUPPORTED_MIME_TYPES = [
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILES = 10;
+const supportedMimeTypes = [
   'image/jpeg',
   'image/png',
   'image/gif',
@@ -21,14 +25,21 @@ const SUPPORTED_MIME_TYPES = [
   'video/x-msvideo',
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES = 10;
-
+@ApiTags('Media Uploads')
 @Controller('media')
 export class MediaController {
-  private readonly logger = new Logger(CloudinaryService.name);
+  private readonly logger = new Logger(MediaController.name);
+  private readonly SUPPORTED_MIME_TYPES: string[];
 
-  constructor(private readonly cloudinaryService: CloudinaryService) {}
+  constructor(
+    private readonly cloudinaryService: CloudinaryService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {
+    this.SUPPORTED_MIME_TYPES = this.configService.get<string[]>(
+      'media.supportedMimeTypes',
+      supportedMimeTypes,
+    );
+  }
 
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -46,13 +57,23 @@ export class MediaController {
       },
     },
   })
+  @ApiResponse({
+    status: 201,
+    description: 'Files uploaded successfully',
+    type: Object,
+  })
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files', MAX_FILES))
   async uploadFiles(
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addValidator(new MaxFileSizeValidator({ maxSize: MAX_FILE_SIZE }))
-        .build({ fileIsRequired: true }),
+        .build({
+          fileIsRequired: true,
+          exceptionFactory: (err) => {
+            throw new BadRequestException(err);
+          },
+        }),
     )
     files: Express.Multer.File[],
   ): Promise<CloudinaryUploadMapped[]> {
@@ -62,7 +83,7 @@ export class MediaController {
 
     const results = await Promise.allSettled(
       files.map(async (file): Promise<CloudinaryUploadMapped> => {
-        const isSupported = SUPPORTED_MIME_TYPES.includes(file.mimetype);
+        const isSupported = this.SUPPORTED_MIME_TYPES.includes(file.mimetype);
         if (!isSupported) {
           return {
             success: false,
