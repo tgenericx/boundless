@@ -1,9 +1,10 @@
 # Builder Stage
 FROM node:lts-alpine AS builder
-WORKDIR /app
 
 # Install pnpm globally
 RUN apk update && apk add --no-cache pnpm=10.12.1 && rm -rf /var/cache/apk/*
+
+WORKDIR /app
 
 # Install only what's needed to install dependencies
 COPY package.json pnpm-lock.yaml ./
@@ -16,15 +17,17 @@ RUN pnpm run build
 
 # Production Stage
 FROM node:lts-alpine
-WORKDIR /app
-ENV NODE_ENV=production
+
+# Install pnpm
+RUN apk update && apk add --no-cache pnpm=10.12.1 && rm -rf /var/cache/apk/*
 
 # Create non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# Install pnpm
-RUN apk update && apk add --no-cache pnpm=10.12.1 && rm -rf /var/cache/apk/*
+WORKDIR /app
+
+ENV NODE_ENV=production
 
 # Copy app files and install production deps
 COPY package.json pnpm-lock.yaml ./
