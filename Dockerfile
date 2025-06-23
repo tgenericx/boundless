@@ -3,7 +3,7 @@ FROM node:lts-alpine AS builder
 WORKDIR /app
 
 # Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk update && apk add --no-cache pnpm=10.12.1 && rm -rf /var/cache/apk/*
 
 # Install only what's needed to install dependencies
 COPY package.json pnpm-lock.yaml ./
