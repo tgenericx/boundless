@@ -24,7 +24,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk update && apk add --no-cache pnpm=10.12.1 && rm -rf /var/cache/apk/*
 
 # Copy app files and install production deps
 COPY package.json pnpm-lock.yaml ./
