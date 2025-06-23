@@ -7,8 +7,6 @@ import {
   FindManyPostArgs,
   FindUniquePostArgs,
   PostCreateInput,
-  PostUpdateInput,
-  PostWhereUniqueInput
 } from 'src/@generated';
 import { PaginatedPosts } from './dto/paginated-posts.response';
 
