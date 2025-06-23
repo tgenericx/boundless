@@ -1,24 +1,36 @@
-FROM node:latest AS builder
-
-# Create app directory
+# Builder Stage
+FROM node:lts-alpine AS builder
 WORKDIR /app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-COPY package*.json ./
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Install only what's needed to install dependencies
+COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma/
+RUN pnpm install --frozen-lockfile
 
-# Install app dependencies
-RUN npm ci
-
+# Copy the rest of the app and build
 COPY . .
+RUN pnpm run build
 
-RUN npm run build
+# Production Stage
+FROM node:lts-alpine
+WORKDIR /app
+ENV NODE_ENV=production
 
-FROM node:latest
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy app files and install production deps
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
+
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
-CMD [ "npm", "run", "start:prod" ]
+CMD ["pnpm", "run", "start:prod"]

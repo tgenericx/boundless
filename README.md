@@ -1,42 +1,22 @@
 # 📦 GraphQL API with NestJS, Prisma & MongoDB
 
-A robust GraphQL API built using **NestJS**, **Apollo Server**, **Prisma ORM**, and **MongoDB** for managing social media-style posts. The project features a modular architecture, real-time subscriptions, and a generic base service pattern for efficient CRUD operations.
+A robust GraphQL API built with **NestJS**, **Apollo Server**, **Prisma ORM**, and **MongoDB**, tailored for managing social media-style posts with media uploads. The project includes a modular structure, real-time GraphQL subscriptions, media upload via Cloudinary, and REST support with Swagger docs.
 
 ---
 
 ## 🛠 Features
 
-* 📡 GraphQL API with `@nestjs/graphql` & `Apollo Server`
-* 🔔 Real-time subscriptions with `graphql-subscriptions`
-* ⚙️ Code-first development with auto-generated schema
-* 🟔 MongoDB database with Prisma ORM
-* ✅ Class-validator for input validation
-* ♻️ Generic `BaseService` for reusable CRUD operations
-* 📁 Modular structure for scalability
-* 🧪 Jest testing setup
-* 📄 Error handling with formatted GraphQL errors
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── app.module.ts           # Root application module
-├── common/
-│   └── base.service.ts     # Generic CRUD service
-├── gql/
-│   └── gql.module.ts       # GraphQL configuration
-├── main.ts                 # Application entry point
-├── posts/                  # Post module
-│   ├── dto/                # Data transfer objects
-│   ├── entities/           # GraphQL entity definitions
-│   ├── posts.module.ts     # Post feature module
-│   ├── posts.resolver.ts   # GraphQL resolvers
-│   └── posts.service.ts    # Business logic
-└── pub-sub/                # PubSub module for subscriptions
-    └── pub-sub.module.ts   # PubSub configuration
-```
+- 📡 GraphQL API with `@nestjs/graphql` & Apollo Server
+- 🔔 Real-time subscriptions using `graphql-subscriptions`
+- ⚙️ Code-first GraphQL schema generation
+- 🟢 MongoDB with Prisma ORM
+- ✅ Input validation via `class-validator`
+- 📁 Modular and scalable architecture
+- 🧾 Error formatting for cleaner GraphQL responses
+- ☁️ Cloudinary integration for media handling
+- 🖼️ Image & video optimization
+- 📊 Swagger documentation for REST endpoints
+- 🔄 Cursor-based pagination for posts
 
 ---
 
@@ -46,8 +26,10 @@ src/
 
 ```bash
 git clone https://github.com/phastboy/graphql.git
-cd graphql-nestjs-api
+cd graphql
 ```
+
+---
 
 ### 2. Set up Environment
 
@@ -56,13 +38,22 @@ Create a `.env` file in the root:
 ```env
 DATABASE_URL="mongodb+srv://<user>:<password>@cluster.mongodb.net/mydb?retryWrites=true&w=majority"
 PORT=3000
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Media Limits (optional)
+MAX_FILE_SIZE=10485760 # 10MB
+MAX_FILES=10
 ```
 
 ### 3. Database Setup
 
 ```bash
 # Generate Prisma client & push schema to database
-npm install
+pnpm install
 ```
 
 ---
@@ -70,11 +61,11 @@ npm install
 ## 🥪 Running the App
 
 ```bash
-# Development mode with hot reload
-npm run dev
+# Dev mode
+pnpm dev
 
-# Production build
-npm run build && npm start
+# Production mode
+pnpm build && pnpm start:prod
 ```
 
 Access GraphQL Playground at: `http://localhost:3000/graphql`
@@ -87,9 +78,7 @@ Access GraphQL Playground at: `http://localhost:3000/graphql`
 
 ```graphql
 mutation {
-  createPost(input: {
-    textContent: "Hello World!"
-  }) {
+  createPost(input: { textContent: "Hello World!" }) {
     id
     textContent
   }
@@ -107,68 +96,56 @@ subscription {
 
 ```graphql
 query {
-  posts {
-    id
-    textContent
-    createdAt
-  }
-  
-  post(id: "some-id") {
-    textContent
+  posts(take: 10) {
+    data {
+      id
+      textContent
+      createdAt
+    }
+    nextCursor
   }
 }
 ```
 
-### Update Post
+### Upload Media (REST)
 
-```graphql
-mutation {
-  updatePost(input: {
-    id: "some-id",
-    textContent: "Updated content"
-  }) {
-    id
-    textContent
-  }
-}
+```curl
+curl -X POST \
+  -H "Content-Type: multipart/form-data" \
+  -F "files=@photo.jpg" \
+  -F "files=@video.mp4" \
+  http://localhost:3000/media/upload
 ```
 
 ---
 
 ## 🧰 Development Commands
 
-| Command                 | Description                          |
-|-------------------------|--------------------------------------|
-| `npm run dev`           | Run in dev mode with file watching   |
-| `npm run lint`          | Run ESLint with auto-fix             |
-| `npm run test`          | Run unit tests                       |
-| `npm run prisma:studio` | Open Prisma Studio for data browsing |
-| `npm run migrate:dev`   | Create and apply database migration  |
+| Command                  | Description                          |
+| ------------------------ | ------------------------------------ |
+| `pnpm run dev`           | Run in dev mode with file watching   |
+| `pnpm run lint`          | Run ESLint with auto-fix             |
+| `pnpm run test`          | Run unit tests                       |
+| `pnpm run prisma:studio` | Open Prisma Studio for data browsing |
 
 ---
 
-## 🛠 Technical Highlights
+🛠 Technical Highlights
 
-- **Generic Base Service**: The `BaseService` provides reusable CRUD operations that can be extended by specific entity services.
-- **Real-time Updates**: GraphQL subscriptions notify clients when new posts are created.
-- **Error Handling**: Custom error formatting for consistent API responses.
-- **Validation**: Input validation using `class-validator` decorators.
-
----
-
-## Planned Features
-
-- [ ] User authentication & authorization
-- [ ] Pagination for posts
-- [ ] File upload support
-- [ ] Advanced filtering and sorting
+- Cloudinary Integration: For efficient media storage & delivery
+- REST Upload Endpoint: With size/type validation
+- Real-time GraphQL: Subscriptions push new post updates instantly
+- Robust Validation: Including custom validators
+- Cursor Pagination: For optimal post loading
+- API Documentation: Accessible Swagger UI for REST
 
 ---
 
-## 📚 Documentation
+📚 Documentation
 
 - Auto-generated GraphQL schema: `src/@generated/schema.gql`
 - Prisma-generated types: `src/@generated`
+- REST API Docs: `http://localhost:3000/api/docs``
 
 ---
 
