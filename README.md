@@ -145,6 +145,7 @@ curl -X POST \
 
 - Auto-generated GraphQL schema: `src/@generated/schema.gql`
 - Prisma-generated types: `src/@generated`
+
 - REST API Docs: `http://localhost:3000/api/docs`
 
 ---
