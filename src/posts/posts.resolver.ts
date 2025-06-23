@@ -1,13 +1,14 @@
 import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './entities/post.entity';
-import { UpdatePostInput } from './dto/update-post.input';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import {
   FindManyPostArgs,
   FindUniquePostArgs,
   PostCreateInput,
+  PostUpdateInput,
+  PostWhereUniqueInput
 } from 'src/@generated';
 import { PaginatedPosts } from './dto/paginated-posts.response';
 
@@ -77,24 +78,6 @@ export class PostsResolver {
   })
   async findUniquePost(@Args() args: FindUniquePostArgs): Promise<Post | null> {
     return this.postService.findUnique(args.where);
-  }
-
-  /**
-   * Updates an existing Post.
-   *
-   * @param input - Updated data for the Post, including ID
-   * @returns The updated Post
-   */
-  @Mutation(() => Post, {
-    name: 'updatePost',
-    description: 'Updates an existing post with the provided data.',
-  })
-  async updatePost(@Args('input') input: UpdatePostInput): Promise<Post> {
-    const { id, ...rest } = input;
-    return this.postService.update({
-      where: { id },
-      data: { ...rest },
-    });
   }
 
   /**
