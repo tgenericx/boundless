@@ -15,6 +15,11 @@
     }
   },
   "dependencies": {
+    "@prisma/client": "^6.10.1",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.10.1",
+    "prisma-nestjs-graphql": "^21.2.0"
   }
 }
