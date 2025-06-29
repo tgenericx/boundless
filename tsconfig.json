@@ -8,6 +8,24 @@
     },
     {
       "path": "./apps/boundless"
+    },
+    {
+      "path": "./apps/events-e2e"
+    },
+    {
+      "path": "./apps/events"
+    },
+    {
+      "path": "./apps/auth-e2e"
+    },
+    {
+      "path": "./apps/auth"
+    },
+    {
+      "path": "./apps/posts-e2e"
+    },
+    {
+      "path": "./apps/posts"
     }
   ]
 }
