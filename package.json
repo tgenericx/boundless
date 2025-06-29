@@ -2,7 +2,11 @@
   "name": "@boundless/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev": "pnpm dlx nx serve boundless",
+    "build": "pnpm dlx nx build boundless",
+    "find:targets": "pnpm dlx nx show project boundless"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.1.3",
