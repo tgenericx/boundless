@@ -4,6 +4,8 @@
 /out-tsc
 /tmp
 /node-compile-cache
+**/dist/
+**/node_modules/
 
 ### Dependencies ###
 /node_modules
@@ -78,3 +80,5 @@ Thumbs.db
 ### Nx Workspace
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+test-output

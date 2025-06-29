@@ -1,5 +1,5 @@
 {
-  "name": "@boundless/boundless",
+  "name": "@boundless/events",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -28,15 +28,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@boundless/boundless:build",
+          "buildTarget": "@boundless/events:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@boundless/boundless:build:development"
+            "buildTarget": "@boundless/events:build:development"
           },
           "production": {
-            "buildTarget": "@boundless/boundless:build:production"
+            "buildTarget": "@boundless/events:build:production"
           }
         }
       },
@@ -44,21 +44,7 @@
         "options": {
           "passWithNoTests": true
         }
-      },
-      "docker-build": {
-        "dependsOn": [
-          "build"
-        ],
-        "command": "docker build -f apps/boundless/Dockerfile . -t boundless-boundless"
       }
     }
-  },
-  "dependencies": {
-    "@nestjs/common": "11.1.3",
-    "@nestjs/core": "11.1.3",
-    "@nestjs/platform-express": "11.1.3",
-    "reflect-metadata": "0.1.14",
-    "rxjs": "7.8.2"
-  },
-  "main": "main.js"
+  }
 }
