@@ -52,5 +52,16 @@
         "command": "docker build -f apps/boundless/Dockerfile . -t boundless-boundless"
       }
     }
+  },
+  "dependencies": {
+    "@apollo/server": "^4.12.2",
+    "@nestjs/apollo": "^13.1.0",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/graphql": "^13.1.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/throttler": "^6.4.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "graphql": "^16.11.0"
   }
 }
