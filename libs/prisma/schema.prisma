@@ -5,12 +5,13 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  output   = "./src/@generated/client"
+  output   = "../../node_modules/@generated/client"
 }
 
 generator nestgraphql {
   provider = "node node_modules/prisma-nestjs-graphql"
-  output   = "./src/@generated"
+  output   = "../../node_modules/@generated/nestgraphql"
+  reExport = "All"
 }
 
 model User {
