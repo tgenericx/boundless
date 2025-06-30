@@ -26,6 +26,12 @@
     },
     {
       "path": "./apps/posts"
+    },
+    {
+      "path": "./libs/prisma"
+    },
+    {
+      "path": "./libs/prisma"
     }
   ]
 }
