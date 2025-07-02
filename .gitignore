@@ -1,26 +1,67 @@
-# compiled output
-/dist
-/node_modules
-/node-compile-cache
-/build
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Logs
-logs
+### Build & Compiled Output ###
+/dist
+/build
+/out-tsc
+/tmp
+/out-tsc
+/node-compile-cache
+**/dist/
+web-build/
+
+### Dependencies ###
+/node_modules
+**/node_modules/
+.yarn/
+
+### Logs ###
+/logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+/libpeerconnection.log
+testem.log
+npm-debug.log
+yarn-error.log
+testem.log
 
-# OS
-.DS_Store
+### Runtime & Cache ###
+.temp
+.tmp
+/.nx
+.nx/cache
+.nx/workspace-data
+/connect.lock
+.expo/
+cache/
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid
+*.seed
+*.pid.lock
+/.sass-cache
+/libpeerconnection.log
 
-# Tests
+### Testing & Coverage ###
 /coverage
 /.nyc_output
+/test-output
+test-output
 
-# IDEs and editors
+### Environment Variables ###
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+### IDEs & Editors ###
 /.idea
 .project
 .classpath
@@ -28,39 +69,33 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+/typings
 
-# IDE - VSCode
+### VSCode ###
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+### System Files ###
+.DS_Store
+Thumbs.db
 
-# temp directory
-.temp
-.tmp
+### Nx Workspace ###
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+### Expo ###
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-/generated/prisma
-
-# generated GraphQL types
-/src/@generated
-/src/gql/schema.gql
-# docs & diagrams
-/docs
-/prisma/ERD.md
+### Misc ###
+/connect.lock
+/coverage
+/libpeerconnection.log
+/typings

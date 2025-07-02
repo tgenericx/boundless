@@ -1,0 +1,22 @@
+{
+  "name": "mobile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mobile/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "command": "expo start --web",
+      "cwd": "apps/mobile",
+      "args": [
+        "--clear"
+      ],
+      "dependsOn": [
+        "api-gateway:serve"
+      ],
+      "options": {
+        "proxyConfig": "apps/mobile/proxy.conf.json"
+      }
+    }
+  }
+}
