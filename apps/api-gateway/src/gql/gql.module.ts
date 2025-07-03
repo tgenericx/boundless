@@ -10,12 +10,15 @@ import { join } from 'path';
       autoSchemaFile: join(process.cwd(), 'apps/api-gateway/schema.gql'),
       sortSchema: true,
       introspection: true,
+      path: '/api/graphql',
       subscriptions: {
         'graphql-ws': {
-          path: '/graphql',
+          path: '/api/graphql',
         },
       },
-      graphiql: true,
+      graphiql: {
+        shouldPersistHeaders: true
+      },
     }),
   ],
 })

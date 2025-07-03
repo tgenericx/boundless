@@ -17,11 +17,19 @@ import { GqlModule } from '../gql/gql.module';
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
+            logger: console,
             urls: [
               configService.get<string>('RABBITMQ_URL', 'amqps://...'), // Env variable with fallback
             ],
             queue: configService.get<string>('AUTH_QUEUE', 'auth_queue'), // Using the default 'auth_queue'
-            queueOptions: { durable: false },
+            queueOptions: {
+              durable: false,
+              noAck: false,
+              prefetchCount: 1
+            },
+            socketOptions: {
+              heartbeat: 30
+            }
           },
         }),
       },
