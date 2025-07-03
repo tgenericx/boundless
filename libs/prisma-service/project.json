@@ -48,7 +48,10 @@
         "assets": [
           "libs/prisma-service/*.md"
         ]
-      }
+      },
+      "dependsOn": [
+        "generate-types"
+      ]
     }
   }
 }
