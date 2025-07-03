@@ -1,0 +1,54 @@
+{
+  "name": "prisma-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/prisma-service/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "prisma": {
+      "command": "pnpm dlx prisma",
+      "options": {
+        "cwd": "libs/prisma-service"
+      }
+    },
+    "format": {
+      "command": "pnpm dlx prisma format",
+      "options": {
+        "cwd": "libs/prisma-service"
+      }
+    },
+    "migrate": {
+      "command": "pnpm dlx prisma migrate dev",
+      "options": {
+        "cwd": "libs/prisma-service"
+      }
+    },
+    "studio": {
+      "command": "pnpm dlx prisma studio",
+      "options": {
+        "cwd": "libs/prisma-service"
+      }
+    },
+    "generate-types": {
+      "command": "pnpm dlx prisma generate --no-engine",
+      "options": {
+        "cwd": "libs/prisma-service"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/prisma-service",
+        "tsConfig": "libs/prisma-service/tsconfig.lib.json",
+        "packageJson": "libs/prisma-service/package.json",
+        "main": "libs/prisma-service/src/index.ts",
+        "assets": [
+          "libs/prisma-service/*.md"
+        ]
+      }
+    }
+  }
+}
