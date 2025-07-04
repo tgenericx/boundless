@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm dlx nx serve",
-    "build": "pnpm dlx nx build",
-    "find:target": "pnpm dlx nx show project",
-    "generate-types": "pnpm dlx nx run prisma:generate-types"
+    "dev": "nx serve",
+    "build": "nx build",
+    "find:target": "nx show project",
+    "generate-types": "nx run prisma:generate-types"
   },
   "private": true,
   "devDependencies": {
@@ -53,9 +53,12 @@
   "dependencies": {
     "@expo/metro-config": "~0.20.15",
     "@expo/metro-runtime": "~5.0.4",
+    "@nestjs/apollo": "^13.1.0",
     "@nestjs/common": "^11.1.3",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.3",
+    "@nestjs/graphql": "^13.1.0",
+    "@nestjs/jwt": "^11.0.0",
     "@nestjs/microservices": "^11.1.3",
     "@nestjs/platform-express": "^11.1.3",
     "@nestjs/swagger": "^11.2.0",
@@ -68,6 +71,7 @@
     "expo": "~53.0.15",
     "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",
+    "graphql": "^16.11.0",
     "react": "~19.1.0",
     "react-dom": "~19.1.0",
     "react-native": "0.80.1",
