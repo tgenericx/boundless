@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@boundless/auth-utils": ["libs/auth-utils/src/index.ts"],
       "@boundless/prisma-service": ["libs/prisma-service/src/index.ts"]
     }
   },
