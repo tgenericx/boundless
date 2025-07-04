@@ -50,6 +50,9 @@ importers:
       amqplib:
         specifier: ^0.10.8
         version: 0.10.8
+      argon2:
+        specifier: ^0.43.0
+        version: 0.43.0
       axios:
         specifier: ^1.10.0
         version: 1.10.0
