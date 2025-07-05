@@ -15,11 +15,6 @@ RUN addgroup --system auth && \
   adduser --system -G auth auth
 
 COPY dist/apps/auth auth/
-COPY apps/auth/package.json auth/
 RUN chown -R auth:auth .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix auth --omit=dev -f install
-
-CMD [ "node", "auth/main" ]
+CMD [ "node", "auth/main.js" ]

@@ -15,11 +15,6 @@ RUN addgroup --system api-gateway && \
   adduser --system -G api-gateway api-gateway
 
 COPY dist/apps/api-gateway api-gateway/
-COPY apps/api-gateway/package.json api-gateway/
 RUN chown -R api-gateway:api-gateway .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix api-gateway --omit=dev -f install
-
-CMD [ "node", "api-gateway/main" ]
+CMD [ "node", "api-gateway/main.js" ]
