@@ -12,7 +12,7 @@ ENV PORT=3000
 WORKDIR /app
 
 RUN addgroup --system auth && \
-          adduser --system -G auth auth
+  adduser --system -G auth auth
 
 COPY dist/apps/auth auth/
 COPY apps/auth/package.json auth/
@@ -22,4 +22,4 @@ RUN chown -R auth:auth .
 # The bundled output will include external dependencies.
 RUN npm --prefix auth --omit=dev -f install
 
-CMD [ "node", "auth" ]
+CMD [ "node", "auth/main" ]
