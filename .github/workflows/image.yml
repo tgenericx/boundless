@@ -102,12 +102,14 @@ jobs:
           name: prisma-client-${{ matrix.service }}
           path: ./libs/prisma-service/src/lib/@generated/prisma
 
-      #  downstream deploy
       - name: Trigger Deployment
+        if: ${{ github.event_name == 'push' }}
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy.yml
           token: ${{ secrets.GITHUB_TOKEN }}
-          inputs: |
-            service: ${{ matrix.service }}
-            image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}
+          inputs: >-
+            {
+              "service": "${{ matrix.service }}",
+              "image": "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}"
+            }
