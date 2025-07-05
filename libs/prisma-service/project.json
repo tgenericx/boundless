@@ -37,21 +37,15 @@
     },
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/prisma-service",
         "tsConfig": "libs/prisma-service/tsconfig.lib.json",
         "packageJson": "libs/prisma-service/package.json",
         "main": "libs/prisma-service/src/index.ts",
-        "assets": [
-          "libs/prisma-service/*.md"
-        ]
+        "assets": ["libs/prisma-service/*.md"]
       },
-      "dependsOn": [
-        "generate-types"
-      ]
+      "dependsOn": ["generate-types"]
     }
   }
 }

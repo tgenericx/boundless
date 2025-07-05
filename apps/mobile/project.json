@@ -8,15 +8,7 @@
     "serve": {
       "command": "expo start --web",
       "cwd": "apps/mobile",
-      "args": [
-        "--clear"
-      ],
-      "dependsOn": [
-        "api-gateway:serve"
-      ],
-      "options": {
-        "proxyConfig": "apps/mobile/proxy.conf.json"
-      }
+      "args": ["--clear"]
     }
   }
 }

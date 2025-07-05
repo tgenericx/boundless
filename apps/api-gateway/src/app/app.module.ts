@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppResolver } from './app.resolver';
 import { AppService } from './app.service';
 import { GqlModule } from '../gql/gql.module';
@@ -19,23 +19,26 @@ import { GqlModule } from '../gql/gql.module';
           options: {
             logger: console,
             urls: [
-              configService.get<string>('RABBITMQ_URL', 'amqps://...'), // Env variable with fallback
+              configService.get<string>(
+                'RABBITMQ_URL',
+                'amqps://guest:guest@localhost:5672',
+              ),
             ],
-            queue: configService.get<string>('AUTH_QUEUE', 'auth_queue'), // Using the default 'auth_queue'
+            queue: configService.get<string>('AUTH_QUEUE', 'auth_queue'),
             queueOptions: {
               durable: false,
               noAck: false,
-              prefetchCount: 1
+              prefetchCount: 1,
             },
             socketOptions: {
-              heartbeat: 30
-            }
+              heartbeat: 30,
+            },
           },
         }),
       },
     ]),
-    GqlModule
+    GqlModule,
   ],
   providers: [AppService, AppResolver],
 })
-export class AppModule { }
+export class AppModule {}

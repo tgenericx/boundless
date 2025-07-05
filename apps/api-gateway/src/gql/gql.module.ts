@@ -17,9 +17,9 @@ import { join } from 'path';
         },
       },
       graphiql: {
-        shouldPersistHeaders: true
+        shouldPersistHeaders: true,
       },
     }),
   ],
 })
-export class GqlModule { }
+export class GqlModule {}
