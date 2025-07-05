@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaService } from '@boundless/prisma-service';
-import { JwtModule } from '@nestjs/jwt'
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -12,20 +12,15 @@ import { JwtModule } from '@nestjs/jwt'
     }),
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>(
-          'JWT_SECRET', 'super-secret-key'
-        ),
+        secret: configService.get<string>('JWT_SECRET', 'super-secret-key'),
         signOptions: {
-          expiresIn: '1d'
+          expiresIn: '1d',
         },
       }),
       inject: [ConfigService],
     }),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    PrismaService
-  ],
+  providers: [AppService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -8,9 +8,7 @@
     "serve": {
       "command": "expo start --web",
       "cwd": "apps/mobile",
-      "args": [
-        "--clear"
-      ]
+      "args": ["--clear"]
     }
   }
 }
