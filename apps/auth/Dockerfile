@@ -15,6 +15,10 @@ RUN addgroup --system auth && \
   adduser --system -G auth auth
 
 COPY dist/apps/auth auth/
+
+RUN ls -la auth/ && \
+  [ -f auth/main.js ] || (echo "main.js missing!" && exit 1)
+
 RUN chown -R auth:auth .
 
 CMD [ "node", "auth/main.js" ]
