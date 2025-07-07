@@ -2,7 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { ExtendedConsoleLogger } from '@boundless/prisma-service';
+import {
+  ExceptionFilter,
+  ExtendedConsoleLogger,
+} from '@boundless/prisma-service';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -31,6 +34,7 @@ async function bootstrap() {
       queueOptions: { durable: false },
     },
   });
+  app.useGlobalFilters(new ExceptionFilter());
 
   await app.startAllMicroservices();
 
