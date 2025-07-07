@@ -1,7 +1,12 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateUserInput, User } from '@boundless/prisma-service';
+import {
+  CreateUserInput,
+  isRpcExceptionResponse,
+  rpcToHttpException,
+  User,
+} from '@boundless/prisma-service';
 import { lastValueFrom } from 'rxjs';
 
 @Resolver()
@@ -21,11 +26,18 @@ export class AppResolver {
   async createUser(
     @Args('createUserInput') createUserInput: CreateUserInput,
   ): Promise<User> {
-    const createdUser = await lastValueFrom(
-      this.authClient.send('create_user', createUserInput),
-    );
+    try {
+      const createdUser = await lastValueFrom(
+        this.authClient.send('create_user', createUserInput),
+      );
 
-    this.logger.log(`User created successfully: ${createdUser.email}`);
-    return createdUser;
+      this.logger.log(`User created successfully: ${createdUser.email}`);
+      return createdUser;
+    } catch (error) {
+      if (isRpcExceptionResponse(error)) {
+        throw rpcToHttpException(error);
+      }
+      throw error;
+    }
   }
 }
