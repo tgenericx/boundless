@@ -4,7 +4,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   CreateUserInput,
   isRpcExceptionResponse,
-  rpcToHttpException,
+  rpcToGraphQLError,
   User,
 } from '@boundless/prisma-service';
 import { lastValueFrom } from 'rxjs';
@@ -35,7 +35,7 @@ export class AppResolver {
       return createdUser;
     } catch (error) {
       if (isRpcExceptionResponse(error)) {
-        throw rpcToHttpException(error);
+        throw rpcToGraphQLError(error);
       }
       throw error;
     }

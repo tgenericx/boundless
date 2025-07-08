@@ -1,6 +1,6 @@
-import { HttpException } from '@nestjs/common';
-
-import { HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { GraphQLErrorCode, HttpToGraphQLErrorMap } from './error-code.map';
+import { GraphQLError } from 'graphql';
 
 export interface RpcExceptionResponse {
   status: 'error';
@@ -40,6 +40,8 @@ export function createRpcExceptionResponse(
 }
 
 export function rpcToHttpException(rpc: RpcExceptionResponse): HttpException {
+  const logger = new Logger('rpcToHttpException');
+  logger.error(rpc);
   return new HttpException(
     {
       status: rpc.status,
@@ -49,4 +51,20 @@ export function rpcToHttpException(rpc: RpcExceptionResponse): HttpException {
     },
     rpc.httpCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
   );
+}
+
+export function rpcToGraphQLError(rpc: RpcExceptionResponse): GraphQLError {
+  const httpCode = rpc.httpCode ?? 500;
+  const graphqlCode =
+    HttpToGraphQLErrorMap[httpCode] ?? GraphQLErrorCode.InternalServerError;
+
+  return new GraphQLError(rpc.message, {
+    extensions: {
+      code: graphqlCode,
+      status: rpc.status,
+      httpCode,
+      errorCode: rpc.code,
+      metadata: rpc.metadata,
+    },
+  });
 }

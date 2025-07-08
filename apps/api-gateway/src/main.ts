@@ -3,7 +3,10 @@ import { AppModule } from './app/app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerConfigModule } from './swagger-config/swagger-config.module';
-import { ExtendedConsoleLogger } from '@boundless/prisma-service';
+import {
+  ExtendedConsoleLogger,
+  GraphqlExceptionFilter,
+} from '@boundless/prisma-service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -19,6 +22,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3000);
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new GraphqlExceptionFilter());
   SwaggerConfigModule.setup(app);
 
   await app.listen(port);
