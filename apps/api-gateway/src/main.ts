@@ -1,14 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerConfigModule } from './swagger-config/swagger-config.module';
+import {
+  ExtendedConsoleLogger,
+  GraphqlExceptionFilter,
+  HttpExceptionFilter,
+} from '@boundless/prisma-service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const globalPrefix = 'api';
   const app = await NestFactory.create(AppModule, {
-    logger: new ConsoleLogger({
+    logger: new ExtendedConsoleLogger({
       json: true,
       colors: true,
     }),
@@ -18,11 +23,14 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3000);
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new GraphqlExceptionFilter(), new HttpExceptionFilter());
   SwaggerConfigModule.setup(app);
 
   await app.listen(port);
 
-  logger.log(`✅ Everything okay, 🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
+  logger.log(
+    `✅ Everything okay, 🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+  );
   logger.log(`🌱 Environment: ${configService.get('NODE_ENV', 'development')}`);
 }
 bootstrap().catch((error) => {

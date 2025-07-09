@@ -1,11 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
+import { AppService } from './app.service';
 import { CreateUserInput, User } from '@boundless/prisma-service';
-import { Omit } from '@prisma/client/runtime/library';
 
 @Controller()
 export class AppController {
+  private readonly logger = new Logger(AppController.name);
+
   constructor(private readonly appService: AppService) {}
 
   @Get()
@@ -15,6 +16,6 @@ export class AppController {
 
   @MessagePattern('create_user')
   async createUser(data: CreateUserInput): Promise<Omit<User, 'password'>> {
-    return this.appService.createUser(data);
+    return await this.appService.createUser(data);
   }
 }
