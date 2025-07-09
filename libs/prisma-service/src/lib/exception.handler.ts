@@ -14,12 +14,7 @@ export interface RpcExceptionResponse {
 export const isRpcExceptionResponse = (
   error: unknown,
 ): error is RpcExceptionResponse => {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'status' in error &&
-    'message' in error
-  ) {
+  if (typeof error === 'object' && error !== null) {
     const e = error as { status?: unknown; message?: unknown };
     return e.status === 'error' && typeof e.message === 'string';
   }
@@ -39,9 +34,27 @@ export function createRpcExceptionResponse(
   };
 }
 
+export function rpcToGraphQLError(rpc: RpcExceptionResponse): GraphQLError {
+  const httpCode = rpc.httpCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
+  const graphqlCode =
+    HttpToGraphQLErrorMap[httpCode] ?? GraphQLErrorCode.InternalServerError;
+
+  return new GraphQLError(rpc.message, {
+    extensions: {
+      code: graphqlCode,
+      status: rpc.status,
+      httpCode,
+      errorCode: rpc.code ?? null,
+      metadata: rpc.metadata ?? null,
+    },
+  });
+}
+
 export function rpcToHttpException(rpc: RpcExceptionResponse): HttpException {
   const logger = new Logger('rpcToHttpException');
+
   logger.error(rpc);
+
   return new HttpException(
     {
       status: rpc.status,
@@ -51,20 +64,4 @@ export function rpcToHttpException(rpc: RpcExceptionResponse): HttpException {
     },
     rpc.httpCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
   );
-}
-
-export function rpcToGraphQLError(rpc: RpcExceptionResponse): GraphQLError {
-  const httpCode = rpc.httpCode ?? 500;
-  const graphqlCode =
-    HttpToGraphQLErrorMap[httpCode] ?? GraphQLErrorCode.InternalServerError;
-
-  return new GraphQLError(rpc.message, {
-    extensions: {
-      code: graphqlCode,
-      status: rpc.status,
-      httpCode,
-      errorCode: rpc.code,
-      metadata: rpc.metadata,
-    },
-  });
 }

@@ -6,6 +6,7 @@ import { SwaggerConfigModule } from './swagger-config/swagger-config.module';
 import {
   ExtendedConsoleLogger,
   GraphqlExceptionFilter,
+  HttpExceptionFilter,
 } from '@boundless/prisma-service';
 
 async function bootstrap() {
@@ -22,7 +23,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3000);
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new GraphqlExceptionFilter());
+  app.useGlobalFilters(new GraphqlExceptionFilter(), new HttpExceptionFilter());
   SwaggerConfigModule.setup(app);
 
   await app.listen(port);
