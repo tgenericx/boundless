@@ -1,77 +1,147 @@
-# Boundless
+# API Gateway Documentation
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## 📚 Overview
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+The API Gateway serves as the **unified entry point** for both **GraphQL** and **REST** APIs in the QuickPost system. It proxies requests to microservices over RabbitMQ and handles validation, exception transformation, and documentation exposure.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Finish your CI setup
+## 🚀 Features
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/a5IxLOErzh)
+* GraphQL API via `@nestjs/graphql` + Apollo
+* REST API auto-docs via Swagger
+* RabbitMQ client integration for `AUTH_SERVICE`
+* Exception filters for HTTP and GraphQL
+* Extended logger with persistent log file
 
+---
 
-## Run tasks
+## 🧱 Architecture
 
-To run tasks with Nx use:
+```mermaid
+flowchart TD
+  subgraph Gateway["API Gateway"]
+    GQL["GraphQLModule (Apollo)"]
+    REST["Swagger REST Docs"]
+    RESOLVER["AppResolver"]
+    Swagger -->|"REST Docs"| REST
+    RESOLVER -->|"Mutation: createUser"| MQ_QUEUE
+  end
 
-```sh
-npx nx <target> <project-name>
+  subgraph MQ["Microservice Queue"]
+    MQ_QUEUE["AUTHSERVICE Queue"]
+  end
+
+  GQL -->|"Query/Mutation"| RESOLVER
+  REST -->|"REST Endpoints"| ExceptionFilters
+  MQ_QUEUE -->|"Response"| RESOLVER
 ```
 
-For example:
+---
 
-```sh
-npx nx build myproject
+## 📦 Modules
+
+### 🔹 `GqlModule`
+
+Responsible for setting up the GraphQL API with auto-generated schemas.
+
+* Schema generated to `apps/api-gateway/schema.gql`
+* Uses `ApolloDriver`
+* GraphQL Playground enabled
+
+### 🔹 `SwaggerConfigModule`
+
+Adds REST API documentation using Swagger only in **non-production** environments.
+
+* Route: `/api/docs`
+* JWT bearer authentication configured
+
+---
+
+## 🔌 Microservice Integration
+
+Registered via `ClientsModule.registerAsync`:
+
+```ts
+transport: Transport.RMQ,
+queue: 'auth_queue',
+heartbeat: 30,
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Sends and receives messages using `ClientProxy`.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
-## Add new projects
+## 🎯 GraphQL Resolver
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+`AppResolver` contains GraphQL `Mutation` and `Query` logic.
 
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+```ts
+@Mutation(() => User)
+async createUser(...) {
+  const createdUser = await lastValueFrom(
+    this.authClient.send('create_user', createUserInput)
+  );
+  return createdUser;
+}
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+Handles `RpcException` errors via `rpcToGraphQLError()` for proper formatting.
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
+---
 
-# Generate a library
-npx nx g @nx/react:lib some-lib
+## 🛡 Global Exception Filters
+
+Registered in `main.ts`:
+
+```ts
+app.useGlobalFilters(
+  new GraphqlExceptionFilter(),
+  new HttpExceptionFilter()
+);
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+Ensures all errors are transformed to a consistent GraphQL or REST response format.
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
+## 🧪 Dev Experience
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+* Swagger UI: [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs)
+* GraphQL: [`http://localhost:3000/api/graphql`](http://localhost:3000/api/graphql)
 
-## Install Nx Console
+> Introspection is enabled and headers are persisted across sessions.
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+---
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 📁 File Structure (Relevant)
 
-## Useful links
+```
+apps/api-gateway/
+├── src/
+│   ├── app/
+│   │   ├── app.module.ts         # Gateway config and microservice setup
+│   │   ├── app.resolver.ts       # GraphQL logic
+│   ├── gql/
+│   │   └── gql.module.ts         # GraphQLModule config
+│   ├── swagger-config/
+│   │   └── swagger-config.module.ts # Swagger setup
+│   └── main.ts                  # App bootstrap and logger setup
+```
 
-Learn more:
+---
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## ✅ Health Checklist
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+* [x] GraphQL schema available
+* [x] Swagger UI reachable
+* [x] Message broker connected
+* [x] Global error filters in place
+
+---
+
+## 🧠 Next Steps
+
+* Add authentication middleware
+* Introduce gateway-level caching
+* Rate limiting for REST and GraphQL
