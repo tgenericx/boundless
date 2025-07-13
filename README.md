@@ -1,147 +1,90 @@
-# API Gateway Documentation
+# Boundless Monorepo
 
-## 📚 Overview
+Welcome to the **Boundless** monorepo! This project is designed for modular, scalable, and modern full-stack development using **NestJS**, **GraphQL**, **REST**, **Prisma**, **RabbitMQ**, and **Nx** for workspace orchestration.
 
-The API Gateway serves as the **unified entry point** for both **GraphQL** and **REST** APIs in the QuickPost system. It proxies requests to microservices over RabbitMQ and handles validation, exception transformation, and documentation exposure.
+## 🧠 Monorepo Structure
 
----
+```bash
+.
+├── apps
+│   ├── api-gateway     # Main gateway (GraphQL + Swagger)
+│   └── auth             # Auth microservice (REST + RabbitMQ)
+│
+├── libs
+│   └── prisma-service   # Shared Prisma client + exception filters + logger
+│
+├── docs                # Optional: architecture diagrams, request samples
+└── README.md           # You're here!
+```
 
-## 🚀 Features
+## 📦 Tech Stack
 
-* GraphQL API via `@nestjs/graphql` + Apollo
-* REST API auto-docs via Swagger
-* RabbitMQ client integration for `AUTH_SERVICE`
-* Exception filters for HTTP and GraphQL
-* Extended logger with persistent log file
+* **Framework**: NestJS
+* **Transport**: RabbitMQ (RMQ)
+* **Database**: PostgreSQL via Prisma ORM
+* **Client Communication**: GraphQL (Apollo), REST (Express)
+* **Dev Tools**: Nx, PNPM, Terminus, Swagger
 
----
+## 🧪 Services Overview
 
-## 🧱 Architecture
+### 🛡️ `auth` Service
+
+* RESTful microservice
+* JWT-based authentication
+* Prisma for user persistence
+* Health checks: DB, Disk, RabbitMQ
+
+### 🚪 `api-gateway`
+
+* GraphQL interface via Apollo
+* REST interface with Swagger Docs
+* Communicates with microservices using RabbitMQ
+
+### 🧬 `prisma-service`
+
+* Centralized Prisma client
+* Exception filters for HTTP/GraphQL/RPC
+* Extended logger to file + console
+
+## 🔗 Message Flow (Auth)
 
 ```mermaid
 flowchart TD
-  subgraph Gateway["API Gateway"]
-    GQL["GraphQLModule (Apollo)"]
-    REST["Swagger REST Docs"]
-    RESOLVER["AppResolver"]
-    Swagger -->|"REST Docs"| REST
-    RESOLVER -->|"Mutation: createUser"| MQ_QUEUE
-  end
-
-  subgraph MQ["Microservice Queue"]
-    MQ_QUEUE["AUTHSERVICE Queue"]
-  end
-
-  GQL -->|"Query/Mutation"| RESOLVER
-  REST -->|"REST Endpoints"| ExceptionFilters
-  MQ_QUEUE -->|"Response"| RESOLVER
+  GQLClient -->|Mutation| APIGateway
+  APIGateway -->|RabbitMQ| AuthService
+  AuthService -->|Throws| RpcException
+  RpcException -->|Handled by| PrismaServiceFilters
 ```
 
----
+## ⚙️ Running the Project
 
-## 📦 Modules
-
-### 🔹 `GqlModule`
-
-Responsible for setting up the GraphQL API with auto-generated schemas.
-
-* Schema generated to `apps/api-gateway/schema.gql`
-* Uses `ApolloDriver`
-* GraphQL Playground enabled
-
-### 🔹 `SwaggerConfigModule`
-
-Adds REST API documentation using Swagger only in **non-production** environments.
-
-* Route: `/api/docs`
-* JWT bearer authentication configured
-
----
-
-## 🔌 Microservice Integration
-
-Registered via `ClientsModule.registerAsync`:
-
-```ts
-transport: Transport.RMQ,
-queue: 'auth_queue',
-heartbeat: 30,
+```bash
+pnpm install
+nx serve api-gateway  # Gateway
+nx serve auth         # Auth microservice
 ```
 
-Sends and receives messages using `ClientProxy`.
+Or run with Docker:
 
----
-
-## 🎯 GraphQL Resolver
-
-`AppResolver` contains GraphQL `Mutation` and `Query` logic.
-
-```ts
-@Mutation(() => User)
-async createUser(...) {
-  const createdUser = await lastValueFrom(
-    this.authClient.send('create_user', createUserInput)
-  );
-  return createdUser;
-}
+```bash
+pnpm nx run-many --target=docker-build --all
 ```
 
-Handles `RpcException` errors via `rpcToGraphQLError()` for proper formatting.
+## 🩺 Health Checks
+
+* Auth: `GET /api/health`
+* Gateway: GraphQL introspection + REST Swagger docs
+
+## 🗂️ Docs & Diagrams
+
+Refer to `/docs` for diagrams and request samples (coming soon).
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch
+3. Submit a pull request with clear description
 
 ---
 
-## 🛡 Global Exception Filters
-
-Registered in `main.ts`:
-
-```ts
-app.useGlobalFilters(
-  new GraphqlExceptionFilter(),
-  new HttpExceptionFilter()
-);
-```
-
-Ensures all errors are transformed to a consistent GraphQL or REST response format.
-
----
-
-## 🧪 Dev Experience
-
-* Swagger UI: [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs)
-* GraphQL: [`http://localhost:3000/api/graphql`](http://localhost:3000/api/graphql)
-
-> Introspection is enabled and headers are persisted across sessions.
-
----
-
-## 📁 File Structure (Relevant)
-
-```
-apps/api-gateway/
-├── src/
-│   ├── app/
-│   │   ├── app.module.ts         # Gateway config and microservice setup
-│   │   ├── app.resolver.ts       # GraphQL logic
-│   ├── gql/
-│   │   └── gql.module.ts         # GraphQLModule config
-│   ├── swagger-config/
-│   │   └── swagger-config.module.ts # Swagger setup
-│   └── main.ts                  # App bootstrap and logger setup
-```
-
----
-
-## ✅ Health Checklist
-
-* [x] GraphQL schema available
-* [x] Swagger UI reachable
-* [x] Message broker connected
-* [x] Global error filters in place
-
----
-
-## 🧠 Next Steps
-
-* Add authentication middleware
-* Introduce gateway-level caching
-* Rate limiting for REST and GraphQL
+Made with ❤️ using Nx + NestJS
