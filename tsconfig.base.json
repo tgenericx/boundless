@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@boundless/db-prisma": ["libs/db-prisma/src/index.ts"]
+      "@boundless/db-prisma": ["libs/db-prisma/src/index.ts"],
+      "@boundless/errors": ["libs/errors/src/index.ts"],
+      "@boundless/graphql-types": ["libs/graphql-types/src/index.ts"],
+      "@boundless/logging": ["libs/logging/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
