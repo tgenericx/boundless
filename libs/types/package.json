@@ -1,0 +1,13 @@
+{
+  "name": "@boundless/types",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "exports": {
+    "./prisma": "./src/prisma.ts",
+    "./graphql": "./src/graphql.ts"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}
