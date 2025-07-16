@@ -17,8 +17,9 @@
     "paths": {
       "@boundless/db-prisma": ["libs/db-prisma/src/index.ts"],
       "@boundless/errors": ["libs/errors/src/index.ts"],
-      "@boundless/graphql-types": ["libs/graphql-types/src/index.ts"],
-      "@boundless/logging": ["libs/logging/src/index.ts"]
+      "@boundless/logging": ["libs/logging/src/index.ts"],
+      "@boundless/types/prisma": ["libs/types/src/prisma.ts"],
+      "@boundless/types/graphql": ["libs/types/src/graphql.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
