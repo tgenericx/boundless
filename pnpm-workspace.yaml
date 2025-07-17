@@ -3,4 +3,5 @@ onlyBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
   - '@swc/core'
+  - argon2
   - nx
