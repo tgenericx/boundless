@@ -38,9 +38,6 @@ jobs:
         with:
           version: 10
 
-      - name: Enable corepack (pnpm compatibility)
-        run: corepack enable
-
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
