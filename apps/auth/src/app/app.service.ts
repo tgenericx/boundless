@@ -2,8 +2,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import * as argon2 from 'argon2';
 import { throwRpcException } from '@boundless/errors';
-import { Prisma, User } from '@boundless/types/prisma';
-import { PrismaService } from '@boundless/db-prisma';
+import { PrismaService, Prisma, User } from '@boundless/types/prisma';
 
 @Injectable()
 export class AppService {
@@ -16,7 +15,7 @@ export class AppService {
   }
 
   async createUser(
-    data: Prisma.UserCreateInput
+    data: Prisma.UserCreateInput,
   ): Promise<Omit<User, 'password'>> {
     try {
       const password = await argon2.hash(data.password);
@@ -37,7 +36,7 @@ export class AppService {
               message: `User with this ${field} already exists`,
               httpCode: HttpStatus.CONFLICT,
               metadata: error.meta,
-            })
+            }),
           );
         }
       }
@@ -46,7 +45,7 @@ export class AppService {
         throwRpcException({
           message: error.message || 'Failed to create user',
           httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        })
+        }),
       );
     }
   }

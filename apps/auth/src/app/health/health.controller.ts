@@ -8,7 +8,7 @@ import {
   MicroserviceHealthIndicator,
   DiskHealthIndicator,
 } from '@nestjs/terminus';
-import { PrismaService } from '@boundless/db-prisma';
+import { PrismaService } from '@boundless/types/prisma';
 
 @Controller('health')
 export class HealthController {
@@ -18,12 +18,12 @@ export class HealthController {
     private microserviceIndicator: MicroserviceHealthIndicator,
     private configService: ConfigService,
     private prisma: PrismaService,
-    private readonly disk: DiskHealthIndicator
+    private readonly disk: DiskHealthIndicator,
   ) {}
 
   private readonly healthCheckTimeout = this.configService.get<number>(
     'HEALTH_CHECK_TIMEOUT',
-    2000
+    2000,
   );
 
   @Get()
@@ -47,7 +47,7 @@ export class HealthController {
             urls: [
               this.configService.get<string>(
                 'RABBITMQ_URL',
-                'amqps://guest:guest@localhost:5672'
+                'amqps://guest:guest@localhost:5672',
               ),
             ],
             queue: this.configService.get<string>('AUTH_QUEUE', 'auth_queue'),
