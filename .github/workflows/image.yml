@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma client + GraphQL types
+        run: pnpm nx run db-prisma:generate
+
       - name: Build service with Nx
         run: pnpm nx build ${{ matrix.service }}
 
