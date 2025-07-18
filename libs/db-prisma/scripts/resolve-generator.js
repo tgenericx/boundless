@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 const generatorPath = path.resolve(
   __dirname,
   '../node_modules/prisma-nestjs-graphql',
