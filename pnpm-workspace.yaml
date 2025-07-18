@@ -2,8 +2,10 @@ onlyBuiltDependencies:
   - '@apollo/protobufjs'
   - '@nestjs/core'
   - '@parcel/watcher'
+  - '@prisma/engines'
   - '@scarf/scarf'
   - '@swc/core'
   - argon2
   - nx
+  - prisma
   - unrs-resolver
