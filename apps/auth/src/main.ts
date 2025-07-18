@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
-import { ExtendedConsoleLogger } from '@boundless/logging';
 import { ExceptionFilter } from '@boundless/errors';
+import { ExtendedConsoleLogger } from '@boundless/logging';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -20,7 +20,7 @@ async function bootstrap() {
 
   const RABBITMQ_URL = configService.get<string>(
     'RABBITMQ_URL',
-    'amqps://guest:guest@localhost:5672'
+    'amqps://guest:guest@localhost:5672',
   );
   const QUEUE_NAME = configService.get<string>('AUTH_QUEUE', 'auth_queue');
   const NODE_ENV = configService.get<string>('NODE_ENV', 'development');
@@ -54,7 +54,7 @@ async function bootstrap() {
   logger.log(`🔌 Broker: ${RABBITMQ_URL}`);
   logger.log(`🌱 Environment: ${NODE_ENV}`);
   logger.log(
-    `🚑 Health check endpoint ready at http://localhost:${PORT}/${globalPrefix}`
+    `🚑 Health check endpoint ready at http://localhost:${PORT}/${globalPrefix}/health`,
   );
 }
 

@@ -14,8 +14,9 @@ export class AppController {
 
   @MessagePattern('create_user')
   async createUser(
-    data: Prisma.UserCreateInput
+    data: Prisma.UserCreateInput,
   ): Promise<Omit<User, 'password'>> {
+    console.log('📨 Received create_user in AuthController:', data);
     return await this.appService.createUser(data);
   }
 }
