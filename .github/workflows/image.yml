@@ -38,21 +38,8 @@ jobs:
         with:
           version: 10
 
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            **/node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
       - name: Install dependencies
         run: pnpm install
-
-      - name: Generate Prisma client + GraphQL types
-        run: pnpm nx run db-prisma:generate
 
       - name: Build service with Nx
         run: pnpm nx build ${{ matrix.service }}
