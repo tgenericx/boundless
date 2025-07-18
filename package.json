@@ -18,7 +18,7 @@
     "@nx/webpack": "21.2.4",
     "@nx/workspace": "21.2.4",
     "@swc-node/register": "~1.10.10",
-    "@swc/core": "~1.12.14",
+    "@swc/core": "~1.13.0",
     "@swc/helpers": "~0.5.17",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
@@ -38,7 +38,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@apollo/server": "^4.12.2",
+    "@apollo/server": "^5.0.0",
     "@nestjs/apollo": "^13.1.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.4",
