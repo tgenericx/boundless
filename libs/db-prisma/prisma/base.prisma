@@ -9,7 +9,7 @@ generator client {
 }
 
 generator nestgraphql {
-  provider           = "node prisma-nestjs-graphql"
+  provider           = "prisma-nestjs-graphql"
   output             = "../types/src/lib/@generated/graphql"
   reExport           = "All"
   prismaClientImport = "@boundless/types/prisma"
