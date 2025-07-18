@@ -2,6 +2,7 @@ onlyBuiltDependencies:
   - '@apollo/protobufjs'
   - '@nestjs/core'
   - '@parcel/watcher'
+  - '@scarf/scarf'
   - '@swc/core'
   - argon2
   - nx
