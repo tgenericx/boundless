@@ -24,9 +24,9 @@
             "command": "pnpm run generate"
           }
         ],
-        "cwd": "libs/db-prisma"
+        "cwd": "libs/schema"
       }
     }
   },
-  "implicitDependencies": ["db-prisma"]
+  "implicitDependencies": ["schema"]
 }
