@@ -4,4 +4,4 @@ const generatorPath = path.resolve(
   '../node_modules/prisma-nestjs-graphql',
 );
 console.error('Using generator path:', generatorPath);
-console.log(`node ${generatorPath}`);
+console.log(generatorPath);
