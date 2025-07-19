@@ -17,7 +17,6 @@
   "nxCloudId": "687bd7ac58006b54dd8fea45",
   "plugins": [
     {
-      "plugin": "@nx/expo/plugin",
       "options": {
         "startTargetName": "start",
         "buildTargetName": "build",
