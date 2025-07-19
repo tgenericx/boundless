@@ -7,7 +7,7 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "merge:schema": "ts-node scripts/merge-schema.ts",
-    "generate": "pnpm run merge:schema && prisma generate --no-engine",
+    "generate": "pnpm run merge:schema && pnpm dlx prisma generate --no-engine",
     "migrate": "pnpm run merge:schema && prisma migrate dev"
   },
   "dependencies": {
