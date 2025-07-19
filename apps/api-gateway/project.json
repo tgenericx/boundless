@@ -9,11 +9,15 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "webpack-cli build",
-        "args": ["node-env=production"]
+        "args": [
+          "--node-env=production"
+        ]
       },
       "configurations": {
         "development": {
-          "args": ["node-env=development"]
+          "args": [
+            "--node-env=development"
+          ]
         }
       }
     },
@@ -21,7 +25,9 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build", "auth:serve"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "api-gateway:build",
         "runBuildTargetDependencies": false
@@ -39,10 +45,6 @@
       "options": {
         "passWithNoTests": true
       }
-    },
-    "docker-build": {
-      "dependsOn": ["build"],
-      "command": "docker build -f apps/api-gateway/Dockerfile . -t api-gateway"
     }
   }
 }

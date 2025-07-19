@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PrismaService } from '@boundless/prisma-service';
+import { PrismaService } from '@boundless/types/prisma';
 import { JwtModule } from '@nestjs/jwt';
 import { HealthModule } from './health/health.module';
 

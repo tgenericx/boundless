@@ -8,7 +8,7 @@ import {
   MicroserviceHealthIndicator,
   DiskHealthIndicator,
 } from '@nestjs/terminus';
-import { PrismaService } from '@boundless/prisma-service';
+import { PrismaService } from '@boundless/types/prisma';
 
 @Controller('health')
 export class HealthController {

@@ -2,10 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
-import {
-  ExceptionFilter,
-  ExtendedConsoleLogger,
-} from '@boundless/prisma-service';
+import { ExceptionFilter } from '@boundless/errors';
+import { ExtendedConsoleLogger } from '@boundless/logging';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
@@ -56,7 +54,7 @@ async function bootstrap() {
   logger.log(`🔌 Broker: ${RABBITMQ_URL}`);
   logger.log(`🌱 Environment: ${NODE_ENV}`);
   logger.log(
-    `🚑 Health check endpoint ready at http://localhost:${PORT}/${globalPrefix}`,
+    `🚑 Health check endpoint ready at http://localhost:${PORT}/${globalPrefix}/health`,
   );
 }
 

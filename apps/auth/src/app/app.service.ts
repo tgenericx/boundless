@@ -1,9 +1,8 @@
-import { Prisma, PrismaService, User } from '@boundless/prisma-service';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
-import { Omit } from '@prisma/client/runtime/library';
 import * as argon2 from 'argon2';
-import { createRpcExceptionResponse } from '@boundless/prisma-service';
+import { throwRpcException } from '@boundless/errors';
+import { PrismaService, Prisma, User } from '@boundless/types/prisma';
 
 @Injectable()
 export class AppService {
@@ -33,24 +32,19 @@ export class AppService {
         if (error.code === 'P2002') {
           const field = error.meta?.target?.[0];
           throw new RpcException(
-            createRpcExceptionResponse({
-              status: 'error',
+            throwRpcException({
               message: `User with this ${field} already exists`,
-              code: error.code,
               httpCode: HttpStatus.CONFLICT,
               metadata: error.meta,
-              originalError: error,
             }),
           );
         }
       }
 
       throw new RpcException(
-        createRpcExceptionResponse({
-          status: 'error',
+        throwRpcException({
           message: error.message || 'Failed to create user',
           httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          originalError: error,
         }),
       );
     }

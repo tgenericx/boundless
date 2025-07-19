@@ -15,8 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@boundless/auth-utils": ["libs/auth-utils/src/index.ts"],
-      "@boundless/prisma-service": ["libs/prisma-service/src/index.ts"]
+      "@boundless/errors": ["libs/errors/src/index.ts"],
+      "@boundless/logging": ["libs/logging/src/index.ts"],
+      "@boundless/types/graphql": ["libs/types/src/graphql.ts"],
+      "@boundless/types/prisma": ["libs/types/src/prisma.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
