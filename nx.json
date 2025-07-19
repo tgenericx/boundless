@@ -32,6 +32,7 @@
       ]
     }
   },
+  "nxCloudId": "687bd7ac58006b54dd8fea45",
   "plugins": [
     {
       "plugin": "@nx/eslint/plugin",
@@ -58,6 +59,19 @@
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
       }
+    },
+    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } },
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": { "targetName": "test" },
+      "exclude": ["apps/api-gateway-e2e/**/*", "apps/auth-e2e/**/*"]
+    }
+  ],
+  "targetDefaults": {
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   ]
 }
