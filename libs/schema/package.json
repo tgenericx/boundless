@@ -7,13 +7,15 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "merge:schema": "ts-node scripts/merge-schema.ts",
-    "generate": "pnpm run merge:schema && pnpm dlx prisma generate --no-engine",
+    "resolve:generator": "ts-node scripts/resolve-generator-path.ts",
+    "generate": "pnpm run merge:schema && pnpm run resolve:generator && prisma generate --no-engine",
     "migrate": "pnpm run merge:schema && prisma migrate dev"
   },
   "dependencies": {
-    "prisma": "^6.12.0",
-    "prisma-nestjs-graphql": "^21.2.0",
     "tslib": "^2.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "prisma": "^6.12.0",
+    "prisma-nestjs-graphql": "^21.2.0"
+  }
 }
