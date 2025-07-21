@@ -11,6 +11,9 @@ importers:
       '@apollo/server':
         specifier: ^4.12.2
         version: 4.12.2(graphql@16.11.0)
+      '@golevelup/nestjs-rabbitmq':
+        specifier: ^6.0.1
+        version: 6.0.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/apollo':
         specifier: ^13.1.0
         version: 13.1.0(@apollo/server@4.12.2(graphql@16.11.0))(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)(@nestjs/graphql@13.1.0(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)(class-transformer@0.5.1)(class-validator@0.14.2)(graphql@16.11.0)(reflect-metadata@0.2.2))(graphql@16.11.0)
@@ -1002,6 +1005,20 @@ packages:
   '@eslint/plugin-kit@0.3.3':
     resolution: {integrity: sha512-1+WqvgNMhmlAambTvT3KPtCl/Ibr68VldY2XY40SL1CE0ZXiakFR/cbTspaF5HsnpDMvcYYoJHfl4980NBjGag==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@golevelup/nestjs-discovery@5.0.0':
+    resolution: {integrity: sha512-NaIWLCLI+XvneUK05LH2idHLmLNITYT88YnpOuUQmllKtiJNIS3woSt7QXrMZ5k3qUWuZpehEVz1JtlX4I1KyA==}
+    peerDependencies:
+      '@nestjs/common': ^11.0.20
+      '@nestjs/core': ^11.0.20
+
+  '@golevelup/nestjs-rabbitmq@6.0.1':
+    resolution: {integrity: sha512-kOGjQ8w9o06WUSVnqOXNVXINnZZhD9Dq6ZdQu+WjLgZ7gku2RYfK/FplO0/1wz5wTnVQ1KkyjuHiAAwbcaOCug==}
+    peerDependencies:
+      '@nestjs/common': ^11.0.0
+      '@nestjs/core': ^11.0.0
+      reflect-metadata: ^0.2.2
+      rxjs: ^7.8.1
 
   '@graphql-tools/merge@8.4.2':
     resolution: {integrity: sha512-XbrHAaj8yDuINph+sAfuq3QCZ/tKblrTLOpirK0+CAgNlZUCHs0Fa+xtMUURgwCVThLle1AF7svJCxFizygLsw==}
@@ -7064,6 +7081,23 @@ snapshots:
     dependencies:
       '@eslint/core': 0.15.1
       levn: 0.4.1
+
+  '@golevelup/nestjs-discovery@5.0.0(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)':
+    dependencies:
+      '@nestjs/common': 11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.5)(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      lodash: 4.17.21
+
+  '@golevelup/nestjs-rabbitmq@6.0.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
+    dependencies:
+      '@golevelup/nestjs-discovery': 5.0.0(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5)
+      '@nestjs/common': 11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.5)(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      amqp-connection-manager: 4.1.14(amqplib@0.10.8)
+      amqplib: 0.10.8
+      lodash: 4.17.21
+      reflect-metadata: 0.2.2
+      rxjs: 7.8.2
 
   '@graphql-tools/merge@8.4.2(graphql@16.11.0)':
     dependencies:
