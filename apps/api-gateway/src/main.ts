@@ -1,15 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerConfigModule } from './swagger-config/swagger-config.module';
-import { ExtendedConsoleLogger } from '@boundless/logging';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const globalPrefix = 'api';
   const app = await NestFactory.create(AppModule, {
-    logger: new ExtendedConsoleLogger({
+    logger: new ConsoleLogger({
       json: true,
       colors: true,
     }),
