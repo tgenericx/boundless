@@ -1,3 +1,9 @@
+type ExceptionResponse = {
+  message?: string | string[];
+  error?: string;
+  [key: string]: unknown;
+};
+
 export type AmqpError = {
   type?: string;
   message: string;
@@ -28,6 +34,40 @@ export function formatRpcError<T = unknown>(
   error: unknown,
   data: T,
 ): AmqpResponse<never> {
+  // Handle NestJS HttpException with proper typing
+  if (error instanceof HttpException) {
+    const response = error.getResponse();
+    let message: string;
+    let meta: Record<string, unknown> | undefined;
+
+    if (typeof response === 'string') {
+      message = response;
+    } else {
+      const res = response as ExceptionResponse;
+      message =
+        typeof res.message === 'string'
+          ? res.message
+          : Array.isArray(res.message)
+            ? res.message.join(', ')
+            : res.error || error.message;
+
+      meta = { ...res };
+      if ('message' in meta) delete meta.message;
+      if ('error' in meta) delete meta.error;
+    }
+
+    return {
+      success: false,
+      error: {
+        type: 'HttpException',
+        message,
+        code: `HTTP_${error.getStatus()}`,
+        httpStatus: error.getStatus(),
+        meta: Object.keys(meta || {}).length > 0 ? meta : undefined,
+      },
+    };
+  }
+
   // Handle Prisma known errors
   if (error instanceof PrismaClientKnownRequestError) {
     const meta = (error.meta as { target?: string[] }) || {};
@@ -146,4 +186,4 @@ import {
   PrismaClientRustPanicError,
   PrismaClientValidationError,
 } from '@prisma/client/runtime/library';
-import { HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
