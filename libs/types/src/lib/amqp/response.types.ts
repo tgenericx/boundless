@@ -2,6 +2,7 @@ export type AmqpError = {
   type?: string;
   message: string;
   code?: string;
+  httpStatus?: HttpStatus;
   meta?: Record<string, unknown>;
   target?: string[];
   originalError?: unknown;
@@ -31,11 +32,8 @@ export function formatRpcError<T = unknown>(
   if (error instanceof PrismaClientKnownRequestError) {
     const meta = (error.meta as { target?: string[] }) || {};
 
-    // Special handling for unique constraint violation
     if (error.code === 'P2002') {
       const targetFields = meta.target || ['field'];
-
-      // Extract all violating values from user input
       const violations = targetFields
         .map((field) => {
           const value =
@@ -46,9 +44,7 @@ export function formatRpcError<T = unknown>(
         })
         .filter((v) => v.value !== undefined);
 
-      // Format receiver message
       let message: string;
-
       if (violations.length === 1) {
         message = `The ${violations[0].field} '${violations[0].value}' is already in use.`;
       } else {
@@ -62,16 +58,13 @@ export function formatRpcError<T = unknown>(
         success: false,
         error: {
           type: 'UniqueConstraintViolation',
-          message: message,
+          message,
           code: error.code,
+          httpStatus: HttpStatus.CONFLICT,
           meta: {
             ...error.meta,
-            conflictingValues: violations.reduce(
-              (acc, { field, value }) => {
-                acc[field] = value;
-                return acc;
-              },
-              {} as Record<string, unknown>,
+            conflictingValues: Object.fromEntries(
+              violations.map((v) => [v.field, v.value]),
             ),
           },
           target: targetFields,
@@ -79,13 +72,14 @@ export function formatRpcError<T = unknown>(
       };
     }
 
-    // General Prisma known error
+    // General Prisma known error (default to 400 Bad Request)
     return {
       success: false,
       error: {
         type: 'PrismaClientKnownRequestError',
         message: error.message,
         code: error.code,
+        httpStatus: HttpStatus.BAD_REQUEST,
         meta: error.meta,
       },
     };
@@ -97,6 +91,7 @@ export function formatRpcError<T = unknown>(
       error: {
         type: 'PrismaClientUnknownRequestError',
         message: error.message,
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
       },
     };
   }
@@ -108,6 +103,7 @@ export function formatRpcError<T = unknown>(
         type: 'PrismaClientInitializationError',
         message: error.message,
         code: error.errorCode,
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
       },
     };
   }
@@ -128,16 +124,7 @@ export function formatRpcError<T = unknown>(
       error: {
         type: 'PrismaClientValidationError',
         message: error.message,
-      },
-    };
-  }
-
-  if (error instanceof Error) {
-    return {
-      success: false,
-      error: {
-        type: error.name,
-        message: error.message,
+        httpStatus: HttpStatus.BAD_REQUEST,
       },
     };
   }
@@ -147,6 +134,7 @@ export function formatRpcError<T = unknown>(
     error: {
       message: 'Unknown error',
       originalError: error,
+      httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
     },
   };
 }
@@ -158,3 +146,4 @@ import {
   PrismaClientRustPanicError,
   PrismaClientValidationError,
 } from '@prisma/client/runtime/library';
+import { HttpStatus } from '@nestjs/common';

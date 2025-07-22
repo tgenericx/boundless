@@ -1,14 +1,18 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
-import { User, UserCreateInput } from '@boundless/types/graphql';
+import {
+  GraphQLResponseHelper,
+  User,
+  UserCreateInput,
+} from '@boundless/types/graphql';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Logger } from '@nestjs/common';
-import { GraphQLError } from 'graphql';
 import { AmqpResponse, isAmqpSuccess } from '@boundless/types/amqp';
 
 @Resolver()
 export class AppResolver {
-  constructor(private readonly amqp: AmqpConnection) {}
   private readonly logger = new Logger(AppResolver.name);
+
+  constructor(private readonly amqp: AmqpConnection) {}
 
   @Query(() => String)
   root(): string {
@@ -27,25 +31,10 @@ export class AppResolver {
       payload: input,
     });
 
-    if (isAmqpSuccess(response)) {
-      return response.data;
+    if (!isAmqpSuccess(response)) {
+      this.logger.error('❌ createUser RPC failed:', response.error);
     }
 
-    this.logger.error('❌ createUser RPC failed:', response.error);
-
-    throw new GraphQLError(
-      typeof response.error.message === 'string'
-        ? response.error.message
-        : 'Unknown error',
-      {
-        extensions: {
-          code:
-            typeof response.error.code === 'string'
-              ? response.error.code
-              : 'INTERNAL_SERVER_ERROR',
-          metadata: response.error.meta,
-        },
-      },
-    );
+    return GraphQLResponseHelper.fromAmqpResponse(response);
   }
 }
