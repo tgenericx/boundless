@@ -2,7 +2,10 @@
   "name": "@boundless/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "create:exchange": "ts-node tools/scripts/create-exchange.ts",
+    "generate:exchange-config": "ts-node tools/scripts/generate-exchange-config.ts"
+  },
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.31.0",
