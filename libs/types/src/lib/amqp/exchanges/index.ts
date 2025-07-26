@@ -1,4 +1,5 @@
 import { Exchanges } from './exchanges';
+export * from './exchanges';
 
 export function getExchange<
   S extends keyof typeof Exchanges,
