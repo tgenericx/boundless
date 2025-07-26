@@ -1,5 +1,5 @@
 import { defineRoute } from '../define-route';
-import { getExchange } from '../exchanges/get-exchange';
+import { getExchange } from '../exchanges';
 
 export const AuthRoutes = {
   userRegister: defineRoute(getExchange('auth', 'command'))('user.register', {
