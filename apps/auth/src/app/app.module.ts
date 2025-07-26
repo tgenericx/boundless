@@ -6,6 +6,7 @@ import { PrismaService } from '@boundless/types/prisma';
 import { JwtModule } from '@nestjs/jwt';
 import { HealthModule } from './health/health.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { Exchanges } from '@boundless/types/amqp';
 
 @Module({
   imports: [
@@ -20,34 +21,29 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
     }),
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>(
-          'RABBITMQ_URL',
-          'amqp://guest:guest@localhost:5672',
-        ),
-        enableControllerDiscovery: true,
-        connectionInitOptions: {
-          wait: true,
-          reject: true,
-          timeout: 10000,
-        },
-        exchanges: [
-          {
-            name: 'auth.direct',
-            type: 'direct',
+      useFactory: async (config: ConfigService) => {
+        const authExchanges = Exchanges.auth;
+
+        return {
+          uri: config.get<string>(
+            'RABBITMQ_URL',
+            'amqp://guest:guest@localhost:5672',
+          ),
+          enableControllerDiscovery: true,
+          connectionInitOptions: {
+            wait: true,
+            reject: true,
+            timeout: 10000,
+          },
+          exchanges: Object.values(authExchanges).map((ex) => ({
+            name: ex.name,
+            type: ex.type,
             options: {
               durable: true,
             },
-          },
-          {
-            name: 'auth.events',
-            type: 'topic',
-            options: {
-              durable: true,
-            },
-          },
-        ],
-      }),
+          })),
+        };
+      },
     }),
   ],
   controllers: [AppController],

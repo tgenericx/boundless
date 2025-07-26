@@ -6,7 +6,9 @@ import {
 } from '@boundless/types/graphql';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Logger } from '@nestjs/common';
-import { AmqpResponse, isAmqpSuccess } from '@boundless/types/amqp';
+import { AmqpResponse, isAmqpSuccess, Routes } from '@boundless/types/amqp';
+
+const { userRegister } = Routes.auth;
 
 @Resolver()
 export class AppResolver {
@@ -26,8 +28,8 @@ export class AppResolver {
     this.logger.log('📤 Sending create_user message via AmqpConnection');
 
     const response = await this.amqp.request<AmqpResponse<User>>({
-      exchange: 'auth.direct',
-      routingKey: 'create_user',
+      exchange: userRegister.exchange,
+      routingKey: userRegister.routingKey,
       payload: input,
     });
 
