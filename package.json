@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "create:exchange": "ts-node tools/scripts/create-exchange.ts",
-    "generate:exchange-config": "ts-node tools/scripts/generate-exchange-config.ts"
+    "generate:routes": "ts-node libs/types/src/lib/amqp/scripts/generate-routes.ts"
   },
   "private": true,
   "devDependencies": {
@@ -35,6 +34,7 @@
     "prettier": "^3.6.2",
     "prisma-nestjs-graphql": "^21.2.0",
     "ts-jest": "^29.4.0",
+    "ts-morph": "^26.0.0",
     "ts-node": "10.9.2",
     "tslib": "^2.8.1",
     "typescript": "~5.8.3",
