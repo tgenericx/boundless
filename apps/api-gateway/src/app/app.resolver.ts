@@ -7,7 +7,7 @@ import {
   AmqpResponse,
   GraphQLResponseHelper,
   isAmqpSuccess,
-} from '@boundless/errors';
+} from '@boundless/utils';
 
 const { userRegister } = Routes.auth;
 
