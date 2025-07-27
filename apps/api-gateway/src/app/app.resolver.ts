@@ -2,7 +2,7 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { User, UserCreateInput } from '@boundless/types/graphql';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Logger } from '@nestjs/common';
-import { Routes } from '@boundless/types/amqp';
+import { Routes } from '@boundless/utils';
 import {
   AmqpResponse,
   GraphQLResponseHelper,

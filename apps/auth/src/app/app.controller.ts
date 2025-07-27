@@ -2,7 +2,7 @@ import { Controller, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Prisma, User } from '@boundless/types/prisma';
 import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { Routes } from '@boundless/types/amqp';
+import { Routes } from '@boundless/utils';
 import { AmqpResponse, formatRpcError } from '@boundless/utils';
 
 const { userRegister, userRegistered } = Routes.auth;

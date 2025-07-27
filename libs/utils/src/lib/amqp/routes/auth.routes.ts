@@ -1,4 +1,4 @@
-import { defineRoute } from '../define-route';
+import { defineRoute } from './define-route';
 import { getExchange } from '../exchanges';
 
 export const AuthRoutes = {
