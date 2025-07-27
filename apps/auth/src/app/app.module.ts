@@ -6,7 +6,7 @@ import { PrismaService } from '@boundless/types/prisma';
 import { JwtModule } from '@nestjs/jwt';
 import { HealthModule } from './health/health.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { Exchanges } from '@boundless/types/amqp';
+import { Exchanges } from '@boundless/utils';
 
 @Module({
   imports: [

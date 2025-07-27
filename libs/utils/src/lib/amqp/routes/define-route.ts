@@ -1,4 +1,4 @@
-import { ServiceExchange } from './exchange.types';
+import { ServiceExchange } from '../exchanges/exchange.types';
 
 export type RouteMetadata = {
   description: string;

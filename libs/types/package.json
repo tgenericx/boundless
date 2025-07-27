@@ -11,8 +11,5 @@
     "@prisma/client": "^6.12.0",
     "@prisma/extension-accelerate": "^2.0.2",
     "tslib": "^2.3.0"
-  },
-  "devDependencies": {
-    "ts-morph": "^26.0.0"
   }
 }

@@ -4,7 +4,7 @@ import { GqlModule } from '../gql/gql.module';
 import { AppResolver } from './app.resolver';
 import { AppService } from './app.service';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { Exchanges } from '@boundless/types/amqp';
+import { Exchanges } from '@boundless/utils';
 
 @Module({
   imports: [

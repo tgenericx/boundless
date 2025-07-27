@@ -1,4 +1,4 @@
-import { defineExchange } from '../define-exchange';
+import { defineExchange } from './define-exchange';
 
 export const Exchanges = {
   auth: {
