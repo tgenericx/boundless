@@ -1,12 +1,13 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
-import {
-  GraphQLResponseHelper,
-  User,
-  UserCreateInput,
-} from '@boundless/types/graphql';
+import { User, UserCreateInput } from '@boundless/types/graphql';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Logger } from '@nestjs/common';
-import { AmqpResponse, isAmqpSuccess, Routes } from '@boundless/types/amqp';
+import { Routes } from '@boundless/types/amqp';
+import {
+  AmqpResponse,
+  GraphQLResponseHelper,
+  isAmqpSuccess,
+} from '@boundless/errors';
 
 const { userRegister } = Routes.auth;
 
