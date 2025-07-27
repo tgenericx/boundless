@@ -184,12 +184,6 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(webpack@5.99.9)
 
-  libs/errors:
-    dependencies:
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
-
   libs/logging:
     dependencies:
       tslib:
@@ -217,6 +211,12 @@ importers:
       '@prisma/extension-accelerate':
         specifier: ^2.0.2
         version: 2.0.2(@prisma/client@6.12.0(prisma@6.12.0(typescript@5.8.3))(typescript@5.8.3))
+      tslib:
+        specifier: ^2.3.0
+        version: 2.8.1
+
+  libs/utils:
+    dependencies:
       tslib:
         specifier: ^2.3.0
         version: 2.8.1
