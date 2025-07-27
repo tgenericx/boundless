@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@boundless/errors": ["libs/errors/src/index.ts"],
+      "@boundless/utils": ["libs/utils/src/index.ts"],
       "@boundless/logging": ["libs/logging/src/index.ts"],
       "@boundless/types/amqp": ["libs/types/src/amqp.ts"],
       "@boundless/types/graphql": ["libs/types/src/graphql.ts"],
