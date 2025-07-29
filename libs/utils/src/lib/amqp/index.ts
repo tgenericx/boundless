@@ -1,5 +1,4 @@
-export { Routes } from './routes/__generated__/route-map';
-
+export { RouteRegistry } from './routes/__generated__/route-registry';
+export { ExchangeRegistry } from './exchanges/registry';
 export * from './amqp.types';
 export * from './format-rpc-error';
-export * from './exchanges/registry';
