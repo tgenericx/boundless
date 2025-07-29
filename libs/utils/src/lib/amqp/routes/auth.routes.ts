@@ -16,6 +16,11 @@ export const AuthRoutes = {
     description: 'Generates new access token using refresh token',
     tags: ['authentication', 'tokens'],
   }),
+  logoutUser: defineRoute(exchange.command)('user.logout', {
+    description:
+      'Terminates user session and invalidates authentication tokens',
+    tags: ['authentication'],
+  }),
 
   userRegistered: defineRoute(exchange.event)('user.registered', {
     description: 'Emitted after successful user registration',
@@ -28,5 +33,9 @@ export const AuthRoutes = {
   authTokenRefreshed: defineRoute(exchange.event)('token.refreshed', {
     description: 'Emitted when new tokens are generated',
     tags: ['authentication', 'tokens'],
+  }),
+  userLoggedOut: defineRoute(exchange.event)('user.logged_out', {
+    description: 'Emitted after successful session termination',
+    tags: ['authentication', 'session'],
   }),
 };

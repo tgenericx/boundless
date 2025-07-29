@@ -5,8 +5,13 @@ import { Prisma, User } from '@boundless/types/prisma';
 import { AmqpResponse, formatRpcError, RouteRegistry } from '@boundless/utils';
 import { AuthPayload } from '@boundless/types/graphql';
 
-const { registerUser, loginUser, userRegistered, refreshAuthToken } =
-  RouteRegistry.auth;
+const {
+  registerUser,
+  loginUser,
+  userRegistered,
+  refreshAuthToken,
+  logoutUser,
+} = RouteRegistry.auth;
 
 @Controller()
 export class AuthController {
@@ -83,6 +88,25 @@ export class AuthController {
       return { success: true, data: result };
     } catch (err) {
       this.logger.error('❌ Error refreshing token', err);
+      return formatRpcError(err, data);
+    }
+  }
+
+  @RabbitRPC({
+    exchange: logoutUser.exchange,
+    routingKey: logoutUser.routingKey,
+    queue: logoutUser.queue,
+    queueOptions: { durable: true },
+  })
+  async logoutUser(data: {
+    refreshToken: string;
+  }): Promise<AmqpResponse<boolean>> {
+    this.logger.log(`🚪 Received logout request`);
+    try {
+      await this.authService.logout(data.refreshToken);
+      return { success: true, data: true };
+    } catch (err) {
+      this.logger.error('❌ Logout failed', err);
       return formatRpcError(err, data);
     }
   }

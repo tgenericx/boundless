@@ -75,4 +75,8 @@ export class AuthService {
       user,
     };
   }
+
+  async logout(refreshToken: string): Promise<void> {
+    await this.refreshTokenService.revokeToken(refreshToken);
+  }
 }
