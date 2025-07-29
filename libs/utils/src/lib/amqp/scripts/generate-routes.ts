@@ -5,7 +5,7 @@ import { findMonorepoRoot } from './find-monorepo-root';
 
 const monorepoRoot = findMonorepoRoot(__dirname);
 const routesDir = path.join(monorepoRoot, 'src/lib/amqp/routes');
-const outputPath = path.join(routesDir, '__generated__/route-map.ts');
+const outputPath = path.join(routesDir, '__generated__/route-registry.ts');
 
 const project = new Project({
   tsConfigFilePath: path.join(monorepoRoot, 'tsconfig.json'),
@@ -39,12 +39,12 @@ const contents = `
 
 ${imports.join('\n')}
 
-export const Routes = {
+export const RouteRegistry = {
 ${routeMapEntries.join('\n')}
 } as const;
 
-export type RegisteredService = keyof typeof Routes;
-export type RegisteredRouteName<S extends RegisteredService> = keyof typeof Routes[S];
+export type RegisteredService = keyof typeof RouteRegistry;
+export type RegisteredRouteName<S extends RegisteredService> = keyof typeof RouteRegistry[S];
 `;
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });

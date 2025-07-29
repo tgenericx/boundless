@@ -2,10 +2,10 @@ import { Controller, Logger } from '@nestjs/common';
 import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { AuthService } from '../auth/auth.service';
 import { Prisma, User } from '@boundless/types/prisma';
-import { Routes } from '@boundless/utils';
+import { RouteRegistry } from '@boundless/utils';
 import { AmqpResponse, formatRpcError } from '@boundless/utils';
 
-const { userRegister, userRegistered } = Routes.auth;
+const { userRegister, userRegistered } = RouteRegistry.auth;
 
 @Controller()
 export class RpcController {
