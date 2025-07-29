@@ -8,11 +8,10 @@ export class AuthService {
   constructor(private readonly usersService: UsersService) {}
 
   async signup(data: Prisma.UserCreateInput): Promise<Omit<User, 'password'>> {
-    const passwordHash = await argon2.hash(data.password);
-    const { password, ...rest } = await this.usersService.createUser({
+    const password = await argon2.hash(data.password);
+    return await this.usersService.createUser({
       ...data,
-      password: passwordHash,
+      password,
     });
-    return rest;
   }
 }

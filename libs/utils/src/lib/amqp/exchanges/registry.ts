@@ -1,6 +1,6 @@
 import { defineExchange } from './define-exchange';
 
-export const Exchanges = {
+export const ExchangeRegistry = {
   auth: {
     command: defineExchange('auth', 'command'),
     event: defineExchange('auth', 'event'),
@@ -15,6 +15,6 @@ export const Exchanges = {
   },
 } as const;
 
-export type RegisteredService = keyof typeof Exchanges;
+export type RegisteredService = keyof typeof ExchangeRegistry;
 export type RegisteredExchangeType =
-  keyof (typeof Exchanges)[RegisteredService];
+  keyof (typeof ExchangeRegistry)[RegisteredService];

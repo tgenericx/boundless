@@ -2,9 +2,7 @@
   "name": "@boundless/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {
-    "generate:routes": "ts-node libs/types/src/lib/amqp/scripts/generate-routes.ts"
-  },
+  "scripts": {},
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.32.0",

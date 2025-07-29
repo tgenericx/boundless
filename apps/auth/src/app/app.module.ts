@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { HealthModule } from './health/health.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { Exchanges } from '@boundless/utils';
+import { ExchangeRegistry } from '@boundless/utils';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MessagingModule } from './messaging/messaging.module';
@@ -27,7 +27,7 @@ import { TokensModule } from './tokens/tokens.module';
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
-        const authExchanges = Exchanges.auth;
+        const authExchanges = ExchangeRegistry.auth;
 
         return {
           uri: config.get<string>(
