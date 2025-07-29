@@ -49,4 +49,30 @@ export class AuthService {
       user,
     };
   }
+
+  async login(email: string, password: string): Promise<AuthPayload> {
+    const user = await this.usersService.findUniqueUser({
+      email,
+    });
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    const valid = await argon2.verify(user.password, password);
+    if (!valid) {
+      throw new Error('Invalid credentials');
+    }
+
+    const accessToken = this.tokenService.generateAccessToken(user);
+    const refreshToken = await this.refreshTokenService.generateRefreshToken(
+      user.id,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
+  }
 }
