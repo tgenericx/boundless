@@ -1,6 +1,6 @@
 import { User } from '@boundless/types/prisma';
 
-export interface AuthPayload {
+export interface IAuthPayload {
   accessToken: string;
   refreshToken: string;
   user: Omit<User, 'password'>;
