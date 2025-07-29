@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma types
+        run: pnpm nx run types:generate
+
       - name: Build service with Nx
         run: pnpm nx build ${{ matrix.service }}
 
