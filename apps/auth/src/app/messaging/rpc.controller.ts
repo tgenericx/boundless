@@ -1,20 +1,20 @@
 import { Controller, Logger } from '@nestjs/common';
-import { AppService } from './app.service';
-import { Prisma, User } from '@boundless/types/prisma';
 import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { AuthService } from '../auth/auth.service';
+import { Prisma, User } from '@boundless/types/prisma';
 import { Routes } from '@boundless/utils';
 import { AmqpResponse, formatRpcError } from '@boundless/utils';
 
 const { userRegister, userRegistered } = Routes.auth;
 
 @Controller()
-export class AppController {
+export class RpcController {
+  private readonly logger = new Logger(RpcController.name);
+
   constructor(
-    private readonly appService: AppService,
+    private readonly authService: AuthService,
     private readonly amqp: AmqpConnection,
   ) {}
-
-  private logger = new Logger(AppController.name);
 
   @RabbitRPC({
     exchange: userRegister.exchange,
@@ -22,13 +22,13 @@ export class AppController {
     queue: userRegister.queue,
     queueOptions: { durable: true },
   })
-  async createUser(
+  async registerUser(
     data: Prisma.UserCreateInput,
   ): Promise<AmqpResponse<Omit<User, 'password'>>> {
-    this.logger.log('📨 Received create_user RPC via RabbitMQ:', data);
+    this.logger.log('📨 Received RPC: registerUser', data);
 
     try {
-      const user = await this.appService.createUser(data);
+      const user = await this.authService.signup(data);
 
       await this.amqp.publish(
         userRegistered.exchange,
@@ -36,13 +36,11 @@ export class AppController {
         user,
       );
 
-      this.logger.log(
-        `📤 Published userRegistered event for user ${user.email}`,
-      );
+      this.logger.log(`📤 Published userRegistered event: ${user.email}`);
 
       return { success: true, data: user };
     } catch (error) {
-      this.logger.error('❌ Error creating user', error);
+      this.logger.error('❌ Registration error', error);
       return formatRpcError(error, data);
     }
   }
