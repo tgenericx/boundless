@@ -3,7 +3,7 @@ import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { AuthService } from '../auth/auth.service';
 import { Prisma, User } from '@boundless/types/prisma';
 import { AmqpResponse, formatRpcError, RouteRegistry } from '@boundless/utils';
-import { AuthPayload } from '@boundless/types/graphql';
+import { IAuthPayload } from '@boundless/types/interfaces';
 
 const {
   registerUser,
@@ -60,7 +60,7 @@ export class AuthController {
   async loginUser(data: {
     email: string;
     password: string;
-  }): Promise<AmqpResponse<AuthPayload>> {
+  }): Promise<AmqpResponse<IAuthPayload>> {
     this.logger.log(`🔐 Received login request: ${data.email}`);
 
     try {
@@ -80,7 +80,7 @@ export class AuthController {
   })
   async refreshToken(data: {
     token: string;
-  }): Promise<AmqpResponse<AuthPayload>> {
+  }): Promise<AmqpResponse<IAuthPayload>> {
     this.logger.log(`🔄 Received refresh token: ${data.token}`);
 
     try {
