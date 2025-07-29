@@ -9,7 +9,7 @@ import {
   isAmqpSuccess,
 } from '@boundless/utils';
 
-const { userRegister } = RouteRegistry.auth;
+const { registerUser } = RouteRegistry.auth;
 
 @Resolver()
 export class AppResolver {
@@ -29,8 +29,8 @@ export class AppResolver {
     this.logger.log('📤 Sending create_user message via AmqpConnection');
 
     const response = await this.amqp.request<AmqpResponse<User>>({
-      exchange: userRegister.exchange,
-      routingKey: userRegister.routingKey,
+      exchange: registerUser.exchange,
+      routingKey: registerUser.routingKey,
       payload: input,
     });
 

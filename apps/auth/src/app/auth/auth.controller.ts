@@ -5,7 +5,8 @@ import { Prisma, User } from '@boundless/types/prisma';
 import { AmqpResponse, formatRpcError, RouteRegistry } from '@boundless/utils';
 import { AuthPayload } from '@boundless/types/graphql';
 
-const { userRegister, userRegistered, authToken } = RouteRegistry.auth;
+const { registerUser, loginUser, userRegistered, refreshAuthToken } =
+  RouteRegistry.auth;
 
 @Controller()
 export class AuthController {
@@ -17,9 +18,9 @@ export class AuthController {
   ) {}
 
   @RabbitRPC({
-    exchange: userRegister.exchange,
-    routingKey: userRegister.routingKey,
-    queue: userRegister.queue,
+    exchange: registerUser.exchange,
+    routingKey: registerUser.routingKey,
+    queue: registerUser.queue,
     queueOptions: { durable: true },
   })
   async registerUser(
@@ -46,9 +47,30 @@ export class AuthController {
   }
 
   @RabbitRPC({
-    exchange: authToken.exchange,
-    routingKey: authToken.routingKey,
-    queue: authToken.queue,
+    exchange: loginUser.exchange,
+    routingKey: loginUser.routingKey,
+    queue: loginUser.queue,
+    queueOptions: { durable: true },
+  })
+  async loginUser(data: {
+    email: string;
+    password: string;
+  }): Promise<AmqpResponse<AuthPayload>> {
+    this.logger.log(`🔐 Received login request: ${data.email}`);
+
+    try {
+      const result = await this.authService.login(data.email, data.password);
+      return { success: true, data: result };
+    } catch (err) {
+      this.logger.error('❌ Login failed', err);
+      return formatRpcError(err, data);
+    }
+  }
+
+  @RabbitRPC({
+    exchange: refreshAuthToken.exchange,
+    routingKey: refreshAuthToken.routingKey,
+    queue: refreshAuthToken.queue,
     queueOptions: { durable: true },
   })
   async refreshToken(data: {
