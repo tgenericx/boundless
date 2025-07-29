@@ -6,7 +6,6 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ExchangeRegistry } from '@boundless/utils';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { MessagingModule } from './messaging/messaging.module';
 import { TokensModule } from './tokens/tokens.module';
 
 @Module({
@@ -15,7 +14,6 @@ import { TokensModule } from './tokens/tokens.module';
     HealthModule,
     UsersModule,
     AuthModule,
-    MessagingModule,
     TokensModule,
     JwtModule.registerAsync({
       inject: [ConfigService],

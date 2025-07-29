@@ -2,14 +2,14 @@ import { Controller, Logger } from '@nestjs/common';
 import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { AuthService } from '../auth/auth.service';
 import { Prisma, User } from '@boundless/types/prisma';
-import { RouteRegistry } from '@boundless/utils';
-import { AmqpResponse, formatRpcError } from '@boundless/utils';
+import { AmqpResponse, formatRpcError, RouteRegistry } from '@boundless/utils';
+import { AuthPayload } from '@boundless/types/graphql';
 
-const { userRegister, userRegistered } = RouteRegistry.auth;
+const { userRegister, userRegistered, authToken } = RouteRegistry.auth;
 
 @Controller()
-export class RpcController {
-  private readonly logger = new Logger(RpcController.name);
+export class AuthController {
+  private logger = new Logger(AuthController.name);
 
   constructor(
     private readonly authService: AuthService,
@@ -42,6 +42,26 @@ export class RpcController {
     } catch (error) {
       this.logger.error('❌ Registration error', error);
       return formatRpcError(error, data);
+    }
+  }
+
+  @RabbitRPC({
+    exchange: authToken.exchange,
+    routingKey: authToken.routingKey,
+    queue: authToken.queue,
+    queueOptions: { durable: true },
+  })
+  async refreshToken(data: {
+    token: string;
+  }): Promise<AmqpResponse<AuthPayload>> {
+    this.logger.log(`🔄 Received refresh token: ${data.token}`);
+
+    try {
+      const result = await this.authService.refreshToken(data.token);
+      return { success: true, data: result };
+    } catch (err) {
+      this.logger.error('❌ Error refreshing token', err);
+      return formatRpcError(err, data);
     }
   }
 }
