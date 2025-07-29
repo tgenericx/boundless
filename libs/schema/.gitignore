@@ -1,1 +1,2 @@
-*.prisma
+# this is generated from other schema files, no need to track this
+schema.prisma
