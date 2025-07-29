@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrismaService } from '@boundless/types/prisma';
 import { JwtModule } from '@nestjs/jwt';
 import { HealthModule } from './health/health.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Exchanges } from '@boundless/utils';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
-    HealthModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    HealthModule,
+    UsersModule,
+    AuthModule,
+    MessagingModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
@@ -46,7 +49,5 @@ import { Exchanges } from '@boundless/utils';
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService, PrismaService],
 })
 export class AppModule {}
