@@ -7,6 +7,7 @@ import { Exchanges } from '@boundless/utils';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { TokensModule } from './tokens/tokens.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MessagingModule } from './messaging/messaging.module';
     UsersModule,
     AuthModule,
     MessagingModule,
+    TokensModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({

@@ -1,7 +1,15 @@
+enum UserRole {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  roles         UserRole[]     @default([USER])
+  refreshTokens RefreshToken[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
