@@ -5,8 +5,16 @@
   "projectType": "library",
   "tags": [],
   "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run generate:routes",
+        "cwd": "libs/utils"
+      }
+    },
     "build": {
       "executor": "@nx/js:tsc",
+      "dependsOn": ["generate"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/utils",

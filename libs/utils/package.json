@@ -2,6 +2,9 @@
   "name": "@boundless/utils",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "generate:routes": "ts-node src/lib/amqp/scripts/generate-routes.ts"
+  },
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",

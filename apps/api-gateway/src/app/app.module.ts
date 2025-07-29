@@ -4,7 +4,7 @@ import { GqlModule } from '../gql/gql.module';
 import { AppResolver } from './app.resolver';
 import { AppService } from './app.service';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { Exchanges } from '@boundless/utils';
+import { ExchangeRegistry } from '@boundless/utils';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { Exchanges } from '@boundless/utils';
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
-        const authExchanges = Exchanges.auth;
+        const authExchanges = ExchangeRegistry.auth;
 
         return {
           uri: config.get<string>(
