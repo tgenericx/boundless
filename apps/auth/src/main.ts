@@ -24,7 +24,7 @@ async function bootstrap() {
   await app.listen(PORT);
 
   logger.log(`✅ Auth service started`);
-  logger.log(`🌱 Env: ${config.get('NODE_ENV')}`);
+  logger.log(`🌱 Env: ${config.get<string>('NODE_ENV', 'development')}`);
   logger.log(`🚑 Health: http://localhost:${PORT}/${globalPrefix}/health`);
 }
 bootstrap().catch((err) => {
