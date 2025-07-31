@@ -99,3 +99,4 @@ Thumbs.db
 /coverage
 /libpeerconnection.log
 /typings
+**/migrations
