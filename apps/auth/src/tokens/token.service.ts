@@ -6,16 +6,15 @@ import { User } from '@boundless/types/prisma';
 export class TokenService {
   constructor(private readonly jwt: JwtService) {}
 
-  generateAccessToken(user: Pick<User, 'id' | 'email' | 'roles'>): string {
+  generateAccessToken(user: Pick<User, 'id' | 'roles'>): string {
     return this.jwt.sign({
       sub: user.id,
-      email: user.email,
       roles: user.roles,
     });
   }
 
   verify(token: string): any {
-    return this.jwt.verify(token);
+    return this.jwt.verify(token, { algorithms: ['RS256'] });
   }
 
   decode(token: string): any {
