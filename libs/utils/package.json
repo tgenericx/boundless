@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "generate:routes": "ts-node src/lib/amqp/scripts/generate-routes.ts"
+    "generate:routes": "ts-node src/lib/amqp/scripts/generate-routes.ts",
+    "generate:secrets": "ts-node src/lib/amqp/scripts/generate-keys.ts"
   },
   "type": "commonjs",
   "main": "./src/index.js",
