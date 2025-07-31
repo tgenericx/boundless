@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ConsoleLogger, Logger } from '@nestjs/common';
 import { ExceptionFilter } from '@boundless/utils';

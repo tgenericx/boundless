@@ -1,19 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
-import { HealthModule } from './health/health.module';
+import { AuthService } from './auth.service';
+import { UsersModule } from '../users/users.module';
+import { AuthController } from './auth.controller';
+import { TokensModule } from '../tokens/tokens.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { ConfigService } from '@nestjs/config';
 import { ExchangeRegistry } from '@boundless/utils';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { TokensModule } from './tokens/tokens.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    HealthModule,
     UsersModule,
-    AuthModule,
     TokensModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -49,5 +46,8 @@ import { TokensModule } from './tokens/tokens.module';
       },
     }),
   ],
+  providers: [AuthService],
+  exports: [AuthService],
+  controllers: [AuthController],
 })
-export class AppModule {}
+export class AuthModule {}

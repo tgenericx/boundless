@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GqlModule } from '../gql/gql.module';
-import { AppResolver } from './app.resolver';
-import { AppService } from './app.service';
+import { AuthResolver } from './auth.resolver';
+import { AuthService } from './auth.service';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { ConfigService } from '@nestjs/config';
 import { ExchangeRegistry } from '@boundless/utils';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    GqlModule,
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
@@ -37,6 +34,6 @@ import { ExchangeRegistry } from '@boundless/utils';
       },
     }),
   ],
-  providers: [AppService, AppResolver],
+  providers: [AuthResolver, AuthService],
 })
-export class AppModule {}
+export class AuthModule {}
