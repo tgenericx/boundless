@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { Prisma, User } from '@boundless/types/prisma';
 import * as argon2 from 'argon2';
 import { AuthPayload } from '@boundless/types/graphql';
+import { UsersService } from '../users/users.service';
 import { TokenService } from '../tokens/token.service';
 import { RefreshTokenService } from '../tokens/refresh-token.service';
 
