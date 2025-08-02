@@ -6,19 +6,11 @@ import { TokensModule } from '../tokens/tokens.module';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ConfigService } from '@nestjs/config';
 import { ExchangeRegistry } from '@boundless/utils';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     UsersModule,
     TokensModule,
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET', 'super-secret-key'),
-        signOptions: { expiresIn: '1d' },
-      }),
-    }),
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {

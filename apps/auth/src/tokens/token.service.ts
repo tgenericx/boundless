@@ -1,23 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@boundless/types/prisma';
 
 @Injectable()
 export class TokenService {
+  private readonly logger = new Logger(TokenService.name);
+
   constructor(private readonly jwt: JwtService) {}
 
   generateAccessToken(user: Pick<User, 'id' | 'roles'>): string {
-    return this.jwt.sign({
-      sub: user.id,
-      roles: user.roles,
-    });
+    try {
+      return this.jwt.sign({
+        sub: user.id,
+        roles: user.roles,
+      });
+    } catch (error) {
+      this.logger.error('Failed to generate access token', error);
+      throw new InternalServerErrorException('Failed to generate access token');
+    }
   }
 
   verify(token: string): any {
-    return this.jwt.verify(token, { algorithms: ['RS256'] });
+    try {
+      return this.jwt.verify(token);
+    } catch (error) {
+      this.logger.error('Token verification failed', error);
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
 
   decode(token: string): any {
-    return this.jwt.decode(token);
+    try {
+      return this.jwt.decode(token);
+    } catch (error) {
+      this.logger.error('Token decoding failed', error);
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 }
