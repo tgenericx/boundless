@@ -15,12 +15,20 @@ import { findMonorepoRoot } from '@boundless/utils';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
         const root = findMonorepoRoot(process.cwd());
-        const privateKey =
-          fs.readFileSync(path.join(root, 'secrets/private.pem'), 'utf8') ||
-          config.get<string>('JWT_PRIVATE_KEY');
-        const publicKey =
-          fs.readFileSync(path.join(root, 'secrets/public.pem'), 'utf8') ||
-          config.get<string>('JWT_PUBLIC_KEY');
+        let privateKey: string;
+        let publicKey: string;
+
+        try {
+          privateKey = fs.readFileSync(path.join(root, 'secrets/private.pem'), 'utf8');
+        } catch {
+          privateKey = config.get<string>('JWT_PRIVATE_KEY');
+        }
+
+        try {
+          publicKey = fs.readFileSync(path.join(root, 'secrets/public.pem'), 'utf8');
+        } catch {
+          publicKey = config.get<string>('JWT_PUBLIC_KEY');
+        }
 
         return {
           privateKey,
