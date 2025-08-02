@@ -10,27 +10,27 @@ import { findMonorepoRoot } from '@boundless/utils';
 
 @Module({
   imports: [
-    ConfigModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: async () => {
+      useFactory: async (config: ConfigService) => {
         const root = findMonorepoRoot(process.cwd());
-        console.log('process dir:', root);
-        const privateKey = fs.readFileSync(
-          path.join(root, 'secrets/private.pem'),
-          'utf8',
-        );
-        const publicKey = fs.readFileSync(
-          path.join(root, 'secrets/public.pem'),
-          'utf8',
-        );
+        const privateKey =
+          fs.readFileSync(path.join(root, 'secrets/private.pem'), 'utf8') ||
+          config.get<string>('JWT_PRIVATE_KEY');
+        const publicKey =
+          fs.readFileSync(path.join(root, 'secrets/public.pem'), 'utf8') ||
+          config.get<string>('JWT_PUBLIC_KEY');
 
         return {
           privateKey,
           publicKey,
           signOptions: {
             algorithm: 'RS256',
-            expiresIn: '15m',
+            expiresIn: config.get<string>('ACCESS_TOKEN_EXPIRES_IN', '15m'),
+          },
+          verifyOptions: {
+            algorithms: ['RS256'],
           },
         };
       },

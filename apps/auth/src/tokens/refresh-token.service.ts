@@ -1,25 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import * as argon2 from 'argon2';
 import { PrismaService } from '@boundless/types/prisma';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RefreshTokenService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(RefreshTokenService.name);
+  private readonly refreshTokenExpiresIn: number;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {
+    this.refreshTokenExpiresIn =
+      this.config.get<number>('REFRESH_TOKEN_EXPIRES_IN_DAYS', 7) *
+      24 *
+      60 *
+      60 *
+      1000;
+  }
 
   async generateRefreshToken(userId: number): Promise<string> {
     const rawToken = randomUUID();
     const hashedToken = await argon2.hash(rawToken);
+    const expiresAt = new Date(Date.now() + this.refreshTokenExpiresIn);
 
-    await this.prisma.refreshToken.create({
-      data: {
-        userId,
-        token: hashedToken,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      },
-    });
+    try {
+      await this.prisma.refreshToken.create({
+        data: {
+          userId,
+          token: hashedToken,
+          expiresAt,
+        },
+      });
 
-    return rawToken;
+      await this.cleanupExpiredTokens(userId);
+      return rawToken;
+    } catch (error) {
+      this.logger.error(
+        `Failed to generate refresh token for user ${userId}`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Failed to generate refresh token',
+      );
+    }
   }
 
   async rotateToken(rawToken: string, userId: number): Promise<string> {
@@ -28,31 +60,65 @@ export class RefreshTokenService {
   }
 
   async revokeToken(rawToken: string): Promise<void> {
-    const tokens = await this.prisma.refreshToken.findMany();
-
-    for (const token of tokens) {
-      const match = await argon2.verify(token.token, rawToken);
-      if (match) {
-        await this.prisma.refreshToken.delete({ where: { id: token.id } });
-        return;
+    try {
+      const token = await this.findToken(rawToken);
+      if (!token) {
+        throw new NotFoundException('Refresh token not found');
       }
+      await this.prisma.refreshToken.delete({ where: { id: token.id } });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error('Failed to revoke token', error);
+      throw new InternalServerErrorException('Failed to revoke token');
     }
-
-    throw new Error('Refresh token not found or already used');
   }
 
   async isValid(
     rawToken: string,
   ): Promise<{ valid: boolean; userId?: number }> {
-    const tokens = await this.prisma.refreshToken.findMany();
+    try {
+      const token = await this.findToken(rawToken);
+      if (!token) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+      return { valid: true, userId: token.userId };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return { valid: false };
+      }
+      this.logger.error('Token validation failed', error);
+      throw new InternalServerErrorException('Token validation failed');
+    }
+  }
+
+  private async findToken(rawToken: string) {
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: { expiresAt: { gt: new Date() } },
+    });
 
     for (const token of tokens) {
-      const match = await argon2.verify(token.token, rawToken);
-      if (match && token.expiresAt > new Date()) {
-        return { valid: true, userId: token.userId };
+      if (await argon2.verify(token.token, rawToken)) {
+        return token;
       }
     }
+    return null;
+  }
 
-    return { valid: false };
+  private async cleanupExpiredTokens(userId: number): Promise<void> {
+    try {
+      await this.prisma.refreshToken.deleteMany({
+        where: {
+          userId,
+          expiresAt: { lt: new Date() },
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to cleanup expired tokens for user ${userId}`,
+        error,
+      );
+    }
   }
 }
