@@ -26,7 +26,7 @@ export const AuthRoutes = {
     description: 'Emitted after successful user registration',
     tags: ['registration', 'user'],
   }),
-  userLoggedIn: defineRoute(exchange.event)('user.logged_in', {
+  userLoggedIn: defineRoute(exchange.event)('user.loggedIn', {
     description: 'Emitted after successful authentication',
     tags: ['authentication'],
   }),
@@ -34,8 +34,12 @@ export const AuthRoutes = {
     description: 'Emitted when new tokens are generated',
     tags: ['authentication', 'tokens'],
   }),
-  userLoggedOut: defineRoute(exchange.event)('user.logged_out', {
+  userLoggedOut: defineRoute(exchange.event)('user.loggedOut', {
     description: 'Emitted after successful session termination',
     tags: ['authentication', 'session'],
+  }),
+  getUserById: defineRoute(exchange.command)('user.getById', {
+    description: 'Fetch user details by userId',
+    tags: ['user', 'details'],
   }),
 };
