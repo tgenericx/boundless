@@ -18,8 +18,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         path.join(root, 'secrets/public.pem'),
         'utf8',
       );
-    } catch {
+    } catch (error) {
+      console.warn('Failed to read public key file, falling back to config:', error.message);
       secretOrKey = config.get<string>('JWT_PUBLIC_KEY', '');
+      if (!secretOrKey) {
+        throw new Error('No JWT public key available from file or config');
+      }
     }
 
     super({
