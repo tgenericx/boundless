@@ -129,4 +129,19 @@ export class AuthService {
       throw new InternalServerErrorException('Logout failed');
     }
   }
+
+  async getUserById(userId: User['id']): Promise<User> {
+    try {
+      const user = await this.usersService.findUniqueUser({ id: userId });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error('Failed to retrieve user by ID', error);
+      throw new InternalServerErrorException('Failed to retrieve user');
+    }
+  }
 }

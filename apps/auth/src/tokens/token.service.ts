@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@boundless/types/prisma';
+import {
+  IAccessTokenPayload,
+  VerifiedToken,
+} from '@boundless/types/interfaces';
 
 @Injectable()
 export class TokenService {
@@ -15,17 +19,18 @@ export class TokenService {
 
   generateAccessToken(user: Pick<User, 'id' | 'roles'>): string {
     try {
-      return this.jwt.sign({
+      const payload: IAccessTokenPayload = {
         sub: user.id,
         roles: user.roles,
-      });
+      };
+      return this.jwt.sign(payload);
     } catch (error) {
       this.logger.error('Failed to generate access token', error);
       throw new InternalServerErrorException('Failed to generate access token');
     }
   }
 
-  verify(token: string): any {
+  verify<T = IAccessTokenPayload>(token: string): VerifiedToken<T> {
     try {
       return this.jwt.verify(token);
     } catch (error) {
@@ -34,7 +39,7 @@ export class TokenService {
     }
   }
 
-  decode(token: string): any {
+  decode<T = IAccessTokenPayload>(token: string): VerifiedToken<T> | null {
     try {
       return this.jwt.decode(token);
     } catch (error) {
