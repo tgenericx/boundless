@@ -4,9 +4,15 @@ import { AuthService } from './auth.service';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ConfigService } from '@nestjs/config';
 import { ExchangeRegistry } from '@boundless/utils';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '../utils/strategies';
+import { GqlAuthGuard } from '../utils/guards';
 
 @Module({
   imports: [
+    PassportModule,
+    JwtModule.register({}),
     RabbitMQModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => {
@@ -34,6 +40,7 @@ import { ExchangeRegistry } from '@boundless/utils';
       },
     }),
   ],
-  providers: [AuthResolver, AuthService],
+  providers: [AuthResolver, AuthService, JwtStrategy, GqlAuthGuard],
+  exports: [GqlAuthGuard],
 })
 export class AuthModule {}
