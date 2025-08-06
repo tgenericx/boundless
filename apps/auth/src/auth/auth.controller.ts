@@ -8,6 +8,7 @@ import { IAuthPayload } from '@boundless/types/interfaces';
 const {
   registerUser,
   loginUser,
+  getUserById,
   userRegistered,
   refreshAuthToken,
   logoutUser,
@@ -69,6 +70,26 @@ export class AuthController {
     } catch (err) {
       this.logger.error('❌ Login failed', err);
       return formatRpcError(err, data);
+    }
+  }
+
+  @RabbitRPC({
+    exchange: getUserById.exchange,
+    routingKey: getUserById.routingKey,
+    queue: getUserById.queue,
+    queueOptions: { durable: true },
+  })
+  async getUserById(data: { userId: number }): Promise<AmqpResponse<User>> {
+    this.logger.log(`📨 Received RPC: getUserById for userId: ${data.userId}`);
+
+    try {
+      const user = await this.authService.getUserById(data.userId);
+
+      this.logger.log(`📤 Returning user data for userId: ${data.userId}`);
+      return { success: true, data: user };
+    } catch (error) {
+      this.logger.error('❌ Error retrieving user by ID', error);
+      return formatRpcError(error, data);
     }
   }
 
