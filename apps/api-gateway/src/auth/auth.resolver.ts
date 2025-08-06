@@ -6,7 +6,10 @@ import {
   LoginInput,
 } from '@boundless/types/graphql';
 import { AuthService } from './auth.service';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
+import { AuthenticatedUser } from '@boundless/types/interfaces';
+import { GqlAuthGuard } from '../utils/guards';
+import { CurrentUser } from '../utils/decorators';
 
 @Resolver()
 export class AuthResolver {
@@ -31,5 +34,12 @@ export class AuthResolver {
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
     this.logger.log('📤 Sending login RPC...');
     return this.authService.login(input);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => User)
+  async me(@CurrentUser() user: AuthenticatedUser): Promise<User> {
+    this.logger.log(`🔑 Fetching user with ID: ${user.userId}`);
+    return this.authService.getUserById(user.userId);
   }
 }

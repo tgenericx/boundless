@@ -13,7 +13,7 @@ import {
   RouteRegistry,
 } from '@boundless/utils';
 
-const { registerUser, loginUser } = RouteRegistry.auth;
+const { registerUser, loginUser, getUserById } = RouteRegistry.auth;
 
 @Injectable()
 export class AuthService {
@@ -44,6 +44,21 @@ export class AuthService {
 
     if (!isAmqpSuccess(response)) {
       this.logger.error('❌ login RPC failed:', response.error);
+    }
+
+    return GraphQLResponseHelper.fromAmqpResponse(response);
+  }
+
+  async getUserById(userId: number): Promise<User> {
+    const response = await this.amqp.request<AmqpResponse<User>>({
+      exchange: getUserById.exchange,
+      routingKey: getUserById.routingKey,
+      payload: { userId },
+    });
+
+    if (!isAmqpSuccess(response)) {
+      this.logger.error('❌ getUserById RPC failed:', response.error);
+      throw new Error('Failed to retrieve user');
     }
 
     return GraphQLResponseHelper.fromAmqpResponse(response);
