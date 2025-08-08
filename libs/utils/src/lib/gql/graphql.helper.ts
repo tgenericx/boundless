@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { HttpStatus } from '@nestjs/common';
 import { AmqpError, AmqpResponse, isAmqpSuccess } from '../amqp/amqp.types';
+import { reviveDatesIterative } from './revive-date';
 
 export class GraphQLResponseHelper {
   private static httpStatusToCode(status: HttpStatus): string {
@@ -8,7 +9,10 @@ export class GraphQLResponseHelper {
   }
 
   static async fromAmqpResponse<T>(response: AmqpResponse<T>): Promise<T> {
-    if (isAmqpSuccess(response)) return await response.data;
+    if (isAmqpSuccess(response)) {
+      const revived = reviveDatesIterative(await response.data);
+      return revived;
+    }
     throw this.fromAmqpError(response.error);
   }
 
