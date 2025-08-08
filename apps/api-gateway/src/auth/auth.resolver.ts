@@ -10,7 +10,7 @@ import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedUser } from '@boundless/types/interfaces';
 import { GqlAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators';
-import { GraphQLResponseHelper } from '@boundless/utils';
+import { withDatesRevived } from '@boundless/utils';
 
 @Resolver()
 export class AuthResolver {
@@ -41,7 +41,8 @@ export class AuthResolver {
   @Query(() => User)
   async me(@CurrentUser() user: AuthenticatedUser): Promise<User> {
     this.logger.log(`🔑 Fetching user with ID: ${user.userId}`);
-    const response = await this.authService.getUserById(user.userId);
-    return await GraphQLResponseHelper.fromAmqpResponse(response);
+    return await withDatesRevived(
+      await this.authService.getUserById(user.userId),
+    );
   }
 }
