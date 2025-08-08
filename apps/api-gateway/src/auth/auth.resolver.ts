@@ -42,6 +42,6 @@ export class AuthResolver {
   async me(@CurrentUser() user: AuthenticatedUser): Promise<User> {
     this.logger.log(`🔑 Fetching user with ID: ${user.userId}`);
     const response = await this.authService.getUserById(user.userId);
-    return GraphQLResponseHelper.fromAmqpResponse(response);
+    return await GraphQLResponseHelper.fromAmqpResponse(response);
   }
 }
