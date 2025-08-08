@@ -1,6 +1,6 @@
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
-export function reviveDatesIterative<T>(input: T): T {
+export function reviveDateInData<T>(input: T): T {
   if (input === null || input === undefined) return input;
 
   if (typeof input === 'string' && ISO_DATE_RE.test(input)) {
