@@ -1,11 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
 
-// MARK: - Transport Core Types
-export interface TransportResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: TransportError;
-}
+export type TransportResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: TransportError };
 
 export interface TransportError {
   type?: string;
@@ -28,7 +25,6 @@ export type AmqpResponse<T> = TransportResponse<T>;
  */
 export type AmqpError = TransportError;
 
-// Utility functions with deprecation notices
 export function isTransportSuccess<T>(
   response: TransportResponse<T>,
 ): response is { success: true; data: T } {
@@ -37,3 +33,12 @@ export function isTransportSuccess<T>(
 
 /** @deprecated Use isTransportSuccess */
 export const isAmqpSuccess = isTransportSuccess;
+
+export function isTransportError<T>(
+  response: TransportResponse<T>,
+): response is { success: false; error: TransportError } {
+  return response.success === false;
+}
+
+/** @deprecated Use isTransportError */
+export const isAmqpError = isTransportError;

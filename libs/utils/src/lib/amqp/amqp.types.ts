@@ -1,1 +1,6 @@
-export { AmqpResponse, AmqpError, isAmqpSuccess } from '../../types';
+export {
+  AmqpResponse,
+  AmqpError,
+  isAmqpSuccess,
+  isAmqpError,
+} from '../../types';
