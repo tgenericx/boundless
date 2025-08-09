@@ -16,4 +16,4 @@ export interface RpcExceptionPayload extends RpcErrorPayload {
 /**
  * @deprecated Use RpcExceptionPayload instead
  */
-export type ErrorPayload = RpcErrorPayload;
+export type ErrorPayload = RpcExceptionPayload;
