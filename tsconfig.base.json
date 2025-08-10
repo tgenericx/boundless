@@ -16,7 +16,6 @@
     "baseUrl": ".",
     "paths": {
       "@boundless/utils": ["libs/utils/src/index.ts"],
-      "@boundless/logging": ["libs/logging/src/index.ts"],
       "@boundless/types/graphql": ["libs/types/src/graphql.ts"],
       "@boundless/types/interfaces": ["libs/types/src/interfaces.ts"],
       "@boundless/types/prisma": ["libs/types/src/prisma.ts"]
