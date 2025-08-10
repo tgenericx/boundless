@@ -9,8 +9,8 @@ const schemaPath = resolve(__dirname, '../schema.prisma');
 const originalSchema = readFileSync(schemaPath, 'utf8');
 
 const modifiedSchema = originalSchema.replace(
-  /provider\s*=\s*["']node .*?["']/,
-  `provider = "node ${generatorPath}"`,
+  /(generator[\s\S]*?\{[\s\S]*?provider\s*=\s*)["']node .*?["']/i,
+  `$1"node ${generatorPath}"`,
 );
 
 writeFileSync(schemaPath, modifiedSchema);
