@@ -1,5 +1,5 @@
 import { HttpException } from '@nestjs/common';
-import { AmqpResponse } from '../amqp.types';
+import { TransportResponse } from '../../../types';
 
 type ExceptionResponse = {
   message?: string | string[];
@@ -9,7 +9,7 @@ type ExceptionResponse = {
 
 export function formatNestJsError(
   error: unknown,
-): AmqpResponse<never> | undefined {
+): TransportResponse<never> | undefined {
   if (!(error instanceof HttpException)) return;
 
   const response = error.getResponse();

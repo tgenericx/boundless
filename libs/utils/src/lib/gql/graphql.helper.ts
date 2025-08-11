@@ -1,19 +1,23 @@
 import { GraphQLError } from 'graphql';
 import { HttpStatus } from '@nestjs/common';
-import { AmqpError, AmqpResponse, isAmqpSuccess } from '../amqp/amqp.types';
 import { reviveDateInData } from './revive-date';
+import {
+  isTransportSuccess,
+  TransportError,
+  TransportResponse,
+} from '../../types';
 
 export class GraphQLResponseHelper {
   private static httpStatusToCode(status: HttpStatus): string {
     return HttpStatus[status] ?? 'UNKNOWN_ERROR';
   }
 
-  static async fromAmqpResponse<T>(response: AmqpResponse<T>): Promise<T> {
-    if (isAmqpSuccess(response)) return await response.data;
+  static async fromAmqpResponse<T>(response: TransportResponse<T>): Promise<T> {
+    if (isTransportSuccess(response)) return await response.data;
     throw this.fromAmqpError(response.error);
   }
 
-  static fromAmqpError(error: AmqpError): GraphQLError {
+  static fromAmqpError(error: TransportError): GraphQLError {
     const extensions: Record<string, unknown> = {
       code: this.httpStatusToCode(
         error.httpStatus ?? HttpStatus.INTERNAL_SERVER_ERROR,
@@ -33,7 +37,7 @@ export class GraphQLResponseHelper {
 }
 
 export async function withDatesRevived<T>(
-  response: AmqpResponse<T>,
+  response: TransportResponse<T>,
 ): Promise<T> {
   return GraphQLResponseHelper.fromAmqpResponse(response).then(
     reviveDateInData,
