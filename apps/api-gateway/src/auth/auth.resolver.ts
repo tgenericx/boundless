@@ -28,13 +28,13 @@ export class AuthResolver {
     @Args('createUserInput') input: UserCreateInput,
   ): Promise<User> {
     this.logger.log('📤 Sending createUser RPC...');
-    return this.authService.createUser(input);
+    return await withDatesRevived(await this.authService.createUser(input));
   }
 
   @Mutation(() => AuthPayload)
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
     this.logger.log('📤 Sending login RPC...');
-    return this.authService.login(input);
+    return await withDatesRevived(await this.authService.login(input));
   }
 
   @UseGuards(GqlAuthGuard)
