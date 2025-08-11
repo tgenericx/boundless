@@ -1,11 +1,11 @@
 import { RpcException } from '@nestjs/microservices';
-import { ErrorPayload } from '../interfaces/error-payload.interface';
 import { HttpStatus } from '@nestjs/common';
+import { RpcExceptionPayload } from '../../types';
 
-export function extractRpcError(error: unknown): ErrorPayload {
+export function extractRpcError(error: unknown): RpcExceptionPayload {
   //  Proper RpcException
   if (error instanceof RpcException) {
-    const payload = error.getError() as ErrorPayload;
+    const payload = error.getError() as RpcExceptionPayload;
     if (payload?.httpCode && payload?.message) return payload;
   }
 
@@ -16,7 +16,7 @@ export function extractRpcError(error: unknown): ErrorPayload {
     'httpCode' in error &&
     'message' in error
   ) {
-    return error as ErrorPayload;
+    return error as RpcExceptionPayload;
   }
 
   return {

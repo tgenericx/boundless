@@ -12,8 +12,3 @@ export interface RpcExceptionPayload extends RpcErrorPayload {
     statusCode?: HttpStatus;
   };
 }
-
-/**
- * @deprecated Use RpcExceptionPayload instead
- */
-export type ErrorPayload = RpcExceptionPayload;
