@@ -28,21 +28,19 @@ export class AuthResolver {
     @Args('createUserInput') input: UserCreateInput,
   ): Promise<User> {
     this.logger.log('📤 Sending createUser RPC...');
-    return await withDatesRevived(await this.authService.createUser(input));
+    return withDatesRevived(await this.authService.createUser(input));
   }
 
   @Mutation(() => AuthPayload)
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
     this.logger.log('📤 Sending login RPC...');
-    return await withDatesRevived(await this.authService.login(input));
+    return withDatesRevived(await this.authService.login(input));
   }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => User)
   async me(@CurrentUser() user: AuthenticatedUser): Promise<User> {
     this.logger.log(`🔑 Fetching user with ID: ${user.userId}`);
-    return await withDatesRevived(
-      await this.authService.getUserById(user.userId),
-    );
+    return withDatesRevived(await this.authService.getUserById(user.userId));
   }
 }
