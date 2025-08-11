@@ -6,12 +6,12 @@ import {
   PrismaClientValidationError,
 } from '@prisma/client/runtime/library';
 import { HttpStatus } from '@nestjs/common';
-import { AmqpResponse } from '../amqp.types';
+import { TransportResponse } from '../../../types';
 
 export function formatPrismaError<T = unknown>(
   error: unknown,
   data: T,
-): AmqpResponse<never> | undefined {
+): TransportResponse<never> | undefined {
   if (error instanceof PrismaClientKnownRequestError) {
     const meta = (error.meta as { target?: string[] }) || {};
     if (error.code === 'P2002') {

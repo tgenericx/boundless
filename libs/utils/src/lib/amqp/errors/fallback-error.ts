@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
-import { AmqpResponse } from '../amqp.types';
+import { TransportResponse } from '../../../types';
 
-export function formatFallbackError(error: unknown): AmqpResponse<never> {
+export function formatFallbackError(error: unknown): TransportResponse<never> {
   return {
     success: false,
     error: {
