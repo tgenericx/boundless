@@ -12,12 +12,14 @@ export class GraphQLResponseHelper {
     return HttpStatus[status] ?? 'UNKNOWN_ERROR';
   }
 
-  static async fromAmqpResponse<T>(response: TransportResponse<T>): Promise<T> {
-    if (isTransportSuccess(response)) return await response.data;
-    throw this.fromAmqpError(response.error);
+  static async fromTransportResponse<T>(
+    response: TransportResponse<T>,
+  ): Promise<T> {
+    if (isTransportSuccess(response)) return response.data;
+    throw this.fromTransportError(response.error);
   }
 
-  static fromAmqpError(error: TransportError): GraphQLError {
+  static fromTransportError(error: TransportError): GraphQLError {
     const extensions: Record<string, unknown> = {
       code: this.httpStatusToCode(
         error.httpStatus ?? HttpStatus.INTERNAL_SERVER_ERROR,
@@ -39,7 +41,7 @@ export class GraphQLResponseHelper {
 export async function withDatesRevived<T>(
   response: TransportResponse<T>,
 ): Promise<T> {
-  return GraphQLResponseHelper.fromAmqpResponse(response).then(
+  return GraphQLResponseHelper.fromTransportResponse(response).then(
     reviveDateInData,
   );
 }
