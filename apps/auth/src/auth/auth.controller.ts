@@ -2,7 +2,11 @@ import { Controller, Logger } from '@nestjs/common';
 import { RabbitRPC, AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { AuthService } from '../auth/auth.service';
 import { Prisma, User } from '@boundless/types/prisma';
-import { AmqpResponse, formatRpcError, RouteRegistry } from '@boundless/utils';
+import {
+  TransportResponse,
+  formatRpcError,
+  RouteRegistry,
+} from '@boundless/utils';
 import { IAuthPayload } from '@boundless/types/interfaces';
 
 const {
@@ -31,7 +35,7 @@ export class AuthController {
   })
   async registerUser(
     data: Prisma.UserCreateInput,
-  ): Promise<AmqpResponse<Omit<User, 'password'>>> {
+  ): Promise<TransportResponse<Omit<User, 'password'>>> {
     this.logger.log('📨 Received RPC: registerUser', data);
 
     try {
@@ -61,7 +65,7 @@ export class AuthController {
   async loginUser(data: {
     email: string;
     password: string;
-  }): Promise<AmqpResponse<IAuthPayload>> {
+  }): Promise<TransportResponse<IAuthPayload>> {
     this.logger.log(`🔐 Received login request: ${data.email}`);
 
     try {
@@ -79,7 +83,9 @@ export class AuthController {
     queue: getUserById.queue,
     queueOptions: { durable: true },
   })
-  async getUserById(data: { userId: number }): Promise<AmqpResponse<User>> {
+  async getUserById(data: {
+    userId: number;
+  }): Promise<TransportResponse<User>> {
     this.logger.log(`📨 Received RPC: getUserById for userId: ${data.userId}`);
 
     try {
@@ -101,7 +107,7 @@ export class AuthController {
   })
   async refreshToken(data: {
     token: string;
-  }): Promise<AmqpResponse<IAuthPayload>> {
+  }): Promise<TransportResponse<IAuthPayload>> {
     this.logger.log(`🔄 Received refresh token: ${data.token}`);
 
     try {
@@ -121,7 +127,7 @@ export class AuthController {
   })
   async logoutUser(data: {
     refreshToken: string;
-  }): Promise<AmqpResponse<boolean>> {
+  }): Promise<TransportResponse<boolean>> {
     this.logger.log(`🚪 Received logout request`);
     try {
       await this.authService.logout(data.refreshToken);
