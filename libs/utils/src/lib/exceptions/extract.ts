@@ -9,14 +9,19 @@ export function extractRpcError(error: unknown): RpcExceptionPayload {
     if (payload?.httpCode && payload?.message) return payload;
   }
 
-  //  Raw object passed over wire
   if (
     typeof error === 'object' &&
     error !== null &&
     'httpCode' in error &&
     'message' in error
   ) {
-    return error as RpcExceptionPayload;
+    const candidate = error as Partial<RpcExceptionPayload>;
+    if (
+      typeof candidate.message === 'string' &&
+      typeof candidate.httpCode === 'number'
+    ) {
+      return candidate as RpcExceptionPayload;
+    }
   }
 
   return {
