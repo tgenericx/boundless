@@ -18,6 +18,16 @@ export class UsersService {
   }
 
   async findAllUsers(): Promise<Omit<User, 'password'>[]> {
-    return await this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        roles: true,
+        createdAt: true,
+        updatedAt: true,
+        // explicitly exclude password by not selecting it
+      },
+    });
   }
 }
