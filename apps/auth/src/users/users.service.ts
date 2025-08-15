@@ -22,11 +22,9 @@ export class UsersService {
       select: {
         id: true,
         email: true,
-        name: true,
         roles: true,
         createdAt: true,
         updatedAt: true,
-        // explicitly exclude password by not selecting it
       },
     });
   }

@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { AuthenticatedUser } from '@boundless/types/interfaces';
-import { UserRole } from '@boundless/types/prisma';
+import { UserRole } from '@boundless/types/graphql';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,7 +20,9 @@ export class RolesGuard implements CanActivate {
     }
 
     const ctx = GqlExecutionContext.create(context);
-    const user: AuthenticatedUser = ctx.getContext().req.user;
+    const gqlCtx = ctx.getContext?.();
+    const req = gqlCtx?.req;
+    const user: AuthenticatedUser | undefined = req?.user;
 
     if (!user?.roles || user.roles.length === 0) {
       return false;
