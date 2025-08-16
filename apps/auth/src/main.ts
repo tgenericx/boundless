@@ -2,7 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ConsoleLogger, Logger } from '@nestjs/common';
-import { ExceptionFilter } from '@boundless/utils';
+import {
+  TransportExceptionFilter,
+  TransportResponseInterceptor,
+} from '@boundless/utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,7 +21,8 @@ async function bootstrap() {
   const globalPrefix = 'api';
 
   app.setGlobalPrefix(globalPrefix);
-  app.useGlobalFilters(new ExceptionFilter());
+  app.useGlobalInterceptors(new TransportResponseInterceptor());
+  app.useGlobalFilters(new TransportExceptionFilter());
   app.enableShutdownHooks();
 
   await app.listen(PORT);
