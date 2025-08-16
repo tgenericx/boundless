@@ -13,7 +13,7 @@ export function throwRpcException(data: RpcExceptionPayload): never {
   throw new RpcException(data);
 }
 
-@Catch(RpcException)
+@Catch()
 export class TransportExceptionFilter
   implements RpcExceptionFilter<RpcException>
 {
