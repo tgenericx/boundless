@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransportResponse } from '../../types';
+import { isRabbitContext } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class TransportResponseInterceptor<T>
@@ -16,6 +17,9 @@ export class TransportResponseInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<TransportResponse<T>> {
+    if (!isRabbitContext(context)) {
+      return next.handle();
+    }
     return next.handle().pipe(
       map((data) => {
         if (data && typeof data === 'object' && 'success' in data) {
