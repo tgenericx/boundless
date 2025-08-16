@@ -5,7 +5,7 @@ import { formatFallbackError } from './errors/fallback-error';
 
 export function formatRpcError<T = unknown>(
   error: unknown,
-  data: T,
+  data?: T,
 ): TransportResponse<never> {
   return (
     formatNestJsError(error) ??
