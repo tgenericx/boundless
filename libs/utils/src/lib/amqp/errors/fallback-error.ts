@@ -16,7 +16,7 @@ export function formatFallbackError(error: unknown): TransportResponse<never> {
       meta:
         error instanceof Error
           ? { stack: error.stack }
-          : { original: safeStringify(error) },
+          : { original: safeStringify(error, 2048) },
     },
   };
 }
