@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransportResponse } from '../../types';
 import { isRabbitContext } from '@golevelup/nestjs-rabbitmq';
+import { isTransportResponse } from './transport-response.util';
 
 @Injectable()
 export class TransportResponseInterceptor<T>
@@ -22,7 +23,7 @@ export class TransportResponseInterceptor<T>
     }
     return next.handle().pipe(
       map((data) => {
-        if (data && typeof data === 'object' && 'success' in data) {
+        if (isTransportResponse(data)) {
           return data;
         }
 
