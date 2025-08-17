@@ -90,6 +90,7 @@ export function formatPrismaError<T = unknown>(
       error: {
         type: 'PrismaClientRustPanicError',
         message: error.message,
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
       },
     };
   }
