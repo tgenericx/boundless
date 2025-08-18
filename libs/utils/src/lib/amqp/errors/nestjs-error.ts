@@ -14,7 +14,7 @@ export function formatNestJsError(
 
   const response = error.getResponse();
   let message: string;
-  let meta: Record<string, unknown> | undefined;
+  let nestMeta: Record<string, unknown> | undefined;
 
   if (typeof response === 'string') {
     message = response;
@@ -27,9 +27,9 @@ export function formatNestJsError(
           ? res.message.join(', ')
           : res.error || error.message;
 
-    meta = { ...res };
-    delete meta.message;
-    delete meta.error;
+    nestMeta = { ...res };
+    delete nestMeta.message;
+    delete nestMeta.error;
   }
 
   return {
@@ -39,7 +39,7 @@ export function formatNestJsError(
       message,
       code: `HTTP_${error.getStatus()}`,
       httpStatus: error.getStatus(),
-      meta: Object.keys(meta || {}).length ? meta : undefined,
+      meta: nestMeta ? { nest: nestMeta } : undefined,
     },
   };
 }
