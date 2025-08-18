@@ -1,18 +1,35 @@
 import { HttpStatus } from '@nestjs/common';
 
+interface BaseTransportError {
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+interface HttpExceptionTransportError extends BaseTransportError {
+  type: 'HttpException';
+  code: string;
+  httpStatus: HttpStatus;
+}
+
+interface PrismaErrorTransportError extends BaseTransportError {
+  type: 'PrismaClientKnownRequestError';
+  code: string;
+  httpStatus: HttpStatus;
+}
+
+interface UnknownErrorTransportError extends BaseTransportError {
+  type: 'UnknownError';
+  httpStatus: HttpStatus;
+}
+
+export type TransportError =
+  | HttpExceptionTransportError
+  | PrismaErrorTransportError
+  | UnknownErrorTransportError;
+
 export type TransportResponse<T> =
   | { success: true; data: T }
   | { success: false; error: TransportError };
-
-export interface TransportError {
-  type?: string;
-  message: string;
-  code?: string;
-  httpStatus?: HttpStatus;
-  meta?: Record<string, unknown>;
-  target?: string[];
-  originalError?: unknown;
-}
 
 export function isTransportSuccess<T>(
   response: TransportResponse<T>,
