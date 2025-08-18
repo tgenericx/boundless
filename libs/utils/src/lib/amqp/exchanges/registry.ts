@@ -5,7 +5,7 @@ export const ExchangeRegistry = {
     command: defineExchange('auth', 'command'),
     event: defineExchange('auth', 'event'),
   },
-  post: {
+  user: {
     command: defineExchange('user', 'command'),
     event: defineExchange('user', 'event'),
   },
