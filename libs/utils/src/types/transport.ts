@@ -17,6 +17,13 @@ interface PrismaErrorTransportError extends BaseTransportError {
   httpStatus: HttpStatus;
 }
 
+interface BaseTransportError {
+  message: string;
+  meta?: Record<string, unknown>;
+  target?: string[];
+  originalError?: unknown;
+}
+
 interface UnknownErrorTransportError extends BaseTransportError {
   type: 'UnknownError';
   httpStatus: HttpStatus;
