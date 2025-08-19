@@ -39,12 +39,12 @@ export function formatPrismaError<T = unknown>(
           code: error.code,
           httpStatus: HttpStatus.CONFLICT,
           meta: {
-            ...error.meta,
+            target: targetFields,
             conflictingValues: Object.fromEntries(
               violations.map((v) => [v.field, v.value]),
             ),
+            ...error.meta,
           },
-          target: targetFields,
         },
       };
     }
@@ -105,4 +105,5 @@ export function formatPrismaError<T = unknown>(
       },
     };
   }
+  return undefined;
 }
