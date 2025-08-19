@@ -27,7 +27,6 @@ export class GraphQLResponseHelper {
       httpStatus: error.httpStatus,
       type: error.type,
       meta: error.meta,
-      target: error.target,
     };
 
     if (error.originalError && typeof error.originalError === 'object') {

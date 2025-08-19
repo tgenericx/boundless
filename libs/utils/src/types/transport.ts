@@ -2,36 +2,56 @@ import { HttpStatus } from '@nestjs/common';
 
 interface BaseTransportError {
   message: string;
+  code?: string;
+  httpStatus: HttpStatus;
   meta?: Record<string, unknown>;
+  originalError?: unknown;
 }
 
 interface HttpExceptionTransportError extends BaseTransportError {
   type: 'HttpException';
-  code: string;
-  httpStatus: HttpStatus;
 }
 
-interface PrismaErrorTransportError extends BaseTransportError {
+interface PrismaKnownRequestErrorTransportError extends BaseTransportError {
   type: 'PrismaClientKnownRequestError';
-  code: string;
-  httpStatus: HttpStatus;
 }
 
-interface BaseTransportError {
-  message: string;
-  meta?: Record<string, unknown>;
-  target?: string[];
-  originalError?: unknown;
+interface UniqueConstraintViolationError extends BaseTransportError {
+  type: 'UniqueConstraintViolation';
+  meta: {
+    target?: string[];
+    conflictingValues: Record<string, unknown>;
+  };
+}
+
+interface PrismaUnknownRequestErrorTransportError extends BaseTransportError {
+  type: 'PrismaClientUnknownRequestError';
+}
+
+interface PrismaInitializationErrorTransportError extends BaseTransportError {
+  type: 'PrismaClientInitializationError';
+}
+
+interface PrismaRustPanicErrorTransportError extends BaseTransportError {
+  type: 'PrismaClientRustPanicError';
+}
+
+interface PrismaValidationErrorTransportError extends BaseTransportError {
+  type: 'PrismaClientValidationError';
 }
 
 interface UnknownErrorTransportError extends BaseTransportError {
   type: 'UnknownError';
-  httpStatus: HttpStatus;
 }
 
 export type TransportError =
   | HttpExceptionTransportError
-  | PrismaErrorTransportError
+  | PrismaKnownRequestErrorTransportError
+  | UniqueConstraintViolationError
+  | PrismaUnknownRequestErrorTransportError
+  | PrismaInitializationErrorTransportError
+  | PrismaRustPanicErrorTransportError
+  | PrismaValidationErrorTransportError
   | UnknownErrorTransportError;
 
 export type TransportResponse<T> =

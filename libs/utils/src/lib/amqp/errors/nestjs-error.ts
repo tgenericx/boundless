@@ -27,7 +27,12 @@ export function formatNestJsError(
           ? res.message.join(', ')
           : res.error || error.message;
 
-    nestMeta = { ...res };
+    nestMeta = Object.keys(res).reduce<Record<string, unknown>>((acc, key) => {
+      if (key !== 'message' && key !== 'error') {
+        acc[key] = res[key];
+      }
+      return acc;
+    }, {});
     delete nestMeta.message;
     delete nestMeta.error;
   }
