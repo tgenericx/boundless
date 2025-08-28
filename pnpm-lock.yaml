@@ -147,9 +147,6 @@ importers:
       prisma-docs-generator:
         specifier: ^0.8.0
         version: 0.8.0
-      prisma-markdown:
-        specifier: ^3.0.1
-        version: 3.0.1(@prisma/client@6.15.0(prisma@6.15.0(typescript@5.9.2))(typescript@5.9.2))(prisma@6.15.0(typescript@5.9.2))
       prisma-nestjs-graphql:
         specifier: ^21.2.0
         version: 21.2.0
@@ -4036,13 +4033,6 @@ packages:
   prisma-docs-generator@0.8.0:
     resolution: {integrity: sha512-w+lwFsslDtsCilWauQlKyEIPTtT4wXbG1sRnSb1NldEVF572DtcHTbcp54UGz7i1WaOuLK2M1YCp1UFRf62Nxw==}
     hasBin: true
-
-  prisma-markdown@3.0.1:
-    resolution: {integrity: sha512-2ZgEfz1wFfORYWY0Hg/xiHnhT5tY20ql5TNU3l79U9A3is2X6RLjU7KlBcP4+rg5Bl/i9fHEQqkn3qY0m0Fh5w==}
-    hasBin: true
-    peerDependencies:
-      '@prisma/client': '>= 6.0.0'
-      prisma: '>= 6.0.0'
 
   prisma-nestjs-graphql@21.2.0:
     resolution: {integrity: sha512-Mkb4brKW8NF3f7fq+H4ypdbbESxDnWdaszss2OIBxqutPV8N7DttdbKlmLnxo3Srk6fgW58nYQ4H5PJRKqKZxw==}
@@ -9402,12 +9392,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  prisma-markdown@3.0.1(@prisma/client@6.15.0(prisma@6.15.0(typescript@5.9.2))(typescript@5.9.2))(prisma@6.15.0(typescript@5.9.2)):
-    dependencies:
-      '@prisma/client': 6.15.0(prisma@6.15.0(typescript@5.9.2))(typescript@5.9.2)
-      '@prisma/generator-helper': 6.15.0
-      prisma: 6.15.0(typescript@5.9.2)
 
   prisma-nestjs-graphql@21.2.0:
     dependencies:
