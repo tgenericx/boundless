@@ -1,67 +1,25 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-### Build & Compiled Output ###
+# compiled output
 /dist
-/build
-/out-tsc
-/tmp
-/out-tsc
-/node-compile-cache
-**/dist/
-web-build/
-
-### Dependencies ###
 /node_modules
-**/node_modules/
-.yarn/
+/build
 
-### Logs ###
-/logs
+# Logs
+logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-/libpeerconnection.log
-testem.log
-npm-debug.log
-yarn-error.log
-testem.log
 
-### Runtime & Cache ###
-.temp
-.tmp
-/.nx
-.nx/cache
-.nx/workspace-data
-/connect.lock
-.expo/
-cache/
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pids
-*.pid
-*.seed
-*.pid.lock
-/.sass-cache
-/libpeerconnection.log
+# OS
+.DS_Store
 
-### Testing & Coverage ###
+# Tests
 /coverage
 /.nyc_output
-/test-output
-test-output
 
-### Environment Variables ###
-.env
-.env.*
-!.env.example
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-### IDEs & Editors ###
+# IDEs and editors
 /.idea
 .project
 .classpath
@@ -69,35 +27,37 @@ test-output
 *.launch
 .settings/
 *.sublime-workspace
-/typings
 
-### VSCode ###
+# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-### System Files ###
-.DS_Store
-Thumbs.db
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-### Nx Workspace ###
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
+# temp directory
+.temp
+.tmp
 
-### Expo ###
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-### Misc ###
-/connect.lock
-/coverage
-/libpeerconnection.log
-/typings
-**/migrations
-secrets/
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+*/generated
+*/@generated
+
+secrets
+/generated
+prisma/migrations

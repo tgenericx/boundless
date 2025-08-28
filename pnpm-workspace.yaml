@@ -7,4 +7,3 @@ onlyBuiltDependencies:
   - '@swc/core'
   - argon2
   - prisma
-  - unrs-resolver
