@@ -1,0 +1,299 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  // provider = "prisma-client"
+  // output   = "../src/@generated/prisma"
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator nestgraphql {
+  provider              = "node node_modules/prisma-nestjs-graphql"
+  output                = "../src/@generated/graphql"
+  reExport              = "All"
+  fields_Scalars_from   = "graphql-scalars"
+  fields_Scalars_input  = true
+  fields_Scalars_output = true
+}
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+  output   = "../src/@generated/docs"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id String @id @default(cuid())
+
+  /// @Unique()
+  /// @FieldType('Scalars.GraphQLEmailAddress')
+  email String @unique
+
+  /// @HideField()
+  /// @Validator.MinLength(8)
+  password String
+
+  /// User roles for RBAC
+  /// @Default ["USER"]
+  roles Role[] @default([USER])
+
+  /// All refresh tokens associated with this user
+  /// @Auth(roles: ["USER", "ADMIN"])
+  refreshTokens RefreshToken[]
+
+  /// Scheduled items created by the user
+  schedules ScheduleItem[]
+
+  /// Boards created by the user
+  boards Board[]
+
+  /// Posts authored by the user
+  posts Post[]
+
+  /// Users this user is following
+  /// @Relation(name: "Following")
+  following UserFollow[] @relation("Following")
+
+  /// Users following this user
+  /// @Relation(name: "Followers")
+  followers UserFollow[] @relation("Followers")
+
+  /// Boards this user is following
+  followedBoards BoardFollower[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+}
+
+model UserFollow {
+  id String @id @default(cuid())
+
+  /// The user who follows
+  followerId String
+  follower   User   @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  /// The user being followed
+  followingId String
+  following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  /// @Sensitive()
+  /// @Unique()
+  token String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  /// Token expiry
+  expiresAt DateTime
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Category {
+  id String @id @default(cuid())
+
+  /// @Validator.MinLength(3)
+  /// @Example "Health"
+  name String
+
+  /// Optional category description
+  description String?
+
+  /// Parent category (self-relation)
+  parentId String?
+  parent   Category? @relation("CategoryToParent", fields: [parentId], references: [id], onDelete: SetNull)
+
+  /// Child categories
+  children Category[] @relation("CategoryToParent")
+
+  schedules ScheduleItem[]
+  boards    BoardCategory[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, parentId])
+  @@index([parentId])
+}
+
+model Board {
+  id String @id @default(cuid())
+
+  /// @Validator.MinLength(3)
+  /// @Example "Weekly Planning"
+  name String
+
+  /// Optional board description
+  description String?
+
+  categories BoardCategory[]
+  followers  BoardFollower[]
+  schedules  ScheduleItem[]
+  posts      Post[]
+
+  userId    String
+  createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, userId])
+  @@index([userId])
+}
+
+model BoardCategory {
+  boardId    String
+  categoryId String
+
+  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([boardId, categoryId])
+  @@index([boardId])
+  @@index([categoryId])
+}
+
+model BoardFollower {
+  id String @id @default(cuid())
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  @@unique([boardId, userId])
+  @@index([boardId])
+  @@index([userId])
+}
+
+model ScheduleItem {
+  id String @id @default(cuid())
+
+  /// @Validator.MinLength(3)
+  /// @Example "Team Standup"
+  title String
+
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  userId    String
+  createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
+
+  post Post[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@index([boardId])
+  @@index([categoryId])
+  @@index([startTime])
+}
+
+model Post {
+  id String @id @default(cuid())
+
+  /// @Optional()
+  textContent String?
+
+  /// Related media assets
+  media Media[]
+
+  userId String
+  author User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
+
+  scheduleId String?
+  schedule   ScheduleItem? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([boardId])
+  @@index([createdAt])
+}
+
+model Media {
+  id String @id @default(cuid())
+
+  /// Cloudinary public ID or external provider key
+  /// @Unique()
+  publicId String @unique
+
+  secureUrl String
+  format    String
+  width     Int?
+  height    Int?
+  bytes     Int
+
+  /// @Validator.In(["image", "video", "audio"])
+  resourceType String
+
+  duration    Float?
+  playbackUrl String?
+  eager       Json?
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  @@index([resourceType])
+  @@index([postId])
+  @@index([createdAt])
+}
