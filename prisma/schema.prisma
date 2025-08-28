@@ -29,6 +29,11 @@ generator docs {
   output   = "../src/@generated/docs"
 }
 
+enum ResourceType {
+  IMAGE
+  VIDEO
+}
+
 enum Role {
   USER
   ADMIN
@@ -281,12 +286,6 @@ model Media {
   bytes     Int
 
   resourceType ResourceType
-
-  enum ResourceType {
-    IMAGE
-    VIDEO
-    AUDIO
-  }
 
   duration    Float?
   playbackUrl String?
