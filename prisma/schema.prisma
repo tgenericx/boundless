@@ -280,8 +280,13 @@ model Media {
   height    Int?
   bytes     Int
 
-  /// @Validator.In(["image", "video", "audio"])
-  resourceType String
+  resourceType ResourceType
+
+  enum ResourceType {
+    IMAGE
+    VIDEO
+    AUDIO
+  }
 
   duration    Float?
   playbackUrl String?
