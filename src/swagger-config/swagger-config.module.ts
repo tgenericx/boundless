@@ -5,7 +5,8 @@ import { INestApplication } from '@nestjs/common';
 @Module({})
 export class SwaggerConfigModule {
   static setup(app: INestApplication): void {
-    if (process.env.NODE_ENV === 'production') return;
+    const env = process.env.NODE_ENV?.toLowerCase();
+    if (env !== 'development' && env !== 'test') return;
 
     const config = new DocumentBuilder()
       .setTitle('QuickPost API')
