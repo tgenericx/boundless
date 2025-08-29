@@ -91,17 +91,17 @@ export class MediaController {
       throw new BadRequestException('No files uploaded');
     }
 
+    const invalidFiles = files.filter(
+      (file) => !this.SUPPORTED_MIME_TYPES.includes(file.mimetype),
+    );
+
+    if (invalidFiles.length > 0) {
+      throw new BadRequestException(
+        `Unsupported file types: ${invalidFiles.map((f) => f.mimetype).join(', ')}`,
+      );
+    }
     const results = await Promise.allSettled(
       files.map(async (file): Promise<CloudinaryUploadMapped> => {
-        const isSupported = this.SUPPORTED_MIME_TYPES.includes(file.mimetype);
-        if (!isSupported) {
-          return {
-            success: false,
-            filename: file.originalname,
-            error: `Unsupported file type: ${file.mimetype}`,
-          };
-        }
-
         const upload = await this.cloudinaryService.uploadFile(file);
         this.logger.log(upload);
 
