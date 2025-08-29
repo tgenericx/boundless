@@ -12,7 +12,13 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { CloudinaryUploadMapped } from './response.types';
-import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
 
@@ -64,6 +70,7 @@ export class MediaController {
     description: 'Files uploaded successfully',
     type: Object,
   })
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files', MAX_FILES))
