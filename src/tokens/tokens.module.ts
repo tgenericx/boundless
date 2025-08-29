@@ -6,11 +6,9 @@ import { RefreshTokenService } from './refresh-token.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import { findRoot } from 'src/utils/find-root';
-import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
-    PrismaModule,
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       inject: [ConfigService],

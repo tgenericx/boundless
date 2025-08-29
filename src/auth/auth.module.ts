@@ -6,7 +6,6 @@ import { JwtStrategy } from '../utils/strategies';
 import { GqlAuthGuard } from '../utils/guards';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from 'src/tokens/token.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { RefreshTokenService } from 'src/tokens/refresh-token.service';
 import { TokensModule } from 'src/tokens/tokens.module';
 
@@ -15,7 +14,6 @@ import { TokensModule } from 'src/tokens/tokens.module';
   providers: [
     AuthResolver,
     AuthService,
-    PrismaService,
     UsersService,
     TokenService,
     RefreshTokenService,
