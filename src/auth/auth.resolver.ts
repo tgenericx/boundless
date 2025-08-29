@@ -1,4 +1,5 @@
-import { Resolver, Mutation, Args, Query, Boolean } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { GraphQLBoolean } from 'graphql';
 import { AuthService } from './auth.service';
 import { Logger, UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../utils/guards';
@@ -39,7 +40,7 @@ export class AuthResolver {
     return await this.authService.getUserById(user.userId);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => GraphQLBoolean)
   async logout(@Args('refreshToken') refreshToken: string): Promise<boolean> {
     await this.authService.logout(refreshToken);
     return true;
