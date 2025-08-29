@@ -11,6 +11,7 @@ import { PostsModule } from './posts/posts.module';
 import { BoardFollowersModule } from './board-followers/board-followers.module';
 import { UserFollowsModule } from './user-follows/user-follows.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PrismaModule } from './prisma/prisma.module';
     BoardFollowersModule,
     UserFollowsModule,
     PrismaModule,
+    CloudinaryModule,
   ],
 })
 export class AppModule {}
