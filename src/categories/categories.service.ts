@@ -24,10 +24,11 @@ export class CategoriesService {
     try {
       return await this.prisma.category.update(args);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(`Category not found`);
-        }
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`Category not found`);
       }
       throw error;
     }
