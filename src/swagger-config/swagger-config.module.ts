@@ -24,8 +24,9 @@ export class SwaggerConfigModule {
         'JWT-auth',
       )
       .build();
-const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('api/docs', app, document, { useGlobalPrefix: true });
-    SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document, {
+      useGlobalPrefix: true,
+    });
   }
 }
