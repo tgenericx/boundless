@@ -10,7 +10,7 @@ import { UserFollowsService } from './user-follows.service';
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { UserFollowEventPayload } from 'src/types/graphql/user-follow-event-payload';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from 'src/utils/guards';
 
 @Resolver(() => UserFollow)
 export class UserFollowsResolver {
@@ -19,7 +19,7 @@ export class UserFollowsResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => UserFollow)
   async followUser(@Args() args: CreateOneUserFollowArgs) {
     const userFollow = await this.userFollowsService.follow(args);
@@ -29,7 +29,7 @@ export class UserFollowsResolver {
     return userFollow;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => UserFollow)
   async unfollowUser(@Args() args: DeleteOneUserFollowArgs) {
     const userFollow = await this.userFollowsService.unfollow(args);

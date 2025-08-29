@@ -11,7 +11,7 @@ import { BoardsService } from './boards.service';
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from '../utils/guards';
 
 @Resolver(() => Board)
 export class BoardsResolver {
@@ -20,7 +20,7 @@ export class BoardsResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
   async createBoard(@Args() args: CreateOneBoardArgs) {
     const board = await this.boardsService.create(args);
@@ -30,7 +30,7 @@ export class BoardsResolver {
     return board;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
   async updateBoard(@Args() args: UpdateOneBoardArgs) {
     const board = await this.boardsService.update(args);
@@ -40,7 +40,7 @@ export class BoardsResolver {
     return board;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
   async removeBoard(@Args() args: DeleteOneBoardArgs) {
     const board = await this.boardsService.remove(args);

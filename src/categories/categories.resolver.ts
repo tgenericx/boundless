@@ -11,7 +11,7 @@ import { CategoriesService } from './categories.service';
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { CategoryEventPayload } from 'src/types/graphql/category-event-payload';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from '../utils/guards';
 
 @Resolver(() => Category)
 export class CategoriesResolver {
@@ -20,7 +20,7 @@ export class CategoriesResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Category)
   async createCategory(@Args() args: CreateOneCategoryArgs) {
     const category = await this.categoriesService.create(args);
@@ -30,7 +30,7 @@ export class CategoriesResolver {
     return category;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Category)
   async updateCategory(@Args() args: UpdateOneCategoryArgs) {
     const category = await this.categoriesService.update(args);
@@ -40,7 +40,7 @@ export class CategoriesResolver {
     return category;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Category)
   async removeCategory(@Args() args: DeleteOneCategoryArgs) {
     const category = await this.categoriesService.remove(args);

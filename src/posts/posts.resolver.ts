@@ -11,7 +11,7 @@ import { PostsService } from './posts.service';
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { PostEventPayload } from 'src/types/graphql/post-event-payload';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from 'src/utils/guards';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -20,7 +20,7 @@ export class PostsResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
   async createPost(@Args() args: CreateOnePostArgs) {
     const post = await this.postsService.create(args);
@@ -30,7 +30,7 @@ export class PostsResolver {
     return post;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
   async updatePost(@Args() args: UpdateOnePostArgs) {
     const post = await this.postsService.update(args);
@@ -40,7 +40,7 @@ export class PostsResolver {
     return post;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
   async removePost(@Args() args: DeleteOnePostArgs) {
     const post = await this.postsService.remove(args);

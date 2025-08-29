@@ -2,7 +2,7 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { GraphQLBoolean } from 'graphql';
 import { AuthService } from './auth.service';
 import { Logger, UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../utils/guards';
+import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators';
 import { CreateOneUserArgs, User } from 'generated/graphql';
 import { AuthenticatedUser, AuthPayload, LoginInput } from 'src/types/graphql';
@@ -29,14 +29,15 @@ export class AuthResolver {
     return await this.authService.login(input.email, input.password);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => AuthPayload)
   async refresh(@Args('refreshToken') token: string): Promise<AuthPayload> {
     return await this.authService.refreshToken(token);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Query(() => User)
-  async me(@CurrentUser() user: AuthenticatedUser): Promise<User> {
+  async profile(@CurrentUser() user: AuthenticatedUser): Promise<User> {
     return await this.authService.getUserById(user.userId);
   }
 
