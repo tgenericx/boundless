@@ -3,13 +3,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TokenService } from './token.service';
 import { RefreshTokenService } from './refresh-token.service';
-import { PrismaService } from '../prisma.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import { findRoot } from 'src/utils/find-root';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -50,7 +51,7 @@ import { findRoot } from 'src/utils/find-root';
       },
     }),
   ],
-  providers: [TokenService, RefreshTokenService, PrismaService],
+  providers: [TokenService, RefreshTokenService],
   exports: [TokenService, RefreshTokenService, JwtModule],
 })
 export class TokensModule {}

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SchedulesResolver } from './schedules.resolver';
 import { SchedulesService } from './schedules.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  providers: [SchedulesResolver, SchedulesService, PrismaService],
+  imports: [PrismaModule],
+  providers: [SchedulesResolver, SchedulesService],
 })
 export class SchedulesModule {}
