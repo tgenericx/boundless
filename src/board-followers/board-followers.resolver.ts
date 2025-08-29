@@ -10,7 +10,7 @@ import { BoardFollowersService } from './board-followers.service';
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { BoardFollowerEventPayload } from 'src/types/graphql/board-follower-event-payload';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from '../utils/guards';
 
 @Resolver(() => BoardFollower)
 export class BoardFollowersResolver {
@@ -19,7 +19,7 @@ export class BoardFollowersResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => BoardFollower)
   async subscribeBoard(@Args() args: CreateOneBoardFollowerArgs) {
     const boardFollower = await this.boardFollowersService.subscribe(args);
@@ -29,7 +29,7 @@ export class BoardFollowersResolver {
     return boardFollower;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => BoardFollower)
   async unsubscribeBoard(@Args() args: DeleteOneBoardFollowerArgs) {
     const boardFollower = await this.boardFollowersService.unsubscribe(args);

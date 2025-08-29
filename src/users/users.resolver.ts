@@ -6,6 +6,8 @@ import {
   UpdateOneUserArgs,
   User,
 } from 'src/@generated/graphql';
+import { JwtAuthGuard } from 'src/utils/guards';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -19,11 +21,13 @@ export class UsersResolver {
     return this.usersService.findOne(args);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => User)
   updateUser(@Args() args: UpdateOneUserArgs) {
     return this.usersService.update(args);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => User)
   removeUser(@Args() args: FindUniqueUserArgs) {
     return this.usersService.remove(args);

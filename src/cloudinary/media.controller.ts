@@ -6,6 +6,7 @@ import {
   BadRequestException,
   Logger,
   Inject,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { CloudinaryService } from './cloudinary.service';
 import { CloudinaryUploadMapped } from './response.types';
 import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from 'src/utils/guards';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
@@ -62,6 +64,7 @@ export class MediaController {
     description: 'Files uploaded successfully',
     type: Object,
   })
+  @UseGuards(JwtAuthGuard)
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files', MAX_FILES))
   async uploadFiles(

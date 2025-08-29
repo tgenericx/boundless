@@ -12,7 +12,7 @@ import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { ScheduleEventPayload } from 'src/types/graphql/schedule-event-payload';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard } from 'src/utils/guards';
 
 @Resolver(() => ScheduleItem)
 export class SchedulesResolver {
@@ -21,7 +21,7 @@ export class SchedulesResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => ScheduleItem)
   async createSchedule(@Args() args: CreateOneScheduleItemArgs) {
     const schedule = await this.schedulesService.create(args);
@@ -31,7 +31,7 @@ export class SchedulesResolver {
     return schedule;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => ScheduleItem)
   async updateSchedule(@Args() args: UpdateOneScheduleItemArgs) {
     const schedule = await this.schedulesService.update(args);
@@ -41,7 +41,7 @@ export class SchedulesResolver {
     return schedule;
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => ScheduleItem)
   async removeSchedule(@Args() args: DeleteOneScheduleItemArgs) {
     const schedule = await this.schedulesService.remove(args);
