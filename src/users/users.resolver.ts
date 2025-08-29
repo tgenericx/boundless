@@ -11,7 +11,10 @@ import {
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Query(() => User, { name: 'user' })
+  @Query(() => User, {
+    name: 'user',
+    nullable: true,
+  })
   findOne(@Args() args: FindUniqueUserArgs) {
     return this.usersService.findOne(args);
   }
