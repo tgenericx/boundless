@@ -6,15 +6,26 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { Request } from 'express';
 import { AuthenticatedUser } from 'src/types/graphql';
-import { Role } from 'generated/graphql';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AdminOnlyGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const ctx = GqlExecutionContext.create(context);
-    const req = ctx.getContext<{ req: { user?: AuthenticatedUser } }>().req;
-    const user = req?.user;
+    let req: Request & { user?: AuthenticatedUser };
+
+    if (context.getType<'graphql'>() === 'graphql') {
+      const ctx = GqlExecutionContext.create(context);
+      req = ctx.getContext<{ req: Request & { user?: AuthenticatedUser } }>()
+        .req;
+    } else {
+      req = context
+        .switchToHttp()
+        .getRequest<Request & { user?: AuthenticatedUser }>();
+    }
+
+    const user = req.user;
 
     if (!user) {
       throw new UnauthorizedException('User not authenticated');
