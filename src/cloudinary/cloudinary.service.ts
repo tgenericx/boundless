@@ -43,6 +43,17 @@ export class CloudinaryService {
       );
 
       const stream = Readable.from(file.buffer);
+    
+      stream.on('error', (error) => {
+        this.logger.error('Stream error during upload', error);
+        resolve({ success: false, error: { message: 'Stream error', error } });
+      });
+    
+      uploadStream.on('error', (error) => {
+        this.logger.error('Upload stream error', error);
+        resolve({ success: false, error });
+      });
+    
       stream.pipe(uploadStream);
     });
   }
