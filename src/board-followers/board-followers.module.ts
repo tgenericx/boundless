@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { BoardFollowersService } from './board-followers.service';
 import { BoardFollowersResolver } from './board-followers.resolver';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  providers: [BoardFollowersResolver, BoardFollowersService, PrismaService],
+  imports: [PrismaModule],
+  providers: [BoardFollowersResolver, BoardFollowersService],
 })
 export class BoardFollowersModule {}

@@ -8,9 +8,9 @@ import { SchedulesModule } from './schedules/schedules.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { BoardsModule } from './boards/boards.module';
 import { PostsModule } from './posts/posts.module';
-import { MediaModule } from './media/media.module';
 import { BoardFollowersModule } from './board-followers/board-followers.module';
 import { UserFollowsModule } from './user-follows/user-follows.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -23,9 +23,9 @@ import { UserFollowsModule } from './user-follows/user-follows.module';
     PubSubModule,
     BoardsModule,
     PostsModule,
-    MediaModule,
     BoardFollowersModule,
     UserFollowsModule,
+    PrismaModule,
   ],
 })
 export class AppModule {}
