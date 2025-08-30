@@ -1,24 +1,19 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  UploadApiResponse,
   UploadApiErrorResponse,
-  v2 as CloudinaryType,
+  UploadApiResponse,
+  v2 as Cloudinary,
 } from 'cloudinary';
-import { Readable } from 'stream';
 import { CLOUDINARY } from './cloudinary.provider';
-
-export interface CloudinaryUploadResult {
-  success: boolean;
-  data?: UploadApiResponse;
-  error?: UploadApiErrorResponse | Error | { message: string; error: unknown };
-}
+import { Readable } from 'stream';
+import { CloudinaryUploadResult } from './response.types';
 
 @Injectable()
 export class CloudinaryService {
   private readonly logger = new Logger(CloudinaryService.name);
 
   constructor(
-    @Inject(CLOUDINARY) private readonly cloudinary: typeof CloudinaryType,
+    @Inject(CLOUDINARY) private readonly cloudinary: typeof Cloudinary,
   ) {}
 
   async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
@@ -26,45 +21,42 @@ export class CloudinaryService {
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
-          folder: 'posts',
-          eager: [{ format: 'jpg', quality: 'auto' }],
-          eager_async: true,
-          transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+          folder: 'uploads',
+          public_id: file.originalname.split('.')[0],
         },
-        (error, result) => {
-          if (error || !result) {
-            this.logger.error('Cloudinary upload failed', error);
-            return resolve({ success: false, error });
+        (error: UploadApiErrorResponse, result: UploadApiResponse) => {
+          if (error) {
+            this.logger.error(
+              `❌ Upload failed for ${file.originalname}: ${error.message}`,
+            );
+            return resolve({
+              success: false,
+              filename: file.originalname,
+              error,
+            });
           }
 
-          this.logger.log(`File uploaded to Cloudinary: ${result.secure_url}`);
-          resolve({ success: true, data: result });
+          this.logger.log(
+            `✅ Uploaded ${file.originalname} → ${result.secure_url}`,
+          );
+          return resolve({
+            success: true,
+            filename: file.originalname,
+            data: result,
+          });
         },
       );
 
-      const stream = Readable.from(file.buffer);
-
-      stream.on('error', (error) => {
-        this.logger.error('Stream error during upload', error);
-        resolve({ success: false, error: { message: 'Stream error', error } });
-      });
-
-      uploadStream.on('error', (error) => {
-        this.logger.error('Upload stream error', error);
-        resolve({ success: false, error });
-      });
-
-      stream.pipe(uploadStream);
+      Readable.from(file.buffer).pipe(uploadStream);
     });
   }
 
   async deleteFile(publicId: string): Promise<void> {
     try {
       await this.cloudinary.uploader.destroy(publicId);
-      this.logger.log(`File deleted from Cloudinary: ${publicId}`);
     } catch (error) {
       this.logger.error(
-        `Failed to delete file from Cloudinary: ${publicId}`,
+        `❌ Failed to delete file from Cloudinary: ${publicId}`,
         error,
       );
       throw error;
