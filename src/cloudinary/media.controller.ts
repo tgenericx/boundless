@@ -107,7 +107,6 @@ export class MediaController {
 
         if (upload.success && upload.data) {
           const { data } = upload;
-
           return {
             success: true,
             filename: file.originalname,
@@ -132,30 +131,32 @@ export class MediaController {
             success: false,
             filename: file.originalname,
             error:
-              } else {
-                const filename = files[i]?.originalname || `file-${i}`;
-                const errorMessage = res.reason instanceof Error 
-                  ? res.reason.message 
-                  : 'Upload processing failed';
-    
-                this.logger.error(`Upload failed for ${filename}`, res.reason);
-    
-                return {
-                  success: false,
-                  filename,
-                  error: `Failed to process ${filename}: ${errorMessage}`,
-                };
+              upload.error instanceof Error
+                ? upload.error.message
+                : JSON.stringify(upload.error),
+          };
+        }
+      }),
+    );
+
+    const typedResults: CloudinaryUploadMapped[] = results.map((res, i) => {
+      if (res.status === 'fulfilled') {
         return res.value;
-      } else {
-        return {
-          success: false,
-          filename: files[i]?.originalname || `file-${i}`,
-          error:
-            res.reason instanceof Error
-              ? res.reason.message
-              : `Unhandled error uploading ${files[i]?.originalname || `file-${i}`}`,
-        };
       }
+
+      const filename = files[i]?.originalname || `file-${i}`;
+      const errorMessage =
+        res.reason instanceof Error
+          ? res.reason.message
+          : 'Upload processing failed';
+
+      this.logger.error(`Upload failed for ${filename}`, res.reason);
+
+      return {
+        success: false,
+        filename,
+        error: `Failed to process ${filename}: ${errorMessage}`,
+      };
     });
 
     return typedResults;
