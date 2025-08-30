@@ -10,21 +10,27 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
-import { CloudinaryService } from './cloudinary.service';
-import { CloudinaryUploadMapped } from './response.types';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiResponse,
+  ApiExtraModels,
+  ApiOkResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
+import { CloudinaryService } from './cloudinary.service';
+import {
+  CloudinaryUploadFailureDto,
+  CloudinaryUploadResult,
+  CloudinaryUploadSuccessDto,
+} from './response.types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
-const supportedMimeTypes = [
+const DEFAULT_SUPPORTED_TYPES = [
   'image/jpeg',
   'image/png',
   'image/gif',
@@ -45,7 +51,7 @@ export class MediaController {
   ) {
     this.SUPPORTED_MIME_TYPES = this.configService.get<string[]>(
       'media.supportedMimeTypes',
-      supportedMimeTypes,
+      DEFAULT_SUPPORTED_TYPES,
     );
   }
 
@@ -57,18 +63,23 @@ export class MediaController {
       properties: {
         files: {
           type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
+          items: { type: 'string', format: 'binary' },
         },
       },
     },
   })
-  @ApiResponse({
-    status: 201,
-    description: 'Files uploaded successfully',
-    type: Object,
+  @ApiExtraModels(CloudinaryUploadSuccessDto, CloudinaryUploadFailureDto)
+  @ApiOkResponse({
+    description: 'Files uploaded (success or failure per file)',
+    schema: {
+      type: 'array',
+      items: {
+        oneOf: [
+          { $ref: getSchemaPath(CloudinaryUploadSuccessDto) },
+          { $ref: getSchemaPath(CloudinaryUploadFailureDto) },
+        ],
+      },
+    },
   })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -86,8 +97,8 @@ export class MediaController {
         }),
     )
     files: Express.Multer.File[],
-  ): Promise<CloudinaryUploadMapped[]> {
-    if (!files || files.length === 0) {
+  ): Promise<CloudinaryUploadResult[]> {
+    if (!files?.length) {
       throw new BadRequestException('No files uploaded');
     }
 
@@ -95,70 +106,16 @@ export class MediaController {
       (file) => !this.SUPPORTED_MIME_TYPES.includes(file.mimetype),
     );
 
-    if (invalidFiles.length > 0) {
+    if (invalidFiles.length) {
       throw new BadRequestException(
-        `Unsupported file types: ${invalidFiles.map((f) => f.mimetype).join(', ')}`,
+        `Unsupported file types: ${invalidFiles
+          .map((f) => f.mimetype)
+          .join(', ')}`,
       );
     }
-    const results = await Promise.allSettled(
-      files.map(async (file): Promise<CloudinaryUploadMapped> => {
-        const upload = await this.cloudinaryService.uploadFile(file);
-        this.logger.log(upload);
 
-        if (upload.success && upload.data) {
-          const { data } = upload;
-          return {
-            success: true,
-            filename: file.originalname,
-            public_id: data.public_id,
-            secure_url: data.secure_url,
-            format: data.format,
-            width: data.width,
-            height: data.height,
-            bytes: data.bytes,
-            resource_type: data.resource_type,
-            duration: data.duration,
-            playback_url: data.playback_url,
-            eager: data.eager,
-          };
-        } else {
-          this.logger.error(
-            `Upload failed for file "${file.originalname}"`,
-            upload.error,
-          );
-
-          return {
-            success: false,
-            filename: file.originalname,
-            error:
-              upload.error instanceof Error
-                ? upload.error.message
-                : JSON.stringify(upload.error),
-          };
-        }
-      }),
+    return Promise.all(
+      files.map((file) => this.cloudinaryService.uploadFile(file)),
     );
-
-    const typedResults: CloudinaryUploadMapped[] = results.map((res, i) => {
-      if (res.status === 'fulfilled') {
-        return res.value;
-      }
-
-      const filename = files[i]?.originalname || `file-${i}`;
-      const errorMessage =
-        res.reason instanceof Error
-          ? res.reason.message
-          : 'Upload processing failed';
-
-      this.logger.error(`Upload failed for ${filename}`, res.reason);
-
-      return {
-        success: false,
-        filename,
-        error: `Failed to process ${filename}: ${errorMessage}`,
-      };
-    });
-
-    return typedResults;
   }
 }
