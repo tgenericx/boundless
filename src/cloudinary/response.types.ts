@@ -1,19 +1,34 @@
-import { UploadApiResponse } from 'cloudinary';
+import { ApiProperty } from '@nestjs/swagger';
+import type { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
 
-export type CloudinarySlim = Pick<
-  UploadApiResponse,
-  | 'public_id'
-  | 'secure_url'
-  | 'format'
-  | 'width'
-  | 'height'
-  | 'bytes'
-  | 'resource_type'
-  | 'duration'
-  | 'playback_url'
-  | 'eager'
->;
+export class CloudinaryUploadSuccessDto {
+  @ApiProperty({ example: true })
+  success: true;
 
-export type CloudinaryUploadMapped =
-  | ({ success: true; filename: string } & CloudinarySlim)
-  | { success: false; filename: string; error: string };
+  @ApiProperty({ example: 'image.png' })
+  filename: string;
+
+  @ApiProperty({
+    description: 'Cloudinary response object',
+    type: Object,
+  })
+  data: UploadApiResponse;
+}
+
+export class CloudinaryUploadFailureDto {
+  @ApiProperty({ example: false })
+  success: false;
+
+  @ApiProperty({ example: 'image.png' })
+  filename: string;
+
+  @ApiProperty({
+    description: 'Cloudinary error response object',
+    type: Object,
+  })
+  error: UploadApiErrorResponse;
+}
+
+export type CloudinaryUploadResult =
+  | CloudinaryUploadSuccessDto
+  | CloudinaryUploadFailureDto;
