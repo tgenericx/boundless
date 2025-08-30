@@ -132,15 +132,19 @@ export class MediaController {
             success: false,
             filename: file.originalname,
             error:
-              upload.error?.message ||
-              `Unknown Cloudinary error for file: ${file.originalname}`,
-          };
-        }
-      }),
-    );
-
-    const typedResults: CloudinaryUploadMapped[] = results.map((res, i) => {
-      if (res.status === 'fulfilled') {
+              } else {
+                const filename = files[i]?.originalname || `file-${i}`;
+                const errorMessage = res.reason instanceof Error 
+                  ? res.reason.message 
+                  : 'Upload processing failed';
+    
+                this.logger.error(`Upload failed for ${filename}`, res.reason);
+    
+                return {
+                  success: false,
+                  filename,
+                  error: `Failed to process ${filename}: ${errorMessage}`,
+                };
         return res.value;
       } else {
         return {
