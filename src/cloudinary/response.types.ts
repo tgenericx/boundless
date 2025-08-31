@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
+import type { UploadApiResponse } from 'cloudinary';
 
 export class CloudinaryUploadSuccessDto {
   @ApiProperty({ example: true })
@@ -26,7 +26,7 @@ export class CloudinaryUploadFailureDto {
     description: 'Cloudinary error response object',
     type: Object,
   })
-  error: UploadApiErrorResponse;
+  error: unknown;
 }
 
 export type CloudinaryUploadResult =
