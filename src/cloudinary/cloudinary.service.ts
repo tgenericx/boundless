@@ -18,7 +18,9 @@ export class CloudinaryService {
 
   private generatePublicId(originalName: string): string {
     const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
-    const safeBase = nameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 100);
+    const safeBase = nameWithoutExt
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .slice(0, 100);
     const timestamp = Date.now();
     const random = Math.random().toString(36).slice(2, 8);
     return `${safeBase}_${timestamp}_${random}`;
@@ -73,16 +75,35 @@ export class CloudinaryService {
         });
       });
 
-      Readable.from(file.buffer)
-        .on('error', (error) => {
-          this.logger.error(`❌ File stream error: ${error.message}`);
-          safeResolve({
-            success: false,
-            filename: file.originalname,
-            error,
-          });
-        })
-        .pipe(uploadStream);
+      let sourceStream: NodeJS.ReadableStream | null = null;
+
+      if (file.buffer) {
+        sourceStream = Readable.from(file.buffer);
+      } else if (file.stream) {
+        sourceStream = file.stream;
+      }
+
+      if (!sourceStream) {
+        this.logger.error(
+          `❌ No buffer or stream available for ${file.originalname}`,
+        );
+        return safeResolve({
+          success: false,
+          filename: file.originalname,
+          error: new Error('File has no buffer or stream to upload'),
+        });
+      }
+
+      sourceStream.on('error', (error) => {
+        this.logger.error(`❌ File stream error: ${JSON.stringify(error)}`);
+        safeResolve({
+          success: false,
+          filename: file.originalname,
+          error,
+        });
+      });
+
+      sourceStream.pipe(uploadStream);
     });
   }
 
