@@ -17,10 +17,11 @@ export class CloudinaryService {
   ) {}
 
   private generatePublicId(originalName: string): string {
-    const nameWithoutExt = originalName.split('.')[0];
+    const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
+    const safeBase = nameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 100);
     const timestamp = Date.now();
     const random = Math.random().toString(36).slice(2, 8);
-    return `${nameWithoutExt}_${timestamp}_${random}`;
+    return `${safeBase}_${timestamp}_${random}`;
   }
 
   async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
