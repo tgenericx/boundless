@@ -7,6 +7,7 @@ import {
   Logger,
   Inject,
   UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
@@ -14,19 +15,14 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiExtraModels,
   ApiOkResponse,
   ApiTags,
-  getSchemaPath,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { CloudinaryService } from './cloudinary.service';
-import {
-  CloudinaryUploadFailureDto,
-  CloudinaryUploadResult,
-  CloudinaryUploadSuccessDto,
-} from './response.types';
+import { UploadApiResponse } from 'cloudinary';
+import { CloudinaryUploadError } from './response.types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
@@ -68,18 +64,10 @@ export class MediaController {
       },
     },
   })
-  @ApiExtraModels(CloudinaryUploadSuccessDto, CloudinaryUploadFailureDto)
   @ApiOkResponse({
-    description: 'Files uploaded (success or failure per file)',
-    schema: {
-      type: 'array',
-      items: {
-        oneOf: [
-          { $ref: getSchemaPath(CloudinaryUploadSuccessDto) },
-          { $ref: getSchemaPath(CloudinaryUploadFailureDto) },
-        ],
-      },
-    },
+    description: 'All files uploaded successfully',
+    type: Object,
+    isArray: true,
   })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -97,7 +85,7 @@ export class MediaController {
         }),
     )
     files: Express.Multer.File[],
-  ): Promise<CloudinaryUploadResult[]> {
+  ): Promise<UploadApiResponse[]> {
     if (!files?.length) {
       throw new BadRequestException('No files uploaded');
     }
@@ -114,8 +102,16 @@ export class MediaController {
       );
     }
 
-    return Promise.all(
-      files.map((file) => this.cloudinaryService.uploadFile(file)),
-    );
+    try {
+      return await Promise.all(
+        files.map((file) => this.cloudinaryService.uploadFile(file)),
+      );
+    } catch (e) {
+      if (e instanceof CloudinaryUploadError) {
+        this.logger.error(`❌ Upload failed: ${e.message}`);
+        throw new HttpException(e.message, e.http_code);
+      }
+      throw e;
+    }
   }
 }
