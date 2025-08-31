@@ -18,6 +18,15 @@ export class CloudinaryService {
 
   async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
     return new Promise((resolve) => {
+      let settled = false;
+
+      const safeResolve = (value: CloudinaryUploadResult) => {
+        if (!settled) {
+          settled = true;
+          resolve(value);
+        }
+      };
+
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
@@ -29,7 +38,7 @@ export class CloudinaryService {
             this.logger.error(
               `❌ Upload failed for ${file.originalname}: ${error.message}`,
             );
-            return resolve({
+            return safeResolve({
               success: false,
               filename: file.originalname,
               error,
@@ -39,7 +48,7 @@ export class CloudinaryService {
           this.logger.log(
             `✅ Uploaded ${file.originalname} → ${result.secure_url}`,
           );
-          return resolve({
+          return safeResolve({
             success: true,
             filename: file.originalname,
             data: result,
@@ -47,7 +56,27 @@ export class CloudinaryService {
         },
       );
 
-      Readable.from(file.buffer).pipe(uploadStream);
+      uploadStream.on('error', (error) => {
+        this.logger.error(`❌ Stream error during upload: ${error.message}`);
+        safeResolve({
+          success: false,
+          filename: file.originalname,
+          error,
+        });
+      });
+
+      const readable = Readable.from(file.buffer);
+
+      readable.on('error', (error) => {
+        this.logger.error(`❌ File stream error: ${error.message}`);
+        safeResolve({
+          success: false,
+          filename: file.originalname,
+          error,
+        });
+      });
+
+      readable.pipe(uploadStream);
     });
   }
 
