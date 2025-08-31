@@ -78,6 +78,12 @@ export class CloudinaryService {
         reject(error);
       });
 
+      uploadStream.on('error', (err: unknown) => {
+        const error = err instanceof Error ? err : new Error(String(err));
+        this.logger.error(`❌ Cloudinary stream error: ${error.message}`);
+        reject(error);
+      });
+
       sourceStream.pipe(uploadStream);
     });
   }
