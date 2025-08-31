@@ -6,7 +6,7 @@ import {
 } from 'cloudinary';
 import { CLOUDINARY } from './cloudinary.provider';
 import { Readable } from 'stream';
-import { CloudinaryUploadResult } from './response.types';
+import { CloudinaryUploadError } from './response.types';
 
 @Injectable()
 export class CloudinaryService {
@@ -26,17 +26,8 @@ export class CloudinaryService {
     return `${safeBase}_${timestamp}_${random}`;
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
-    return new Promise((resolve) => {
-      let settled = false;
-
-      const safeResolve = (value: CloudinaryUploadResult) => {
-        if (!settled) {
-          settled = true;
-          resolve(value);
-        }
-      };
-
+  async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse> {
+    return new Promise((resolve, reject) => {
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
@@ -45,35 +36,27 @@ export class CloudinaryService {
         },
         (error: UploadApiErrorResponse, result: UploadApiResponse) => {
           if (error) {
-            this.logger.error(
-              `❌ Upload failed for ${file.originalname}: ${error.message}`,
+            const err = new CloudinaryUploadError(
+              error.message,
+              error.http_code,
+              error.name,
             );
-            return safeResolve({
-              success: false,
-              filename: file.originalname,
-              error,
-            });
+            this.logger.error(
+              `❌ Upload failed for ${file.originalname}: ${err.message} (http_code=${err.http_code})`,
+            );
+            return reject(err);
+          }
+
+          if (!result) {
+            return reject(new Error('Cloudinary returned no result.'));
           }
 
           this.logger.log(
             `✅ Uploaded ${file.originalname} → ${result.secure_url}`,
           );
-          return safeResolve({
-            success: true,
-            filename: file.originalname,
-            data: result,
-          });
+          return resolve(result);
         },
       );
-
-      uploadStream.on('error', (error) => {
-        this.logger.error(`❌ Stream error during upload: ${error.message}`);
-        safeResolve({
-          success: false,
-          filename: file.originalname,
-          error,
-        });
-      });
 
       let sourceStream: NodeJS.ReadableStream | null = null;
 
@@ -84,23 +67,15 @@ export class CloudinaryService {
       }
 
       if (!sourceStream) {
-        this.logger.error(
-          `❌ No buffer or stream available for ${file.originalname}`,
-        );
-        return safeResolve({
-          success: false,
-          filename: file.originalname,
-          error: new Error('File has no buffer or stream to upload'),
-        });
+        const error = new Error('File has no buffer or stream to upload');
+        this.logger.error(`❌ ${error.message}`);
+        return reject(error);
       }
 
-      sourceStream.on('error', (error) => {
-        this.logger.error(`❌ File stream error: ${JSON.stringify(error)}`);
-        safeResolve({
-          success: false,
-          filename: file.originalname,
-          error,
-        });
+      sourceStream.on('error', (err: unknown) => {
+        const error = err instanceof Error ? err : new Error(String(err));
+        this.logger.error(`❌ File stream error: ${error.message}`);
+        reject(error);
       });
 
       sourceStream.pipe(uploadStream);
