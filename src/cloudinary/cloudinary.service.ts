@@ -16,6 +16,13 @@ export class CloudinaryService {
     @Inject(CLOUDINARY) private readonly cloudinary: typeof Cloudinary,
   ) {}
 
+  private generatePublicId(originalName: string): string {
+    const nameWithoutExt = originalName.split('.')[0];
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).slice(2, 8);
+    return `${nameWithoutExt}_${timestamp}_${random}`;
+  }
+
   async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
     return new Promise((resolve) => {
       let settled = false;
@@ -31,7 +38,7 @@ export class CloudinaryService {
         {
           resource_type: 'auto',
           folder: 'uploads',
-          public_id: file.originalname.split('.')[0],
+          public_id: this.generatePublicId(file.originalname),
         },
         (error: UploadApiErrorResponse, result: UploadApiResponse) => {
           if (error) {
@@ -65,18 +72,16 @@ export class CloudinaryService {
         });
       });
 
-      const readable = Readable.from(file.buffer);
-
-      readable.on('error', (error) => {
-        this.logger.error(`❌ File stream error: ${error.message}`);
-        safeResolve({
-          success: false,
-          filename: file.originalname,
-          error,
-        });
-      });
-
-      readable.pipe(uploadStream);
+      Readable.from(file.buffer)
+        .on('error', (error) => {
+          this.logger.error(`❌ File stream error: ${error.message}`);
+          safeResolve({
+            success: false,
+            filename: file.originalname,
+            error,
+          });
+        })
+        .pipe(uploadStream);
     });
   }
 
