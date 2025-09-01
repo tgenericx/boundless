@@ -50,7 +50,12 @@ export class CloudinaryService {
           }
 
           if (!result) {
-            return reject(new Error('Cloudinary returned no result.'));
+            const err = new CloudinaryUploadError(
+              'Cloudinary returned no result.',
+              500,
+              'CloudinaryUploadError',
+            );
+            return reject(err);
           }
 
           this.logger.log(
