@@ -6,7 +6,7 @@ import {
 } from 'cloudinary';
 import { CLOUDINARY } from './cloudinary.provider';
 import { Readable } from 'stream';
-import { CloudinaryUploadError } from './response.types';
+import { CloudinaryUploadError, ExtendedUploadOptions } from './response.types';
 
 @Injectable()
 export class CloudinaryService {
@@ -26,13 +26,14 @@ export class CloudinaryService {
     return `${safeBase}_${timestamp}_${random}`;
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse> {
+  async uploadFile(options: ExtendedUploadOptions): Promise<UploadApiResponse> {
+    const { file, ...cloudinaryUploadOptions } = options;
     return new Promise((resolve, reject) => {
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
-          folder: 'uploads',
           public_id: this.generatePublicId(file.originalname),
+          ...cloudinaryUploadOptions,
         },
         (error: UploadApiErrorResponse, result: UploadApiResponse) => {
           if (error) {
@@ -78,9 +79,10 @@ export class CloudinaryService {
         reject(error);
       });
 
-      uploadStream.on('error', (err: unknown) => {
+      uploadStream.on('error', (err: Error) => {
         const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(`❌ Cloudinary stream error: ${error.message}`);
+        uploadStream.destroy(err);
         reject(error);
       });
 
