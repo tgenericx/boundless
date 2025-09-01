@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -17,7 +16,7 @@ import {
   ApiOkResponse,
   ApiTags,
   getSchemaPath,
-  ApiExtraModels
+  ApiExtraModels,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
@@ -57,7 +56,7 @@ export class MediaController {
 
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Upload up to 10 media files (images/videos)',
+    description: `Upload up to ${MAX_FILES} media files (max ${MAX_FILE_SIZE / (1024 * 1024)}MB each)`,
     schema: {
       type: 'object',
       properties: {
@@ -84,34 +83,25 @@ export class MediaController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('files', MAX_FILES))
+  @UseInterceptors(
+    FilesInterceptor('files', MAX_FILES, {
+      fileFilter: (req, file, cb) => {
+        if (!DEFAULT_SUPPORTED_TYPES.includes(file.mimetype)) {
+          return cb(
+            new BadRequestException(`Unsupported file type: ${file.mimetype}`),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: MAX_FILE_SIZE },
+    }),
+  )
   async uploadFiles(
-    @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addValidator(new MaxFileSizeValidator({ maxSize: MAX_FILE_SIZE }))
-        .build({
-          fileIsRequired: true,
-          exceptionFactory: (err) => {
-            throw new BadRequestException(err);
-          },
-        }),
-    )
-    files: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
   ): Promise<FileUploadResult[]> {
     if (!files?.length) {
       throw new BadRequestException('No files uploaded');
-    }
-
-    const invalidFiles = files.filter(
-      (file) => !this.SUPPORTED_MIME_TYPES.includes(file.mimetype),
-    );
-
-    if (invalidFiles.length) {
-      throw new BadRequestException(
-        `Unsupported file types: ${invalidFiles
-          .map((f) => f.mimetype)
-          .join(', ')}`,
-      );
     }
 
     const timeoutMs = this.configService.get<number>(
