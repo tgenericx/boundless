@@ -7,7 +7,6 @@ import {
   Logger,
   Inject,
   UseGuards,
-  HttpException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ParseFilePipeBuilder, MaxFileSizeValidator } from '@nestjs/common';
@@ -17,12 +16,17 @@ import {
   ApiConsumes,
   ApiOkResponse,
   ApiTags,
+  getSchemaPath,
+  ApiExtraModels
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { CloudinaryService } from './cloudinary.service';
-import { UploadApiResponse } from 'cloudinary';
-import { CloudinaryUploadError, ExtendedUploadOptions } from './response.types';
+import {
+  FileUploadResult,
+  FileUploadFailed,
+  FileUploadSuccessful,
+} from './response.types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
@@ -64,10 +68,18 @@ export class MediaController {
       },
     },
   })
+  @ApiExtraModels(FileUploadSuccessful, FileUploadFailed)
   @ApiOkResponse({
-    description: 'All files uploaded successfully',
-    type: Object,
-    isArray: true,
+    description: 'Files uploaded (success or failure per file)',
+    schema: {
+      type: 'array',
+      items: {
+        oneOf: [
+          { $ref: getSchemaPath(FileUploadSuccessful) },
+          { $ref: getSchemaPath(FileUploadFailed) },
+        ],
+      },
+    },
   })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -85,7 +97,7 @@ export class MediaController {
         }),
     )
     files: Express.Multer.File[],
-  ): Promise<UploadApiResponse[]> {
+  ): Promise<FileUploadResult[]> {
     if (!files?.length) {
       throw new BadRequestException('No files uploaded');
     }
@@ -102,28 +114,39 @@ export class MediaController {
       );
     }
 
-    try {
-      const timeoutMs = this.configService.get<number>(
-        'media.uploadTimeoutMs',
-        30000,
-      );
+    const timeoutMs = this.configService.get<number>(
+      'media.uploadTimeoutMs',
+      30000,
+    );
 
-      return await Promise.all(
-        files.map((file) => {
-          const options: ExtendedUploadOptions = {
-            file,
-            folder: 'uploads',
-            timeoutMs,
-          };
-          return this.cloudinaryService.uploadFile(options);
+    const results = await Promise.allSettled(
+      files.map((file) =>
+        this.cloudinaryService.uploadFile({
+          file,
+          folder: 'uploads',
+          timeoutMs,
         }),
-      );
-    } catch (e) {
-      if (e instanceof CloudinaryUploadError) {
-        this.logger.error(`❌ Upload failed: ${e.message}`);
-        throw new HttpException(e.message, e.http_code);
+      ),
+    );
+
+    return results.map((res, i) => {
+      const filename = files[i].originalname;
+
+      if (res.status === 'fulfilled') {
+        return {
+          filename,
+          success: true,
+          data: res.value,
+        };
       }
-      throw e;
-    }
+
+      const err =
+        res.reason instanceof Error ? res.reason.message : String(res.reason);
+      return {
+        filename,
+        success: false,
+        error: err,
+      };
+    });
   }
 }
