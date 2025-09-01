@@ -30,6 +30,32 @@ export class CloudinaryService {
     const { file, timeoutMs, ...cloudinaryUploadOptions } = options;
 
     return new Promise((resolve, reject) => {
+      let settled = false;
+      let timeout: NodeJS.Timeout | undefined;
+
+      const safeResolve = (value: UploadApiResponse) => {
+        if (!settled) {
+          settled = true;
+          clearTimeoutSafely();
+          resolve(value);
+        }
+      };
+
+      const safeReject = (err: Error) => {
+        if (!settled) {
+          settled = true;
+          clearTimeoutSafely();
+          reject(err);
+        }
+      };
+
+      const clearTimeoutSafely = () => {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = undefined;
+        }
+      };
+
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto',
@@ -46,41 +72,32 @@ export class CloudinaryService {
             this.logger.error(
               `❌ Upload failed for ${file.originalname}: ${err.message} (http_code=${err.http_code})`,
             );
-            return reject(err);
+            return safeReject(err);
           }
 
           if (!result) {
-            const err = new CloudinaryUploadError(
-              'Cloudinary returned no result.',
-              500,
-              'CloudinaryUploadError',
+            return safeReject(
+              new CloudinaryUploadError(
+                'Cloudinary returned no result.',
+                500,
+                'CloudinaryUploadError',
+              ),
             );
-            return reject(err);
           }
 
           this.logger.log(
             `✅ Uploaded ${file.originalname} → ${result.secure_url} (public_id=${result.public_id})`,
           );
-          return resolve(result);
+          return safeResolve(result);
         },
       );
 
-      let timeout: NodeJS.Timeout | undefined;
       if (timeoutMs) {
         timeout = setTimeout(() => {
-          uploadStream.destroy(new Error('Upload timed out'));
-          reject(new Error(`Upload timed out after ${timeoutMs}ms`));
+          const err = new Error(`Upload timed out after ${timeoutMs}ms`);
+          uploadStream.destroy(err);
+          safeReject(err);
         }, timeoutMs);
-
-        const clearTimeoutSafely = () => {
-          if (timeout) {
-            clearTimeout(timeout);
-            timeout = undefined;
-          }
-        };
-
-        uploadStream.on('finish', clearTimeoutSafely);
-        uploadStream.on('error', clearTimeoutSafely);
       }
 
       let sourceStream: NodeJS.ReadableStream | null = null;
@@ -92,23 +109,21 @@ export class CloudinaryService {
       }
 
       if (!sourceStream) {
-        const error = new Error('File has no buffer or stream to upload');
-        this.logger.error(`❌ ${error.message}`);
-        return reject(error);
+        return safeReject(new Error('File has no buffer or stream to upload'));
       }
 
       sourceStream.on('error', (err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(`❌ File stream error: ${error.message}`);
         uploadStream.destroy(error);
-        reject(error);
+        safeReject(error);
       });
 
       uploadStream.on('error', (err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(`❌ Cloudinary stream error: ${error.message}`);
         uploadStream.destroy(error);
-        reject(error);
+        safeReject(error);
       });
 
       sourceStream.pipe(uploadStream);
