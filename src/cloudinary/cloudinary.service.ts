@@ -27,7 +27,8 @@ export class CloudinaryService {
   }
 
   async uploadFile(options: ExtendedUploadOptions): Promise<UploadApiResponse> {
-    const { file, ...cloudinaryUploadOptions } = options;
+    const { file, timeoutMs, ...cloudinaryUploadOptions } = options;
+
     return new Promise((resolve, reject) => {
       const uploadStream = this.cloudinary.uploader.upload_stream(
         {
@@ -53,11 +54,22 @@ export class CloudinaryService {
           }
 
           this.logger.log(
-            `✅ Uploaded ${file.originalname} → ${result.secure_url}`,
+            `✅ Uploaded ${file.originalname} → ${result.secure_url} (public_id=${result.public_id})`,
           );
           return resolve(result);
         },
       );
+
+      let timeout: NodeJS.Timeout | undefined;
+      if (timeoutMs) {
+        timeout = setTimeout(() => {
+          uploadStream.destroy(new Error('Upload timed out'));
+          reject(new Error(`Upload timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+
+        uploadStream.on('finish', () => clearTimeout(timeout));
+        uploadStream.on('error', () => clearTimeout(timeout));
+      }
 
       let sourceStream: NodeJS.ReadableStream | null = null;
 
@@ -76,13 +88,14 @@ export class CloudinaryService {
       sourceStream.on('error', (err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(`❌ File stream error: ${error.message}`);
+        uploadStream.destroy(error);
         reject(error);
       });
 
-      uploadStream.on('error', (err: Error) => {
+      uploadStream.on('error', (err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(`❌ Cloudinary stream error: ${error.message}`);
-        uploadStream.destroy(err);
+        uploadStream.destroy(error);
         reject(error);
       });
 
@@ -93,10 +106,17 @@ export class CloudinaryService {
   async deleteFile(publicId: string): Promise<void> {
     try {
       await this.cloudinary.uploader.destroy(publicId);
-    } catch (error) {
+      this.logger.log(`🗑️ Deleted from Cloudinary: ${publicId}`);
+    } catch (err) {
+      const error =
+        err instanceof Error
+          ? err
+          : new Error(`Unknown delete error: ${String(err)}`);
       this.logger.error(
         `❌ Failed to delete file from Cloudinary: ${publicId}`,
-        error,
+        {
+          stack: error.stack,
+        },
       );
       throw error;
     }
