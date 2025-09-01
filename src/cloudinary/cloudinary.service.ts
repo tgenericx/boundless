@@ -72,8 +72,15 @@ export class CloudinaryService {
           reject(new Error(`Upload timed out after ${timeoutMs}ms`));
         }, timeoutMs);
 
-        uploadStream.on('finish', () => clearTimeout(timeout));
-        uploadStream.on('error', () => clearTimeout(timeout));
+        const clearTimeoutSafely = () => {
+          if (timeout) {
+            clearTimeout(timeout);
+            timeout = undefined;
+          }
+        };
+
+        uploadStream.on('finish', clearTimeoutSafely);
+        uploadStream.on('error', clearTimeoutSafely);
       }
 
       let sourceStream: NodeJS.ReadableStream | null = null;
