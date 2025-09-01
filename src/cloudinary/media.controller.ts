@@ -22,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { CloudinaryService } from './cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
-import { CloudinaryUploadError } from './response.types';
+import { CloudinaryUploadError, ExtendedUploadOptions } from './response.types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
@@ -103,8 +103,20 @@ export class MediaController {
     }
 
     try {
+      const timeoutMs = this.configService.get<number>(
+        'media.uploadTimeoutMs',
+        30000,
+      );
+
       return await Promise.all(
-        files.map((file) => this.cloudinaryService.uploadFile(file)),
+        files.map((file) => {
+          const options: ExtendedUploadOptions = {
+            file,
+            folder: 'uploads',
+            timeoutMs,
+          };
+          return this.cloudinaryService.uploadFile(options);
+        }),
       );
     } catch (e) {
       if (e instanceof CloudinaryUploadError) {
