@@ -16,7 +16,6 @@ RUN pnpm run prisma:generate
 COPY . .
 
 RUN pnpm run build
-RUN pnpm run prisma:migrate:prod
 
 FROM node:lts-alpine
 
