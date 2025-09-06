@@ -26,4 +26,4 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm run prisma:migrate:prod && pnpm run dev"]
+CMD ["sh", "-c", "pnpm run prisma:migrate:prod && pnpm run start:prod"]
