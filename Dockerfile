@@ -11,6 +11,8 @@ COPY prisma ./prisma/
 RUN npm i -g pnpm
 RUN pnpm install
 
+RUN pnpm run prisma:generate
+
 COPY . .
 
 RUN pnpm run build
