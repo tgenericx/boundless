@@ -13,7 +13,6 @@ RUN pnpm run build
 
 # ---- Production image ----
 FROM node:lts-alpine
-RUN npm i -g pnpm
 
 WORKDIR /app
 RUN npm i -g pnpm
