@@ -5,10 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm i -g pnpm
-RUN pnpm install
-
-RUN pnpm run prisma:generate
+RUN npm i -g pnpm && pnpm install && pnpm run prisma:generate
 
 COPY . .
 
