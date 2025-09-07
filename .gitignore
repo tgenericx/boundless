@@ -63,3 +63,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 secrets
 */generated
 */@generated
+
+**/seed.ts
