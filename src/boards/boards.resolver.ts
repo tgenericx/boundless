@@ -31,8 +31,13 @@ export class BoardsResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
-  async createBoard(@Args() args: CreateOneBoardArgs) {
-    const board = await this.boardsService.create(args);
+  async createBoard(
+    @Args() args: CreateOneBoardArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const data = { ...args.data, user: { connect: { id: user.userId } } };
+    const board = await this.boardsService.create({ ...args, data });
+
     await this.pubSub.publish('boardEvents', {
       boardEvents: { type: 'CREATED', board },
     });
@@ -88,9 +93,15 @@ export class BoardsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @AdminOnly()
   @Query(() => [Board])
-  async boards(@Args() args: FindManyBoardArgs) {
+  async boards(
+    @Args() args: FindManyBoardArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
+    if (!isAdmin)
+      args.where = { ...args.where, userId: { equals: user.userId } };
     return await this.boardsService.findMany(args);
   }
 
