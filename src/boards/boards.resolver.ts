@@ -76,17 +76,19 @@ export class BoardsResolver {
     return removed;
   }
 
-  // queries remain public
+  @UseGuards(JwtAuthGuard)
   @Query(() => [Board])
   boards(@Args() args: FindManyBoardArgs) {
     return this.boardsService.findMany(args);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Query(() => Board, { nullable: true })
   board(@Args() args: FindUniqueBoardArgs) {
     return this.boardsService.findOne(args);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Subscription(() => BoardEventPayload, {
     name: 'boardEvents',
     description: 'Fires whenever a board is created, updated, or removed',
