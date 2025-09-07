@@ -8,10 +8,12 @@ import {
   DeleteOneBoardArgs,
 } from 'src/@generated/graphql';
 import { BoardsService } from './boards.service';
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject, UseGuards, ForbiddenException } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
 import { JwtAuthGuard } from '../utils/guards';
+import { CurrentUser } from '../utils/decorators/current-user.decorator';
+import { AuthenticatedUser } from 'src/types/graphql';
 
 @Resolver(() => Board)
 export class BoardsResolver {
@@ -32,22 +34,46 @@ export class BoardsResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
-  async updateBoard(@Args() args: UpdateOneBoardArgs) {
-    const board = await this.boardsService.update(args);
+  async updateBoard(
+    @Args() args: UpdateOneBoardArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const board = await this.boardsService.findOne({ where: args.where });
+
+    const isOwner = board.userId === user.userId;
+    const isAdmin = user.roles.includes('ADMIN');
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('Not authorized to update this board');
+    }
+
+    const updated = await this.boardsService.update(args);
     await this.pubSub.publish('boardEvents', {
-      boardEvents: { type: 'UPDATED', board },
+      boardEvents: { type: 'UPDATED', board: updated },
     });
-    return board;
+    return updated;
   }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
-  async removeBoard(@Args() args: DeleteOneBoardArgs) {
-    const board = await this.boardsService.remove(args);
+  async removeBoard(
+    @Args() args: DeleteOneBoardArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const board = await this.boardsService.findOne({ where: args.where });
+
+    const isOwner = board.userId === user.userId;
+    const isAdmin = user.roles.includes('ADMIN');
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('Not authorized to delete this board');
+    }
+
+    const removed = await this.boardsService.remove(args);
     await this.pubSub.publish('boardEvents', {
-      boardEvents: { type: 'REMOVED', board },
+      boardEvents: { type: 'REMOVED', board: removed },
     });
-    return board;
+    return removed;
   }
 
   // queries remain public
