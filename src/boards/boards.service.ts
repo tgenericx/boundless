@@ -10,10 +10,8 @@ export class BoardsService {
     return this.prisma.board.create(args);
   }
 
-  async findOne(args: Prisma.BoardFindUniqueArgs): Promise<Board> {
-    const board = await this.prisma.board.findUnique(args);
-    if (!board) throw new NotFoundException('Board not found');
-    return board;
+  async findOne(args: Prisma.BoardFindUniqueArgs): Promise<Board | null> {
+    return await this.prisma.board.findUnique(args);
   }
 
   async findMany(args?: Prisma.BoardFindManyArgs): Promise<Board[]> {
