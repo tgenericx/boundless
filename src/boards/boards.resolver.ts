@@ -6,14 +6,21 @@ import {
   CreateOneBoardArgs,
   UpdateOneBoardArgs,
   DeleteOneBoardArgs,
+  Role,
 } from 'src/@generated/graphql';
 import { BoardsService } from './boards.service';
-import { Inject, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+  Inject,
+  UseGuards,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
 import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators/current-user.decorator';
 import { AuthenticatedUser } from 'src/types/graphql';
+import { AdminOnly } from 'src/utils/decorators';
 
 @Resolver(() => Board)
 export class BoardsResolver {
@@ -39,9 +46,11 @@ export class BoardsResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     const board = await this.boardsService.findOne({ where: args.where });
+    if (!board) throw new NotFoundException('Board Not Found');
 
     const isOwner = board.userId === user.userId;
-    const isAdmin = user.roles.includes('ADMIN');
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
 
     if (!isOwner && !isAdmin) {
       throw new ForbiddenException('Not authorized to update this board');
@@ -61,9 +70,11 @@ export class BoardsResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     const board = await this.boardsService.findOne({ where: args.where });
+    if (!board) throw new NotFoundException('Board Not Found');
 
     const isOwner = board.userId === user.userId;
-    const isAdmin = user.roles.includes('ADMIN');
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
 
     if (!isOwner && !isAdmin) {
       throw new ForbiddenException('Not authorized to delete this board');
@@ -77,9 +88,10 @@ export class BoardsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
+  @AdminOnly()
   @Query(() => [Board])
-  boards(@Args() args: FindManyBoardArgs) {
-    return this.boardsService.findMany(args);
+  async boards(@Args() args: FindManyBoardArgs) {
+    return await this.boardsService.findMany(args);
   }
 
   @UseGuards(JwtAuthGuard)
