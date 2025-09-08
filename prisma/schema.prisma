@@ -171,7 +171,9 @@ model Board {
   schedules  ScheduleItem[]
   posts      Post[]
 
+  /// @HideField({ input: true, output:  false})
   userId    String
+  /// @HideField({ input: true, output:  false})
   createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// @ReadOnly()

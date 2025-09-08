@@ -20,7 +20,6 @@ import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
 import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators/current-user.decorator';
 import { AuthenticatedUser } from 'src/types/graphql';
-import { AdminOnly } from 'src/utils/decorators';
 
 @Resolver(() => Board)
 export class BoardsResolver {
@@ -35,9 +34,17 @@ export class BoardsResolver {
     @Args() args: CreateOneBoardArgs,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const data = { ...args.data, user: { connect: { id: user.userId } } };
-    const board = await this.boardsService.create({ ...args, data });
-
+    const board = await this.boardsService.create({
+      ...args,
+      data: {
+        ...args.data,
+        createdBy: {
+          connect: {
+            id: user.userId,
+          },
+        },
+      },
+    });
     await this.pubSub.publish('boardEvents', {
       boardEvents: { type: 'CREATED', board },
     });
