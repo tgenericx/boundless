@@ -54,7 +54,6 @@ export class AuthResolver {
       ...prismaSelect,
       where: {
         id: user.userId,
-        ...(prismaSelect.where ?? {}),
       },
     });
 
