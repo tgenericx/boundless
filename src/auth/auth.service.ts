@@ -112,14 +112,4 @@ export class AuthService {
   async logout(refreshToken: string): Promise<void> {
     await this.refreshTokenService.revokeToken(refreshToken);
   }
-
-  async getUserById(userId: User['id']): Promise<User> {
-    const user = await this.usersService.findOne({ where: { id: userId } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
-  }
 }
