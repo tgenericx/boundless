@@ -229,7 +229,9 @@ model ScheduleItem {
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  /// @HideField({ input: true, output:  false})
   userId    String
+  /// @HideField({ input: true, output:  false})
   createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   boardId String?
@@ -257,7 +259,9 @@ model Post {
   /// Related media assets
   media Media[]
 
+  /// @HideField({ input: true, output:  false})
   userId String
+  /// @HideField({ input: true, output:  false})
   author User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   boardId String?
