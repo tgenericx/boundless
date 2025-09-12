@@ -3,14 +3,19 @@ import {
   BoardFollower,
   FindManyBoardFollowerArgs,
   FindUniqueBoardFollowerArgs,
-  CreateOneBoardFollowerArgs,
-  DeleteOneBoardFollowerArgs,
 } from 'src/@generated/graphql';
 import { BoardFollowersService } from './board-followers.service';
-import { Inject, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { BoardFollowerEventPayload } from 'src/types/graphql/board-follower-event-payload';
 import { JwtAuthGuard } from '../utils/guards';
+import { CurrentUser } from 'src/utils/decorators';
+import { AuthenticatedUser } from 'src/types/graphql';
 
 @Resolver(() => BoardFollower)
 export class BoardFollowersResolver {
@@ -21,8 +26,24 @@ export class BoardFollowersResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => BoardFollower)
-  async subscribeBoard(@Args() args: CreateOneBoardFollowerArgs) {
-    const boardFollower = await this.boardFollowersService.subscribe(args);
+  async subscribeBoard(
+    @Args('boardId') boardId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<BoardFollower> {
+    const existing = await this.boardFollowersService.findOne({
+      where: { boardId_userId: { boardId, userId: user.userId } },
+    });
+    if (existing) {
+      throw new BadRequestException('Already subscribed to this board');
+    }
+
+    const boardFollower = await this.boardFollowersService.subscribe({
+      data: {
+        board: { connect: { id: boardId } },
+        user: { connect: { id: user.userId } },
+      },
+    });
+
     await this.pubSub.publish('boardFollowerEvents', {
       boardFollowerEvents: { type: 'SUBSCRIBED', boardFollower },
     });
@@ -31,8 +52,18 @@ export class BoardFollowersResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => BoardFollower)
-  async unsubscribeBoard(@Args() args: DeleteOneBoardFollowerArgs) {
-    const boardFollower = await this.boardFollowersService.unsubscribe(args);
+  async unsubscribeBoard(
+    @Args('boardId') boardId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<BoardFollower> {
+    const boardFollower = await this.boardFollowersService.unsubscribe({
+      where: { boardId_userId: { boardId, userId: user.userId } },
+    });
+
+    if (!boardFollower) {
+      throw new NotFoundException('Not subscribed to this board');
+    }
+
     await this.pubSub.publish('boardFollowerEvents', {
       boardFollowerEvents: { type: 'UNSUBSCRIBED', boardFollower },
     });
