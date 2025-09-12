@@ -92,7 +92,9 @@ model UserFollow {
   id String @id @default(cuid())
 
   /// The user who follows
+  /// @HideField({ input: true, output:  false})
   followerId String
+  /// @HideField({ input: true, output:  false})
   follower   User   @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
 
   /// The user being followed
@@ -204,7 +206,9 @@ model BoardFollower {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
+  /// @HideField({ input: true, output:  false})
   userId String
+  /// @HideField({ input: true, output:  false})
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// @ReadOnly()
