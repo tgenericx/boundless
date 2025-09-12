@@ -4,10 +4,14 @@ import {
   FindManyUserFollowArgs,
   FindUniqueUserFollowArgs,
   CreateOneUserFollowArgs,
-  DeleteOneUserFollowArgs,
 } from 'src/@generated/graphql';
 import { UserFollowsService } from './user-follows.service';
-import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { UserFollowEventPayload } from 'src/types/graphql/user-follow-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
@@ -56,8 +60,23 @@ export class UserFollowsResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => UserFollow)
-  async unfollowUser(@Args() args: DeleteOneUserFollowArgs) {
-    const userFollow = await this.userFollowsService.unfollow(args);
+  async unfollowUser(
+    @Args('followingId') followingId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<UserFollow> {
+    const userFollow = await this.userFollowsService.unfollow({
+      where: {
+        followerId_followingId: {
+          followerId: user.userId,
+          followingId,
+        },
+      },
+    });
+
+    if (!userFollow) {
+      throw new NotFoundException('Follow relationship not found');
+    }
+
     await this.pubSub.publish('userFollowEvents', {
       userFollowEvents: { type: 'UNFOLLOWED', userFollow },
     });
