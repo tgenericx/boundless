@@ -49,6 +49,8 @@ model User {
   /// @FieldType('Scalars.GraphQLEmailAddress')
   email String @unique
 
+  emailIsVerified Boolean @default(false)
+
   /// @HideField()
   /// @Validator.MinLength(8)
   password String
