@@ -65,6 +65,11 @@ export class AuthResolver {
   }
 
   @Mutation(() => GraphQLBoolean)
+  async verifyEmail(@Args('token') token: string): Promise<boolean> {
+    return await this.authService.verifyEmail(token);
+  }
+
+  @Mutation(() => GraphQLBoolean)
   async logout(@Args('refreshToken') refreshToken: string): Promise<boolean> {
     await this.authService.logout(refreshToken);
     return true;
