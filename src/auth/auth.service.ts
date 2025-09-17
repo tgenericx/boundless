@@ -12,6 +12,9 @@ import { TokenService } from '../tokens/token.service';
 import { RefreshTokenService } from '../tokens/refresh-token.service';
 import { Prisma, Role, User } from '@prisma/client';
 import { IAuthPayload } from 'src/types';
+import { MailerService } from '@nestjs-modules/mailer';
+import { emailVerificationTemplate } from 'src/utils/templates/email-verification.template';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +24,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
     private readonly refreshTokenService: RefreshTokenService,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async signup(input: Prisma.UserCreateArgs): Promise<User> {
@@ -45,14 +50,38 @@ export class AuthService {
     }
 
     const password = await argon2.hash(input.data.password);
+    const APP_URL = this.configService.get<string>(
+      'APP_URL',
+      'http://localhost:3000',
+    );
 
-    return this.usersService.create({
+    const user = await this.usersService.create({
       ...input,
       data: {
         ...input.data,
         password,
       },
     });
+    const token = this.tokenService.generateToken(user);
+    const verificationUrl = `${APP_URL}/auth/verify-email?token=${token}`;
+    const html = emailVerificationTemplate(
+      user.email.split('@')[0],
+      verificationUrl,
+      24,
+      this.configService.get<string>('APP_NAME', 'OneBoard'),
+      this.configService.get<string>('SUPPORT_EMAIL', 'support@example.com'),
+      this.configService.get<string>(
+        'LOGO_URL',
+        'https://dummyimage.com/110x40/2563eb/fff&text=OneBoard',
+      ),
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verify your email',
+      html,
+    });
+    return user;
   }
 
   async refreshToken(token: string): Promise<IAuthPayload> {
@@ -107,6 +136,21 @@ export class AuthService {
       refreshToken,
       user,
     };
+  }
+
+  async verifyEmail(token: string) {
+    const user = this.tokenService.verify<{
+      sub: string;
+    }>(token);
+    await this.usersService.update({
+      where: {
+        id: user?.sub,
+      },
+      data: {
+        emailIsVerified: true,
+      },
+    });
+    return true;
   }
 
   async logout(refreshToken: string): Promise<void> {
