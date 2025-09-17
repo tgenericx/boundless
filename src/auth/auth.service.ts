@@ -144,7 +144,7 @@ export class AuthService {
     }>(token);
     await this.usersService.update({
       where: {
-        id: user?.sub,
+        id: user.sub,
       },
       data: {
         emailIsVerified: true,
