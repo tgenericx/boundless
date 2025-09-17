@@ -8,6 +8,7 @@ import { UsersService } from 'src/users/users.service';
 import { TokenService } from 'src/tokens/token.service';
 import { RefreshTokenService } from 'src/tokens/refresh-token.service';
 import { TokensModule } from 'src/tokens/tokens.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [PassportModule, TokensModule],
@@ -19,6 +20,7 @@ import { TokensModule } from 'src/tokens/tokens.module';
     RefreshTokenService,
     JwtStrategy,
     JwtAuthGuard,
+    MailerModule,
   ],
   exports: [JwtAuthGuard],
 })

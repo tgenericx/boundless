@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GqlModule } from './gql/gql.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -12,6 +12,8 @@ import { BoardFollowersModule } from './board-followers/board-followers.module';
 import { UserFollowsModule } from './user-follows/user-follows.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerConfigService } from './mailer.config';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     UserFollowsModule,
     PrismaModule,
     CloudinaryModule,
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useClass: MailerConfigService,
+    }),
   ],
 })
 export class AppModule {}
