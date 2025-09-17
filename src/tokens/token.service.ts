@@ -27,6 +27,20 @@ export class TokenService {
     }
   }
 
+  generateToken(user: Pick<User, 'id'>): string {
+    try {
+      const payload = {
+        sub: user.id,
+      };
+      return this.jwt.sign(payload, {
+        expiresIn: '24h',
+      });
+    } catch (error) {
+      this.logger.error('Failed to generate access token', error);
+      throw new InternalServerErrorException('Failed to generate access token');
+    }
+  }
+
   verify<T = IAccessTokenPayload>(token: string): VerifiedToken<T> {
     try {
       return this.jwt.verify(token);
