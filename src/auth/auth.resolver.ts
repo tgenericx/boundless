@@ -48,7 +48,7 @@ export class AuthResolver {
     @Info() info: GraphQLResolveInfo,
   ): Promise<User> {
     const prismaSelect = new PrismaSelect(info)
-      .value as Prisma.UserFindUniqueArgs;
+      .value as Prisma.UserFindUniqueArgs['select'];
 
     const foundUser = await this.user.findOne({
       ...prismaSelect,

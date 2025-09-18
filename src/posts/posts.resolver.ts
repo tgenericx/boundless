@@ -1,4 +1,11 @@
-import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Subscription,
+  Info,
+} from '@nestjs/graphql';
 import {
   Post,
   FindManyPostArgs,
@@ -12,6 +19,9 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { PostEventPayload } from 'src/types/graphql/post-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
+import { PrismaSelect } from '@paljs/plugins';
+import { Prisma } from '@prisma/client';
+import { type GraphQLResolveInfo } from 'graphql';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -56,8 +66,13 @@ export class PostsResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Args() args: FindUniquePostArgs) {
-    return this.postsService.findOne(args);
+  post(@Args() args: FindUniquePostArgs, @Info() info: GraphQLResolveInfo) {
+    const prismaSelect = new PrismaSelect(info)
+      .value as Prisma.PostFindFirstArgs['select'];
+    return this.postsService.findOne({
+      ...prismaSelect,
+      ...args,
+    });
   }
 
   @Subscription(() => PostEventPayload, {
