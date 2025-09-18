@@ -69,6 +69,7 @@ export class PostsResolver {
   post(@Args() args: FindUniquePostArgs, @Info() info: GraphQLResolveInfo) {
     const prismaSelect = new PrismaSelect(info)
       .value as Prisma.PostFindFirstArgs;
+
     return this.postsService.findOne({
       ...prismaSelect,
       ...args,
