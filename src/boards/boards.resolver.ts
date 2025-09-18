@@ -126,10 +126,11 @@ export class BoardsResolver {
   @Query(() => Board, { nullable: true })
   board(@Args() args: FindUniqueBoardArgs, @Info() info: GraphQLResolveInfo) {
     const prismaSelect = new PrismaSelect(info)
-      .value as Prisma.BoardFindUniqueArgs['select'];
+      .value as Prisma.BoardFindUniqueArgs;
+
     return this.boardsService.findOne({
-      ...prismaSelect,
       ...args,
+      ...prismaSelect,
     });
   }
 

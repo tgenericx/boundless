@@ -31,7 +31,7 @@ export class AuthResolver {
 
   @Mutation(() => AuthPayload)
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
-    this.logger.log('📤 Sending login RPC...');
+    this.logger.log('📤 Sending login request...');
     return await this.authService.login(input.email, input.password);
   }
 
@@ -48,7 +48,7 @@ export class AuthResolver {
     @Info() info: GraphQLResolveInfo,
   ): Promise<User> {
     const prismaSelect = new PrismaSelect(info)
-      .value as Prisma.UserFindUniqueArgs['select'];
+      .value as Prisma.UserFindUniqueArgs;
 
     const foundUser = await this.user.findOne({
       ...prismaSelect,
