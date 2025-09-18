@@ -1,4 +1,11 @@
-import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Subscription,
+  Info,
+} from '@nestjs/graphql';
 import {
   Board,
   FindManyBoardArgs,
@@ -20,6 +27,9 @@ import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
 import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators/current-user.decorator';
 import { AuthenticatedUser } from 'src/types/graphql';
+import { PrismaSelect } from '@paljs/plugins';
+import { Prisma } from '@prisma/client';
+import { type GraphQLResolveInfo } from 'graphql';
 
 @Resolver(() => Board)
 export class BoardsResolver {
@@ -114,8 +124,13 @@ export class BoardsResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => Board, { nullable: true })
-  board(@Args() args: FindUniqueBoardArgs) {
-    return this.boardsService.findOne(args);
+  board(@Args() args: FindUniqueBoardArgs, @Info() info: GraphQLResolveInfo) {
+    const prismaSelect = new PrismaSelect(info)
+      .value as Prisma.BoardFindUniqueArgs['select'];
+    return this.boardsService.findOne({
+      ...prismaSelect,
+      ...args,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
