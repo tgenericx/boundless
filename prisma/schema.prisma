@@ -276,6 +276,11 @@ model Post {
   scheduleId String?
   schedule   ScheduleItem? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
 
+  /// @HideField({ input: true, output:  false})
+  parentId String?
+  parent   Post?   @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Post[]  @relation("Thread")
+
   /// @ReadOnly()
   createdAt DateTime @default(now())
 
@@ -284,6 +289,8 @@ model Post {
 
   @@index([userId])
   @@index([boardId])
+  @@index([scheduleId])
+  @@index([parentId])
   @@index([createdAt])
 }
 
