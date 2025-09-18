@@ -129,8 +129,8 @@ export class BoardsResolver {
       .value as Prisma.BoardFindUniqueArgs;
 
     return this.boardsService.findOne({
-      ...prismaSelect,
       ...args,
+      ...prismaSelect,
     });
   }
 
