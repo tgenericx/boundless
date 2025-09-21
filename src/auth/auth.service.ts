@@ -77,7 +77,7 @@ export class AuthService {
       ),
     );
 
-    this.mailerService
+    await this.mailerService
       .sendMail({
         to: user.email,
         subject: 'Verify your email',
