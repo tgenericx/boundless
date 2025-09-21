@@ -10,7 +10,7 @@ import * as argon2 from 'argon2';
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../tokens/token.service';
 import { RefreshTokenService } from '../tokens/refresh-token.service';
-import { Prisma, Role, User } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { IAuthPayload } from 'src/types';
 import { MailerService } from '@nestjs-modules/mailer';
 import { emailVerificationTemplate } from 'src/utils/templates/email-verification.template';
@@ -28,7 +28,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async signup(input: Prisma.UserCreateArgs): Promise<User> {
+  async signup(input: Prisma.UserCreateArgs): Promise<IAuthPayload> {
     let roles: Role[] = [];
 
     if (Array.isArray(input.data.roles)) {
@@ -62,6 +62,7 @@ export class AuthService {
         password,
       },
     });
+
     const token = this.tokenService.generateToken(user);
     const verificationUrl = `${APP_URL}/auth/verify-email?token=${token}`;
     const html = emailVerificationTemplate(
@@ -76,12 +77,24 @@ export class AuthService {
       ),
     );
 
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Verify your email',
-      html,
-    });
-    return user;
+    await this.mailerService
+      .sendMail({
+        to: user.email,
+        subject: 'Verify your email',
+        html,
+      })
+      .catch((err) => this.logger.error(`Failed to send email: ${err}`));
+
+    const accessToken = this.tokenService.generateAccessToken(user);
+    const refreshToken = await this.refreshTokenService.generateRefreshToken(
+      user.id,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
   }
 
   async refreshToken(token: string): Promise<IAuthPayload> {

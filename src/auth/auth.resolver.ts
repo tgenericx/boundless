@@ -25,7 +25,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => User)
-  async createUser(@Args() input: CreateOneUserArgs): Promise<User> {
+  async createUser(@Args() input: CreateOneUserArgs): Promise<AuthPayload> {
     return await this.authService.signup(input);
   }
 
