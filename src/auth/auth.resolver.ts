@@ -24,7 +24,7 @@ export class AuthResolver {
     return 'Root query to satisfy GraphQL schema requirements';
   }
 
-  @Mutation(() => User)
+  @Mutation(() => AuthPayload)
   async createUser(@Args() input: CreateOneUserArgs): Promise<AuthPayload> {
     return await this.authService.signup(input);
   }
