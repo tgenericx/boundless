@@ -26,13 +26,13 @@ export class AuthResolver {
 
   @Mutation(() => AuthPayload)
   async createUser(@Args() input: CreateOneUserArgs): Promise<AuthPayload> {
-    return await this.authService.signup(input);
+    return this.authService.signup(input);
   }
 
   @Mutation(() => AuthPayload)
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
     this.logger.log('📤 Sending login request...');
-    return await this.authService.login(input.email, input.password);
+    return this.authService.login(input.email, input.password);
   }
 
   @UseGuards(JwtAuthGuard)
