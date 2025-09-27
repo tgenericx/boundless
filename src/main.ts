@@ -17,15 +17,14 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT', 3000);
   const env = configService.get<string>('NODE_ENV', 'development');
+  const corsOrigin =
+    env === 'production'
+      ? ['http://localhost:3000', configService.get<string>('CORS_ORIGIN', '')]
+      : ['http://localhost:3000'];
+
   app.setGlobalPrefix(globalPrefix);
   app.enableCors({
-    origin:
-      env === 'production'
-        ? [
-            'http://localhost:3000',
-            configService.get<string>('CORS_ORIGIN', ''),
-          ]
-        : ['http://localhost:3000'],
+    origin: corsOrigin,
   });
   app.useGlobalPipes(new ValidationPipe());
   SwaggerConfigModule.setup(app);
