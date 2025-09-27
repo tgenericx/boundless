@@ -16,7 +16,17 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const port = configService.get<number>('PORT', 3000);
+  const env = configService.get<string>('NODE_ENV', 'development');
   app.setGlobalPrefix(globalPrefix);
+  app.enableCors({
+    origin:
+      env === 'production'
+        ? [
+            'http://localhost:3000',
+            configService.get<string>('CORS_ORIGIN', ''),
+          ]
+        : ['http://localhost:3000'],
+  });
   app.useGlobalPipes(new ValidationPipe());
   SwaggerConfigModule.setup(app);
 
@@ -25,7 +35,7 @@ async function bootstrap() {
   logger.log(
     `✅ Everything okay, 🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
   );
-  logger.log(`🌱 Environment: ${configService.get('NODE_ENV', 'development')}`);
+  logger.log(`🌱 Environment: ${env}`);
 }
 
 bootstrap().catch((error) => {
