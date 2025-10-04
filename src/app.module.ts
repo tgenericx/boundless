@@ -4,7 +4,7 @@ import { GqlModule } from './gql/gql.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
-import { SchedulesModule } from './schedules/schedules.module';
+import { EventsModule } from './events/events.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { BoardsModule } from './boards/boards.module';
 import { PostsModule } from './posts/posts.module';
@@ -22,7 +22,7 @@ import { MailerConfigService } from './mailer.config';
     UsersModule,
     AuthModule,
     CategoriesModule,
-    SchedulesModule,
+    EventsModule,
     PubSubModule,
     BoardsModule,
     PostsModule,
