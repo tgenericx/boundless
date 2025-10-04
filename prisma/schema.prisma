@@ -44,12 +44,16 @@ model User {
 
   /// Profile avatar (URL to image)
   avatar String?
+  bio    String?
+
+  firstName String?
+  lastName  String?
+  otherName String?
 
   /// @Unique()
   /// @FieldType('Scalars.GraphQLEmailAddress')
-  email String @unique
-
-  emailIsVerified Boolean @default(false)
+  email    String @unique
+  username String @unique
 
   /// @HideField()
   /// @Validator.MinLength(8)
@@ -59,12 +63,14 @@ model User {
   /// @Default ["USER"]
   roles Role[] @default([USER])
 
+  emailIsVerified Boolean @default(false)
+
   /// All refresh tokens associated with this user
   /// @Auth(roles: ["USER", "ADMIN"])
   refreshTokens RefreshToken[]
 
   /// Scheduled items created by the user
-  schedules ScheduleItem[]
+  events Event[]
 
   /// Boards created by the user
   boards Board[]
@@ -147,8 +153,8 @@ model Category {
   /// Child categories
   children Category[] @relation("CategoryToParent")
 
-  schedules ScheduleItem[]
-  boards    BoardCategory[]
+  events Event[]
+  boards BoardCategory[]
 
   /// @ReadOnly()
   createdAt DateTime @default(now())
@@ -172,7 +178,7 @@ model Board {
 
   categories BoardCategory[]
   followers  BoardFollower[]
-  schedules  ScheduleItem[]
+  events     Event[]
   posts      Post[]
 
   /// @HideField({ input: true, output:  false})
@@ -221,7 +227,7 @@ model BoardFollower {
   @@index([userId])
 }
 
-model ScheduleItem {
+model Event {
   id String @id @default(cuid())
 
   /// @Validator.MinLength(3)
@@ -273,8 +279,8 @@ model Post {
   boardId String?
   board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
 
-  scheduleId String?
-  schedule   ScheduleItem? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
   /// @HideField({ input: true, output:  false})
   parentId String?
@@ -289,7 +295,7 @@ model Post {
 
   @@index([userId])
   @@index([boardId])
-  @@index([scheduleId])
+  @@index([eventId])
   @@index([parentId])
   @@index([createdAt])
 }
