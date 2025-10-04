@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as fs from 'fs';
 import { IAccessTokenPayload } from 'src/types';
-import { findRoot } from 'src/utils/find-root';
+import { findRoot } from 'src/utils/find-root.util';
 import { AuthenticatedUser } from 'src/types/graphql';
 
 @Injectable()
