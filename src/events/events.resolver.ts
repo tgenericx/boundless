@@ -19,6 +19,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
 import { AuthenticatedUser } from 'src/types/graphql';
+import { EventEventPayload } from 'src/types/graphql/event-event-payload';
 
 @Resolver(() => Event)
 export class EventsResolver {
@@ -115,7 +116,7 @@ export class EventsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Subscription(() => Event, {
+  @Subscription(() => EventEventPayload, {
     name: 'eventEvents',
     description: 'Fires whenever an event is created, updated, or removed',
   })
