@@ -32,13 +32,12 @@ async function bootstrap(): Promise<void> {
   app.enableCors({ origin: corsOrigins });
 
   app.useGlobalPipes(
-    new ValidationPipe(
-      // {
-         // whitelist: true,
-         // forbidNonWhitelisted: true,
-        // transform: true,
-     // }
-    ),
+    new ValidationPipe(),
+    // {
+    // whitelist: true,
+    // forbidNonWhitelisted: true,
+    // transform: true,
+    // }
   );
 
   SwaggerConfigModule.setup(app);
