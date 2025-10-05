@@ -16,12 +16,14 @@ datasource db {
 }
 
 generator nestgraphql {
-  provider              = "node node_modules/prisma-nestjs-graphql"
-  output                = "../src/@generated/graphql"
-  reExport              = "All"
-  fields_Scalars_from   = "graphql-scalars"
-  fields_Scalars_input  = true
-  fields_Scalars_output = true
+  provider               = "node node_modules/prisma-nestjs-graphql"
+  output                 = "../src/@generated/graphql"
+  reExport               = "All"
+  fields_Scalars_from    = "graphql-scalars"
+  fields_Scalars_input   = true
+  fields_Scalars_output  = true
+  fields_Validator_from  = "class-validator"
+  fields_Validator_input = true
 }
 
 generator docs {
@@ -37,6 +39,16 @@ enum ResourceType {
 enum Role {
   USER
   ADMIN
+}
+
+enum ListingStatus {
+  AVAILABLE
+  SOLD
+  EXPIRED
+}
+
+enum Currency {
+  NGN
 }
 
 model User {
@@ -65,6 +77,10 @@ model User {
 
   emailIsVerified Boolean @default(false)
 
+  /// @FieldType('Scalars.GraphQLPhoneNumber')
+  phone           String? @unique
+  phoneIsVerified Boolean @default(false)
+
   /// All refresh tokens associated with this user
   /// @Auth(roles: ["USER", "ADMIN"])
   refreshTokens RefreshToken[]
@@ -77,6 +93,9 @@ model User {
 
   /// Posts authored by the user
   posts Post[]
+
+  listings Listing[]
+  Business Business?
 
   /// Users this user is following
   /// @Relation(name: "Following")
@@ -153,8 +172,9 @@ model Category {
   /// Child categories
   children Category[] @relation("CategoryToParent")
 
-  events Event[]
-  boards BoardCategory[]
+  events   Event[]
+  boards   BoardCategory[]
+  listings Listing[]
 
   /// @ReadOnly()
   createdAt DateTime @default(now())
@@ -237,6 +257,10 @@ model Event {
   description String?
   startTime   DateTime
   endTime     DateTime
+  location    String
+
+  mediaId String?
+  media   Media?  @relation(fields: [mediaId], references: [id], onDelete: SetNull)
 
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -269,7 +293,7 @@ model Post {
   textContent String?
 
   /// Related media assets
-  media Media[]
+  postMedia PostMedia[]
 
   /// @HideField({ input: true, output:  false})
   userId String
@@ -314,18 +338,147 @@ model Media {
   bytes     Int
 
   resourceType ResourceType
+  duration     Float?
+  playbackUrl  String?
+  eager        Json?
 
-  duration    Float?
-  playbackUrl String?
-  eager       Json?
+  /// @ReadOnly()
+  createdAt      DateTime         @default(now())
+  PostMedia      PostMedia[]
+  ListingMedia   ListingMedia[]
+  InventoryMedia InventoryMedia[]
+  Event          Event[]
 
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  @@index([resourceType])
+  @@index([createdAt])
+}
+
+// Join tables for media ownership
+model PostMedia {
+  postId  String
+  mediaId String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postId, mediaId])
+  @@index([mediaId])
+  @@index([postId])
+}
+
+model ListingMedia {
+  listingId String
+  mediaId   String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, mediaId])
+  @@index([mediaId])
+  @@index([listingId])
+}
+
+model InventoryMedia {
+  inventoryId String
+  mediaId     String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  media       Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryId, mediaId])
+  @@index([mediaId])
+  @@index([inventoryId])
+}
+
+model Listing {
+  id String @id @default(cuid())
+
+  /// Title e.g. "Fairly Used Laptop"
+  title String
+
+  description String?
+
+  /// @Validator.Decimal({ precision: 12, scale: 2 })
+  price Decimal @db.Decimal(12, 2)
+
+  /// Currency code for price
+  currency Currency @default(NGN)
+
+  status ListingStatus @default(AVAILABLE)
+
+  /// @HideField({ input: true, output: false })
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Category link (e.g. Gadgets, Furniture, Hostel Spaces)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  listingMedia ListingMedia[]
 
   /// @ReadOnly()
   createdAt DateTime @default(now())
 
-  @@index([resourceType])
-  @@index([postId])
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  /// @SoftDelete()
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([status])
   @@index([createdAt])
+}
+
+model Business {
+  id String @id @default(cuid())
+
+  /// Link to User
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Store name (optional, e.g. "Phastboy Gadgets")
+  name String?
+
+  /// Bio/description
+  description String?
+
+  /// Contact info
+  whatsapp  String?
+  instagram String?
+
+  inventories Inventory[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+}
+
+model Inventory {
+  id String @id @default(cuid())
+
+  /// Item title e.g. "Brand New Charger"
+  title String
+
+  description String?
+
+  /// Unit price
+  /// @Validator.Decimal({ precision: 12, scale: 2 })
+  price Decimal @db.Decimal(12, 2)
+
+  /// Stock count (for vendors, unlike listings)
+  stock Int @default(1)
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  inventoryMedia InventoryMedia[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
 }
