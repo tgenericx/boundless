@@ -396,7 +396,6 @@ model Listing {
   description String?
 
   /// @Validator.IsDecimal()
-  /// @Type(() => Object)
   price Decimal @db.Decimal(12, 2)
 
   /// Currency code for price
@@ -465,7 +464,6 @@ model Inventory {
 
   /// Unit price
   /// @Validator.IsDecimal()
-  /// @Type(() => Object)
   price Decimal @db.Decimal(12, 2)
 
   /// Stock count (for vendors, unlike listings)
