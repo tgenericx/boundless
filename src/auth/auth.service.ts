@@ -125,15 +125,27 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<IAuthPayload> {
-    const { email, username, phoneNumber, password } = input;
-    let where: Prisma.UserWhereUniqueInput | null = null;
-    if (email) {
-      where = { email };
-    } else if (username) {
-      where = { username };
-    } else if (phoneNumber) {
-      where = { phone: phoneNumber };
-    }
+    const { password, ...rest } = input;
+
+    const identifiers: {
+      key: keyof typeof rest;
+      dbField: keyof Prisma.UserWhereUniqueInput;
+    }[] = [
+      { key: 'email', dbField: 'email' },
+      { key: 'username', dbField: 'username' },
+      { key: 'phoneNumber', dbField: 'phone' },
+    ];
+
+    const where =
+      identifiers
+        .map(({ key, dbField }) =>
+          rest[key]
+            ? ({
+                [dbField]: rest[key],
+              } as unknown as Prisma.UserWhereUniqueInput)
+            : null,
+        )
+        .find(Boolean) ?? null;
 
     if (!where) {
       throw new BadRequestException(
@@ -141,10 +153,7 @@ export class AuthService {
       );
     }
 
-    const user = await this.usersService.findOne({
-      where,
-    });
-
+    const user = await this.usersService.findOne({ where });
     if (!user) {
       throw new NotFoundException(
         'User with the provided identifier does not exist',
