@@ -15,6 +15,7 @@ import { IAuthPayload } from 'src/types';
 import { MailerService } from '@nestjs-modules/mailer';
 import { emailVerificationTemplate } from 'src/utils/templates/email-verification.template';
 import { ConfigService } from '@nestjs/config';
+import { LoginInput } from 'src/types/graphql';
 
 @Injectable()
 export class AuthService {
@@ -123,20 +124,36 @@ export class AuthService {
     };
   }
 
-  async login(email: string, password: string): Promise<IAuthPayload> {
+  async login(input: LoginInput): Promise<IAuthPayload> {
+    const { email, username, phoneNumber, password } = input;
+    let where: Prisma.UserWhereUniqueInput | null = null;
+    if (email) {
+      where = { email };
+    } else if (username) {
+      where = { username };
+    } else if (phoneNumber) {
+      where = { phone: phoneNumber };
+    }
+
+    if (!where) {
+      throw new BadRequestException(
+        'Provide at least one of email, username, or phone number',
+      );
+    }
+
     const user = await this.usersService.findOne({
-      where: {
-        email: email,
-      },
+      where,
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new NotFoundException(
+        'User with the provided identifier does not exist',
+      );
     }
 
     const valid = await argon2.verify(user.password, password);
     if (!valid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Incorrect password');
     }
 
     const accessToken = this.tokenService.generateAccessToken(user);
