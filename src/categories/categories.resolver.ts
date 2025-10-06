@@ -8,10 +8,11 @@ import {
   DeleteOneCategoryArgs,
 } from 'src/@generated/graphql';
 import { CategoriesService } from './categories.service';
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { CategoryEventPayload } from 'src/types/graphql/category-event-payload';
-import { JwtAuthGuard } from '../utils/guards';
+import { Prisma } from '@prisma/client';
+import { AdminOnly } from 'src/utils/decorators';
 
 @Resolver(() => Category)
 export class CategoriesResolver {
@@ -20,33 +21,44 @@ export class CategoriesResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @AdminOnly()
   @Mutation(() => Category)
   async createCategory(@Args() args: CreateOneCategoryArgs) {
-    const category = await this.categoriesService.create(args);
+    const category = await this.categoriesService.create({
+      data: args.data as unknown as Prisma.CategoryCreateInput,
+    });
+
     await this.pubSub.publish('categoryEvents', {
       categoryEvents: { type: 'CREATED', category },
     });
+
     return category;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AdminOnly()
   @Mutation(() => Category)
   async updateCategory(@Args() args: UpdateOneCategoryArgs) {
-    const category = await this.categoriesService.update(args);
+    const category = await this.categoriesService.update({
+      where: args.where,
+      data: args.data as unknown as Prisma.CategoryUpdateInput,
+    });
+
     await this.pubSub.publish('categoryEvents', {
       categoryEvents: { type: 'UPDATED', category },
     });
+
     return category;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AdminOnly()
   @Mutation(() => Category)
   async removeCategory(@Args() args: DeleteOneCategoryArgs) {
     const category = await this.categoriesService.remove(args);
+
     await this.pubSub.publish('categoryEvents', {
       categoryEvents: { type: 'REMOVED', category },
     });
+
     return category;
   }
 
