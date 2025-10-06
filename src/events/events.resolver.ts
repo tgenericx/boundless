@@ -20,6 +20,7 @@ import { JwtAuthGuard } from 'src/utils/guards';
 import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
 import { AuthenticatedUser } from 'src/types/graphql';
 import { EventEventPayload } from 'src/types/graphql/event-event-payload';
+import { Prisma } from '@prisma/client';
 
 @Resolver(() => Event)
 export class EventsResolver {
@@ -35,12 +36,12 @@ export class EventsResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     const event = await this.eventsService.create({
-      ...args,
       data: {
         ...args.data,
         createdBy: { connect: { id: user.userId } },
-      },
+      } as unknown as Prisma.EventCreateInput,
     });
+
     await this.pubSub.publish('eventEvents', {
       eventEvents: { type: 'CREATED', event },
     });
@@ -64,7 +65,9 @@ export class EventsResolver {
       throw new ForbiddenException('Not authorized to update this event');
     }
 
-    const updated = await this.eventsService.update(args);
+    const updated = await this.eventsService.update(
+      args as unknown as Prisma.EventUpdateArgs,
+    );
     await this.pubSub.publish('eventEvents', {
       eventEvents: { type: 'UPDATED', event: updated },
     });
@@ -88,7 +91,9 @@ export class EventsResolver {
       throw new ForbiddenException('Not authorized to delete this event');
     }
 
-    const removed = await this.eventsService.remove(args);
+    const removed = await this.eventsService.remove(
+      args as unknown as Prisma.EventDeleteArgs,
+    );
     await this.pubSub.publish('eventEvents', {
       eventEvents: { type: 'REMOVED', event: removed },
     });
