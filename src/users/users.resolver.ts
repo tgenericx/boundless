@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Info } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import {
   FindManyUserArgs,
@@ -9,6 +9,8 @@ import {
 import { JwtAuthGuard } from 'src/utils/guards';
 import { UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { type GraphQLResolveInfo } from 'graphql';
+import { PrismaSelect } from '@paljs/plugins';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -18,8 +20,13 @@ export class UsersResolver {
     name: 'user',
     nullable: true,
   })
-  findOne(@Args() args: FindUniqueUserArgs) {
-    return this.usersService.findOne(args);
+  findOne(@Args() args: FindUniqueUserArgs, @Info() info: GraphQLResolveInfo) {
+    const prismaSelect = new PrismaSelect(info)
+      .value as Prisma.UserFindUniqueArgs;
+    return this.usersService.findOne({
+      ...args,
+      ...prismaSelect,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
