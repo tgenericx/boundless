@@ -26,13 +26,15 @@ export class AuthResolver {
 
   @Mutation(() => AuthPayload)
   async createUser(@Args() input: CreateOneUserArgs): Promise<AuthPayload> {
-    return this.authService.signup(input);
+    return this.authService.signup({
+      data: input.data as unknown as Prisma.UserCreateInput,
+    });
   }
 
   @Mutation(() => AuthPayload)
   async login(@Args('input') input: LoginInput): Promise<AuthPayload> {
     this.logger.log('📤 Sending login request...');
-    return this.authService.login(input.email, input.password);
+    return this.authService.login(input);
   }
 
   @UseGuards(JwtAuthGuard)

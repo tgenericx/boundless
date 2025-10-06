@@ -36,7 +36,7 @@ export class BoardsResolver {
   constructor(
     private readonly boardsService: BoardsService,
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
@@ -48,13 +48,10 @@ export class BoardsResolver {
       ...args,
       data: {
         ...args.data,
-        createdBy: {
-          connect: {
-            id: user.userId,
-          },
-        },
-      },
+        createdBy: { connect: { id: user.userId } },
+      } as unknown as Prisma.BoardCreateInput,
     });
+
     await this.pubSub.publish('boardEvents', {
       boardEvents: { type: 'CREATED', board },
     });
@@ -78,10 +75,15 @@ export class BoardsResolver {
       throw new ForbiddenException('Not authorized to update this board');
     }
 
-    const updated = await this.boardsService.update(args);
+    const updated = await this.boardsService.update({
+      where: args.where,
+      data: args.data as unknown as Prisma.BoardUpdateInput,
+    });
+
     await this.pubSub.publish('boardEvents', {
       boardEvents: { type: 'UPDATED', board: updated },
     });
+
     return updated;
   }
 
