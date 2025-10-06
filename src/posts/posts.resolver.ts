@@ -13,15 +13,23 @@ import {
   CreateOnePostArgs,
   UpdateOnePostArgs,
   DeleteOnePostArgs,
+  Role,
 } from 'src/@generated/graphql';
 import { PostsService } from './posts.service';
-import { Inject, UseGuards } from '@nestjs/common';
+import {
+  Inject,
+  UseGuards,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { PostEventPayload } from 'src/types/graphql/post-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
-import { PrismaSelect } from '@paljs/plugins';
 import { Prisma } from '@prisma/client';
+import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
+import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
+import { AuthenticatedUser } from 'src/types/graphql';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -30,52 +38,124 @@ export class PostsResolver {
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
+  /**
+   * Create Post — associates createdBy with the current user.
+   */
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
-  async createPost(@Args() args: CreateOnePostArgs) {
-    const post = await this.postsService.create(args);
+  async createPost(
+    @Args() args: CreateOnePostArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const post = await this.postsService.create({
+      data: {
+        ...args.data,
+        createdBy: {
+          connect: { id: user.userId },
+        },
+      } as unknown as Prisma.PostCreateInput,
+    });
+
     await this.pubSub.publish('postEvents', {
       postEvents: { type: 'CREATED', post },
     });
     return post;
   }
 
+  /**
+   * Update Post — only the owner or admin can update.
+   */
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
-  async updatePost(@Args() args: UpdateOnePostArgs) {
-    const post = await this.postsService.update(args);
-    await this.pubSub.publish('postEvents', {
-      postEvents: { type: 'UPDATED', post },
+  async updatePost(
+    @Args() args: UpdateOnePostArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const existing = await this.postsService.findOne({ where: args.where });
+    if (!existing) throw new NotFoundException('Post not found');
+
+    const isOwner = existing.userId === user.userId;
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('Not authorized to update this post');
+    }
+
+    const updated = await this.postsService.update({
+      where: args.where,
+      data: args.data as unknown as Prisma.PostUpdateInput,
     });
-    return post;
+
+    await this.pubSub.publish('postEvents', {
+      postEvents: { type: 'UPDATED', post: updated },
+    });
+    return updated;
   }
 
+  /**
+   * Delete Post — only the owner or admin can delete.
+   */
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
-  async removePost(@Args() args: DeleteOnePostArgs) {
-    const post = await this.postsService.remove(args);
+  async removePost(
+    @Args() args: DeleteOnePostArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const existing = await this.postsService.findOne({ where: args.where });
+    if (!existing) throw new NotFoundException('Post not found');
+
+    const isOwner = existing.userId === user.userId;
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('Not authorized to delete this post');
+    }
+
+    const removed = await this.postsService.remove(args);
+
     await this.pubSub.publish('postEvents', {
-      postEvents: { type: 'REMOVED', post },
+      postEvents: { type: 'REMOVED', post: removed },
     });
-    return post;
+    return removed;
   }
 
+  /**
+   * Query Posts — non-admins only see their own.
+   */
+  @UseGuards(JwtAuthGuard)
   @Query(() => [Post])
-  posts(@Args() args: FindManyPostArgs) {
+  async posts(
+    @Args() args: FindManyPostArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const isAdmin =
+      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
+
+    if (!isAdmin) {
+      args.where = { ...args.where, userId: { equals: user.userId } };
+    }
+
     return this.postsService.findMany(args);
   }
 
+  /**
+   * Query Single Post
+   */
   @Query(() => Post, { nullable: true })
   post(@Args() args: FindUniquePostArgs, @Info() info: GraphQLResolveInfo) {
     const prismaSelect = new PrismaSelect(info)
       .value as Prisma.PostFindUniqueArgs;
-
     return this.postsService.findOne({
       ...args,
       ...prismaSelect,
     });
   }
 
+  /**
+   * Post Subscriptions
+   */
   @Subscription(() => PostEventPayload, {
     name: 'postEvents',
     description: 'Fires whenever a post is created, updated, or removed',
