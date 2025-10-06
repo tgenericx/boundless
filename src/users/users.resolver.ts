@@ -8,6 +8,7 @@ import {
 } from 'src/@generated/graphql';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { UseGuards } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -23,8 +24,11 @@ export class UsersResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => User)
-  updateUser(@Args() args: UpdateOneUserArgs) {
-    return this.usersService.update(args);
+  async updateUser(@Args() args: UpdateOneUserArgs) {
+    return this.usersService.update({
+      where: args.where,
+      data: args.data as unknown as Prisma.UserUpdateInput,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
