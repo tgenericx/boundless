@@ -8,8 +8,7 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from '@prisma/client';
-import { AuthenticatedUser } from 'src/types';
-import { IdArgs, type OwnershipChain } from 'src/types';
+import { AuthenticatedUser, IdArgs, type OwnershipChain } from 'src/types';
 
 @Injectable()
 export abstract class AbstractOwnerGuard<
@@ -29,10 +28,11 @@ export abstract class AbstractOwnerGuard<
     const gqlCtx = GqlExecutionContext.create(context);
     const ctx = gqlCtx.getContext<{ req?: { user?: AuthenticatedUser } }>();
     const args = gqlCtx.getArgs<TArgs>();
-
     const user = ctx.req?.user;
+
     if (!user) throw new UnauthorizedException();
 
+    // ✅ Admin or privileged role bypass
     if (!this.forceOwnershipCheck) {
       if (
         Array.isArray(user.roles) &&
@@ -48,7 +48,7 @@ export abstract class AbstractOwnerGuard<
     let id: string | undefined = args.where?.id ?? args.id;
     if (!id) throw new ForbiddenException('Missing resource ID');
 
-    for (const step of this.steps) {
+    for (const [index, step] of this.steps.entries()) {
       const resource = await step.findResourceById(id);
       if (!resource)
         throw new ForbiddenException(
@@ -61,17 +61,27 @@ export abstract class AbstractOwnerGuard<
           `Resource missing owner field (${step.resourceName})`,
         );
 
-      if (ownerId !== user.userId)
-        throw new ForbiddenException(
-          `Not authorized to access ${step.resourceName} (owner: ${ownerId})`,
+      const isLastStep = index === this.steps.length - 1;
+
+      if (isLastStep) {
+        if (ownerId !== user.userId)
+          throw new ForbiddenException(
+            `Not authorized to access ${step.resourceName} (owner: ${ownerId})`,
+          );
+
+        this.logger.debug(
+          `✅ Ownership verified for ${user.userId} on ${step.resourceName}`,
         );
-
-      this.logger.debug(
-        `✅ Ownership verified for ${user.userId} on ${step.resourceName}`,
-      );
-
-      const resourceId = (resource as { id?: string }).id;
-      if (typeof resourceId === 'string') id = resourceId;
+      } else {
+        const nextId = resource[step.parentIdField as string] as string;
+        if (!nextId)
+          throw new ForbiddenException(
+            `Missing parent reference (${step.resourceName}.${String(
+              step.parentIdField,
+            )})`,
+          );
+        id = nextId;
+      }
     }
 
     return true;

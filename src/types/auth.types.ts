@@ -25,6 +25,7 @@ export interface OwnershipStep<TResource extends Record<string, any>> {
   resourceName: string;
   ownerField: keyof TResource;
   findResourceById: (id: string) => Promise<TResource | null>;
+  parentIdField?: keyof TResource;
 }
 
 export type OwnershipChain<TResources extends readonly Record<string, any>[]> =
