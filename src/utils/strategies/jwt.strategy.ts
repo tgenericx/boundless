@@ -4,9 +4,9 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as fs from 'fs';
-import { IAccessTokenPayload } from 'src/types';
-import { findRoot } from 'src/utils/find-root.util';
-import { AuthenticatedUser } from 'src/types/graphql';
+import { IAccessTokenPayload } from '@/types';
+import { findRoot } from '@/utils/find-root.util';
+import { type AuthenticatedUser } from '@/types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

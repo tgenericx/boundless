@@ -7,7 +7,7 @@ import {
   UpdateOneEventArgs,
   DeleteOneEventArgs,
   Role,
-} from 'src/@generated/graphql';
+} from '@/@generated/graphql';
 import { EventsService } from './events.service';
 import {
   Inject,
@@ -16,11 +16,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { JwtAuthGuard } from 'src/utils/guards';
-import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
-import { AuthenticatedUser } from 'src/types/graphql';
-import { EventEventPayload } from 'src/types/graphql/event-event-payload';
-import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from '@/utils/guards';
+import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { type AuthenticatedUser } from '@/types';
+import { EventEventPayload } from '@/types/graphql/event-event-payload';
+import { Prisma } from '@generated/prisma';
 
 @Resolver(() => Event)
 export class EventsResolver {

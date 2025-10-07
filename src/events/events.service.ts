@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, Event } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma, Event } from '@generated/prisma';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class EventsService {

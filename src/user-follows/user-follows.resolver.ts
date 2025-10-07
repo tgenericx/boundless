@@ -3,7 +3,7 @@ import {
   UserFollow,
   FindManyUserFollowArgs,
   FindUniqueUserFollowArgs,
-} from 'src/@generated/graphql';
+} from '@/@generated/graphql';
 import { UserFollowsService } from './user-follows.service';
 import {
   BadRequestException,
@@ -12,10 +12,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { UserFollowEventPayload } from 'src/types/graphql/user-follow-event-payload';
-import { JwtAuthGuard } from 'src/utils/guards';
-import { CurrentUser } from 'src/utils/decorators';
-import { AuthenticatedUser } from 'src/types/graphql';
+import { UserFollowEventPayload } from '@/types/graphql/user-follow-event-payload';
+import { JwtAuthGuard } from '@/utils/guards';
+import { CurrentUser } from '@/utils/decorators';
+import { type AuthenticatedUser } from '@/types';
 
 @Resolver(() => UserFollow)
 export class UserFollowsResolver {
