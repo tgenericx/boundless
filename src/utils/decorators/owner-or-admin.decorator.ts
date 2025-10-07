@@ -1,7 +1,6 @@
 import { applyDecorators, Injectable, UseGuards } from '@nestjs/common';
-import { AbstractOwnerGuard } from 'src/utils/guards/abstract-owner.guard';
 import { IdArgs, OwnershipChain } from 'src/types';
-import { JwtAuthGuard } from 'src/utils/guards';
+import { JwtAuthGuard, AbstractOwnerGuard } from 'src/utils/guards';
 import { Role } from '@prisma/client';
 
 export function OwnerOrAdminNested<TResources extends Record<string, any>[]>(
