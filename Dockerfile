@@ -24,4 +24,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpm run prisma:migrate:prod && pnpm run start:prod"]
+CMD ["pnpm", "run", "start:prod"]
