@@ -1,0 +1,31 @@
+# Source files 
+src
+test
+tests
+__tests__/
+*.spec.ts
+*.test.ts
+
+# Node modules (rebuilt inside Docker)
+node_modules
+
+# Logs
+*.log
+logs/
+
+# Editor / OS stuff
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# Git & CI/CD
+.git
+.gitignore
+.github
+.env.local
+
+# Misc
+README.md
+eslint.config.mjs
+tsconfig.*
