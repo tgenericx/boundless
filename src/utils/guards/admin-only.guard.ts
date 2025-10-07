@@ -8,7 +8,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
 import { AuthenticatedUser } from 'src/types/graphql';
-import { Role } from '@prisma/client';
+import { Role } from '@generated/prisma';
 
 @Injectable()
 export class AdminOnlyGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class AdminOnlyGuard implements CanActivate {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    if (!user.roles?.includes(Role.ADMIN)) {
+    if (Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN)) {
       throw new ForbiddenException('Admin access only');
     }
 

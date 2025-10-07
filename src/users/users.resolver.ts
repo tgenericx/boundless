@@ -5,10 +5,10 @@ import {
   FindUniqueUserArgs,
   UpdateOneUserArgs,
   User,
-} from 'src/@generated/graphql';
-import { JwtAuthGuard } from 'src/utils/guards';
+} from '@/@generated/graphql';
+import { JwtAuthGuard } from '@/utils/guards';
 import { UseGuards } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@generated/prisma';
 import { type GraphQLResolveInfo } from 'graphql';
 import { PrismaSelect } from '@paljs/plugins';
 

@@ -14,7 +14,7 @@ import {
   UpdateOnePostArgs,
   DeleteOnePostArgs,
   Role,
-} from 'src/@generated/graphql';
+} from '@/@generated/graphql';
 import { PostsService } from './posts.service';
 import {
   Inject,
@@ -23,13 +23,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { PostEventPayload } from 'src/types/graphql/post-event-payload';
+import { PostEventPayload } from '@/types/graphql/post-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@generated/prisma';
 import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
-import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
-import { AuthenticatedUser } from 'src/types/graphql';
+import { CurrentUser } from '@/utils/decorators';
+import { type AuthenticatedUser } from '@/types';
 
 @Resolver(() => Post)
 export class PostsResolver {

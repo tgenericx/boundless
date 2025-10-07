@@ -7,9 +7,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { Role } from '@prisma/client';
+import { Role } from '@generated/prisma';
 
-import type { AuthenticatedUser, IdArgs, OwnershipChain } from 'src/types';
+import type { AuthenticatedUser, IdArgs, OwnershipChain } from '@/types';
 
 @Injectable()
 export abstract class AbstractOwnerGuard<
