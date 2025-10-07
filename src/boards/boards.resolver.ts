@@ -6,37 +6,77 @@ import {
   Subscription,
   Info,
 } from '@nestjs/graphql';
+import { Inject, UseGuards } from '@nestjs/common';
+import { PubSub } from 'graphql-subscriptions';
+import { PrismaSelect } from '@paljs/plugins';
+import { Prisma } from '@generated/prisma';
+import { type GraphQLResolveInfo } from 'graphql';
 import {
   Board,
+  CreateOneBoardArgs,
+  DeleteOneBoardArgs,
   FindManyBoardArgs,
   FindUniqueBoardArgs,
-  CreateOneBoardArgs,
   UpdateOneBoardArgs,
-  DeleteOneBoardArgs,
-  Role,
-} from 'src/@generated/graphql';
+} from '@/@generated/graphql';
 import { BoardsService } from './boards.service';
-import {
-  Inject,
-  UseGuards,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
-import { PubSub } from 'graphql-subscriptions';
-import { BoardEventPayload } from 'src/types/graphql/board-event-payload';
-import { JwtAuthGuard } from '../utils/guards';
-import { CurrentUser } from '../utils/decorators/current-user.decorator';
-import { AuthenticatedUser } from 'src/types/graphql';
-import { PrismaSelect } from '@paljs/plugins';
-import { Prisma } from '@prisma/client';
-import { type GraphQLResolveInfo } from 'graphql';
+import { CurrentUser, OwnerOrAdminNested } from '@/utils/decorators';
+import { type AuthenticatedUser } from '@/types';
+import { Role } from '@generated/prisma';
+import { BoardEventPayload } from '@/types/graphql/board-event-payload';
+import { JwtAuthGuard } from '@/utils/guards';
 
 @Resolver(() => Board)
 export class BoardsResolver {
   constructor(
     private readonly boardsService: BoardsService,
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
-  ) { }
+  ) {}
+
+  @OwnerOrAdminNested(
+    [
+      {
+        resourceName: 'Board',
+        serviceToken: BoardsService,
+        ownerField: 'userId',
+      },
+    ],
+    [Role.ADMIN],
+  )
+  @Mutation(() => Board)
+  async updateBoard(@Args() args: UpdateOneBoardArgs) {
+    const updated = await this.boardsService.update({
+      where: args.where,
+      data: args.data as unknown as Prisma.BoardUpdateInput,
+    });
+
+    await this.pubSub.publish('boardEvents', {
+      boardEvents: { type: 'UPDATED', board: updated },
+    });
+
+    return updated;
+  }
+
+  @OwnerOrAdminNested(
+    [
+      {
+        resourceName: 'Board',
+        serviceToken: BoardsService,
+        ownerField: 'userId',
+      },
+    ],
+    [Role.ADMIN],
+  )
+  @Mutation(() => Board)
+  async removeBoard(@Args() args: DeleteOneBoardArgs) {
+    const removed = await this.boardsService.remove(args);
+
+    await this.pubSub.publish('boardEvents', {
+      boardEvents: { type: 'REMOVED', board: removed },
+    });
+
+    return removed;
+  }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Board)
@@ -55,60 +95,8 @@ export class BoardsResolver {
     await this.pubSub.publish('boardEvents', {
       boardEvents: { type: 'CREATED', board },
     });
+
     return board;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Board)
-  async updateBoard(
-    @Args() args: UpdateOneBoardArgs,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
-    const board = await this.boardsService.findOne({ where: args.where });
-    if (!board) throw new NotFoundException('Board Not Found');
-
-    const isOwner = board.userId === user.userId;
-    const isAdmin =
-      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
-
-    if (!isOwner && !isAdmin) {
-      throw new ForbiddenException('Not authorized to update this board');
-    }
-
-    const updated = await this.boardsService.update({
-      where: args.where,
-      data: args.data as unknown as Prisma.BoardUpdateInput,
-    });
-
-    await this.pubSub.publish('boardEvents', {
-      boardEvents: { type: 'UPDATED', board: updated },
-    });
-
-    return updated;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Board)
-  async removeBoard(
-    @Args() args: DeleteOneBoardArgs,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
-    const board = await this.boardsService.findOne({ where: args.where });
-    if (!board) throw new NotFoundException('Board Not Found');
-
-    const isOwner = board.userId === user.userId;
-    const isAdmin =
-      Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN);
-
-    if (!isOwner && !isAdmin) {
-      throw new ForbiddenException('Not authorized to delete this board');
-    }
-
-    const removed = await this.boardsService.remove(args);
-    await this.pubSub.publish('boardEvents', {
-      boardEvents: { type: 'REMOVED', board: removed },
-    });
-    return removed;
   }
 
   @UseGuards(JwtAuthGuard)

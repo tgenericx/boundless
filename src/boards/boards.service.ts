@@ -1,6 +1,6 @@
+import { PrismaService } from '@/prisma/prisma.service';
+import { Board, Prisma } from '@generated/prisma';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Board } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class BoardsService {
