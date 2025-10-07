@@ -22,7 +22,13 @@ export abstract class AbstractOwnerGuard<
     private readonly steps: OwnershipChain<TResources>,
     private readonly bypassRoles: Role[] = [Role.ADMIN],
     private readonly forceOwnershipCheck = false,
-  ) {}
+  ) {
+    if (!steps || steps.length === 0) {
+      throw new Error(
+        `${AbstractOwnerGuard.name}: Ownership chain cannot be empty. Define at least one ownership step.`,
+      );
+    }
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const gqlCtx = GqlExecutionContext.create(context);
@@ -32,7 +38,6 @@ export abstract class AbstractOwnerGuard<
 
     if (!user) throw new UnauthorizedException();
 
-    // ✅ Admin or privileged role bypass
     if (!this.forceOwnershipCheck) {
       if (
         Array.isArray(user.roles) &&
