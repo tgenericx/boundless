@@ -1,13 +1,10 @@
-name: Docker
+name: Docker image
 
 on:
-  schedule:
-    - cron: '40 20 * * *'
-  push:
-    branches: ['main']
-    tags: ['v*.*.*']
-  pull_request:
-    branches: ['main']
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
 
 env:
   REGISTRY: ghcr.io
@@ -25,16 +22,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js and cache pnpm
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+          node-version: '22'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Run database migrations
+        run: pnpm run db:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build project
         run: pnpm build
