@@ -1,24 +1,35 @@
-import { SetMetadata, applyDecorators, UseGuards } from '@nestjs/common';
-import { OwnerOrAdminGuard } from '../guards/owner-or-admin.guard';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { applyDecorators, Injectable, UseGuards } from '@nestjs/common';
+import { AbstractOwnerGuard } from 'src/utils/guards/abstract-owner.guard';
+import { IdArgs, OwnershipChain } from 'src/types';
+import { JwtAuthGuard } from 'src/utils/guards';
+import { Role } from '@prisma/client';
 
-export const OWNER_ADMIN_META = 'ownerOrAdminMeta';
+export function OwnerOrAdminNested<TResources extends Record<string, any>[]>(
+  steps: {
+    resourceName: string;
+    service: { findOne: (params: { where: { id: string } }) => Promise<any> };
+    ownerField: string;
+  }[],
+  bypassRoles: Role[] = [Role.ADMIN],
+  forceOwnershipCheck = false,
+) {
+  @Injectable()
+  class DynamicOwnerGuard extends AbstractOwnerGuard<IdArgs, TResources> {
+    constructor() {
+      const ownershipSteps = steps.map((step) => ({
+        resourceName: step.resourceName,
+        ownerField: step.ownerField,
+        findResourceById: (id: string) =>
+          step.service.findOne({ where: { id } }),
+      }));
 
-export interface OwnerOrAdminMeta {
-  resource: string;
-  wherePath: string;
-  ownerField: string;
-}
-
-export function OwnerOrAdmin(meta: OwnerOrAdminMeta) {
-  if (!meta.ownerField) {
-    throw new Error(
-      `@OwnerOrAdmin() requires an explicit 'ownerField' (e.g., 'userId' or 'createdById')`,
-    );
+      super(
+        ownershipSteps as OwnershipChain<TResources>,
+        bypassRoles,
+        forceOwnershipCheck,
+      );
+    }
   }
 
-  return applyDecorators(
-    SetMetadata(OWNER_ADMIN_META, meta),
-    UseGuards(JwtAuthGuard, OwnerOrAdminGuard),
-  );
+  return applyDecorators(UseGuards(JwtAuthGuard, DynamicOwnerGuard));
 }

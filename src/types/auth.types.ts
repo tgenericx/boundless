@@ -21,12 +21,9 @@ export interface AuthenticatedUser {
   roles: User['roles'];
 }
 
-export interface OwnershipStep<
-  TResource extends Record<string, any>,
-  K extends keyof TResource = keyof TResource,
-> {
+export interface OwnershipStep<TResource extends Record<string, any>> {
   resourceName: string;
-  ownerField: K;
+  ownerField: keyof TResource;
   findResourceById: (id: string) => Promise<TResource | null>;
 }
 
