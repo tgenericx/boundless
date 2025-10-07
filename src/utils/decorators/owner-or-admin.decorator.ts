@@ -8,6 +8,7 @@ export function OwnerOrAdminNested<TResources extends Record<string, any>[]>(
     resourceName: string;
     service: { findOne: (params: { where: { id: string } }) => Promise<any> };
     ownerField: string;
+    parentIdField?: string;
   }[],
   bypassRoles: Role[] = [Role.ADMIN],
   forceOwnershipCheck = false,
@@ -18,6 +19,7 @@ export function OwnerOrAdminNested<TResources extends Record<string, any>[]>(
       const ownershipSteps = steps.map((step) => ({
         resourceName: step.resourceName,
         ownerField: step.ownerField,
+        parentIdField: step.parentIdField,
         findResourceById: (id: string) =>
           step.service.findOne({ where: { id } }),
       }));
