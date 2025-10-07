@@ -3,7 +3,9 @@ import { IdArgs, OwnershipChain } from 'src/types';
 import { JwtAuthGuard, AbstractOwnerGuard } from 'src/utils/guards';
 import { Role } from '@prisma/client';
 
-export function OwnerOrAdminNested<TResources extends Record<string, any>[]>(
+export function OwnerOrAdminNested<
+  TResources extends [Record<string, any>, ...Record<string, any>[]],
+>(
   steps: {
     resourceName: string;
     service: { findOne: (params: { where: { id: string } }) => Promise<any> };
