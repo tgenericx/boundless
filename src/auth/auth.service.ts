@@ -7,15 +7,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { UsersService } from '../users/users.service';
-import { TokenService } from '../tokens/token.service';
-import { RefreshTokenService } from '../tokens/refresh-token.service';
 import { Prisma, Role } from '@prisma/client';
 import { IAuthPayload } from 'src/types';
 import { MailerService } from '@nestjs-modules/mailer';
 import { emailVerificationTemplate } from 'src/utils/templates/email-verification.template';
 import { ConfigService } from '@nestjs/config';
-import { LoginInput } from 'src/types/graphql';
+import { UsersService } from '@/users/users.service';
+import { TokenService } from '@/tokens/token.service';
+import { RefreshTokenService } from '@/tokens/refresh-token.service';
+import { LoginInput } from '@/types/graphql';
 
 @Injectable()
 export class AuthService {

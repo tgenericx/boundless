@@ -5,10 +5,11 @@ import { UsersService } from '../users/users.service';
 import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators';
-import { CreateOneUserArgs, User } from 'generated/graphql';
-import { AuthenticatedUser, AuthPayload, LoginInput } from 'src/types/graphql';
 import { PrismaSelect } from '@paljs/plugins';
 import { Prisma } from '@prisma/client';
+import { CreateOneUserArgs, User } from '@/@generated/graphql';
+import { AuthPayload, LoginInput } from '@/types/graphql';
+import type { AuthenticatedUser } from '@/types';
 
 @Resolver()
 export class AuthResolver {

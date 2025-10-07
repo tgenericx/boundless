@@ -1,6 +1,6 @@
+import { PrismaClient } from '@generated/prisma';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { withAccelerate } from '@prisma/extension-accelerate';
-import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService
