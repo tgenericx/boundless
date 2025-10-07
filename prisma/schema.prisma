@@ -5,9 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  // provider = "prisma-client"
-  // output   = "../src/@generated/prisma"
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -19,6 +18,8 @@ generator nestgraphql {
   provider               = "node node_modules/prisma-nestjs-graphql"
   output                 = "../src/@generated/graphql"
   reExport               = "All"
+  prismaClientImport     = "@generated/prisma"
+  purgeOutput            = true
   fields_Scalars_from    = "graphql-scalars"
   fields_Scalars_input   = true
   fields_Scalars_output  = true
