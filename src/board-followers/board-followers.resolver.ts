@@ -1,9 +1,4 @@
 import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
-import {
-  BoardFollower,
-  FindManyBoardFollowerArgs,
-  FindUniqueBoardFollowerArgs,
-} from 'src/@generated/graphql';
 import { BoardFollowersService } from './board-followers.service';
 import {
   BadRequestException,
@@ -12,10 +7,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { BoardFollowerEventPayload } from 'src/types/graphql/board-follower-event-payload';
-import { JwtAuthGuard } from '../utils/guards';
-import { CurrentUser } from 'src/utils/decorators';
-import { AuthenticatedUser } from 'src/types/graphql';
+import {
+  BoardFollower,
+  FindManyBoardFollowerArgs,
+  FindUniqueBoardFollowerArgs,
+} from '@/@generated/graphql';
+import type { AuthenticatedUser } from '@/types';
+import { CurrentUser } from '@/utils/decorators';
+import { JwtAuthGuard } from '@/utils/guards';
+import { BoardFollowerEventPayload } from '@/types/graphql/board-follower-event-payload';
 
 @Resolver(() => BoardFollower)
 export class BoardFollowersResolver {
