@@ -8,7 +8,8 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from '@prisma/client';
-import { AuthenticatedUser, IdArgs, type OwnershipChain } from 'src/types';
+
+import type { AuthenticatedUser, IdArgs, OwnershipChain } from 'src/types';
 
 @Injectable()
 export abstract class AbstractOwnerGuard<
@@ -23,25 +24,29 @@ export abstract class AbstractOwnerGuard<
     private readonly bypassRoles: Role[] = [Role.ADMIN],
     private readonly forceOwnershipCheck = false,
   ) {
-    if (!steps || steps.length === 0) {
+    if (!steps?.length) {
       throw new Error(
-        `${AbstractOwnerGuard.name}: Ownership chain cannot be empty. Define at least one ownership step.`,
+        `${AbstractOwnerGuard.name}: Ownership chain cannot be empty. Provide at least one resource step.`,
       );
     }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const gqlCtx = GqlExecutionContext.create(context);
-    const ctx = gqlCtx.getContext<{ req?: { user?: AuthenticatedUser } }>();
-    const args = gqlCtx.getArgs<TArgs>();
-    const user = ctx.req?.user;
 
-    if (!user) throw new UnauthorizedException();
+    const ctx = gqlCtx.getContext<{ req?: { user?: AuthenticatedUser } }>();
+    const user = ctx?.req?.user;
+    const args = gqlCtx.getArgs<TArgs>();
+
+    if (!user)
+      throw new UnauthorizedException(
+        'Unauthorized: no user in request context',
+      );
 
     if (!this.forceOwnershipCheck) {
       if (
         Array.isArray(user.roles) &&
-        this.bypassRoles.some((role) => user.roles.includes(role))
+        this.bypassRoles.some((r) => user.roles.includes(r))
       ) {
         this.logger.debug(
           `✅ User ${user.userId} bypassed ownership check (roles: ${user.roles.join(', ')})`,
@@ -50,42 +55,73 @@ export abstract class AbstractOwnerGuard<
       }
     }
 
-    let id: string | undefined = args.where?.id ?? args.id;
-    if (!id) throw new ForbiddenException('Missing resource ID');
+    const id: string | undefined = args?.where?.id ?? args?.id;
+    if (!id)
+      throw new ForbiddenException('Missing resource ID for ownership check');
+
+    let currentId = id;
 
     for (const [index, step] of this.steps.entries()) {
-      const resource = await step.findResourceById(id);
-      if (!resource)
+      const resource = await step.findResourceById(currentId);
+      if (!resource) {
         throw new ForbiddenException(
-          `Resource not found (${step.resourceName}, id: ${id})`,
+          `Resource not found (${step.resourceName}, id: ${currentId})`,
         );
+      }
 
-      const ownerId = resource[step.ownerField] as unknown as string;
-      if (typeof ownerId !== 'string')
+      if (!(step.ownerField in resource)) {
         throw new ForbiddenException(
-          `Resource missing owner field (${step.resourceName})`,
+          `Invalid ownership config: field "${String(step.ownerField)}" does not exist on ${step.resourceName}`,
         );
+      }
+
+      const ownerId = resource[step.ownerField] as unknown as
+        | string
+        | null
+        | undefined;
+      if (!ownerId) {
+        this.logger.warn(
+          `${step.resourceName} (${currentId}) has no owner (${String(step.ownerField)} is ${ownerId}). Denying access.`,
+        );
+        throw new ForbiddenException(
+          `Cannot verify ownership: ${step.resourceName} has no assigned owner.`,
+        );
+      }
 
       const isLastStep = index === this.steps.length - 1;
 
       if (isLastStep) {
-        if (ownerId !== user.userId)
+        if (ownerId !== user.userId) {
           throw new ForbiddenException(
-            `Not authorized to access ${step.resourceName} (owner: ${ownerId})`,
+            `Not authorized to access ${step.resourceName} (expected owner ${ownerId}, got ${user.userId})`,
           );
-
+        }
         this.logger.debug(
           `✅ Ownership verified for ${user.userId} on ${step.resourceName}`,
         );
       } else {
-        const nextId = resource[step.parentIdField as string] as string;
-        if (!nextId)
+        // traverse to parent id
+        const parentIdField = step.parentIdField;
+        if (!parentIdField) {
           throw new ForbiddenException(
-            `Missing parent reference (${step.resourceName}.${String(
-              step.parentIdField,
-            )})`,
+            `Invalid ownership config: missing parentIdField on ${step.resourceName}`,
           );
-        id = nextId;
+        }
+
+        if (!(parentIdField in resource)) {
+          throw new ForbiddenException(
+            `Invalid ownership config: missing parentIdField "${String(parentIdField)}" on ${step.resourceName}`,
+          );
+        }
+
+        const nextId = resource[parentIdField] as string | null | undefined;
+        if (!nextId) {
+          throw new ForbiddenException(
+            `Missing parent reference (${step.resourceName}.${String(parentIdField)})`,
+          );
+        }
+
+        currentId = nextId;
       }
     }
 
