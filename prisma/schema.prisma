@@ -59,9 +59,7 @@ model User {
   avatar String?
   bio    String?
 
-  firstName String?
-  lastName  String?
-  otherName String?
+  name String?
 
   /// @Unique()
   /// @FieldType('Scalars.GraphQLEmailAddress')
@@ -108,6 +106,26 @@ model User {
 
   /// Boards this user is following
   followedBoards BoardFollower[]
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+}
+
+model Business {
+  id String @id @default(cuid())
+
+  /// Link to User
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Contact info
+  whatsapp  String?
+  instagram String?
+
+  inventories Inventory[]
 
   /// @ReadOnly()
   createdAt DateTime @default(now())
@@ -427,32 +445,6 @@ model Listing {
   @@index([categoryId])
   @@index([status])
   @@index([createdAt])
-}
-
-model Business {
-  id String @id @default(cuid())
-
-  /// Link to User
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  /// Store name (optional, e.g. "Phastboy Gadgets")
-  name String?
-
-  /// Bio/description
-  description String?
-
-  /// Contact info
-  whatsapp  String?
-  instagram String?
-
-  inventories Inventory[]
-
-  /// @ReadOnly()
-  createdAt DateTime @default(now())
-
-  /// @ReadOnly()
-  updatedAt DateTime @updatedAt
 }
 
 model Inventory {
