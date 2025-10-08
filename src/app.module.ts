@@ -14,6 +14,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerConfigService } from './mailer.config';
+import { BusinessesModule } from './businesses/businesses.module';
+import { InventoriesModule } from './inventories/inventories.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { MailerConfigService } from './mailer.config';
       imports: [ConfigModule],
       useClass: MailerConfigService,
     }),
+    BusinessesModule,
+    InventoriesModule,
   ],
 })
 export class AppModule {}

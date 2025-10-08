@@ -19,8 +19,10 @@ import { PubSub } from 'graphql-subscriptions';
 import { JwtAuthGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@/types';
-import { EventEventPayload } from '@/types/graphql/event-event-payload';
 import { Prisma } from 'generated/prisma';
+import { createEventPayload } from '@/types/graphql';
+
+export const EventEventPayload = createEventPayload('eventEvents', Event);
 
 @Resolver(() => Event)
 export class EventsResolver {

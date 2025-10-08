@@ -3,6 +3,7 @@ import { User } from '@/generated/graphql';
 
 export * from './login.input';
 export * from './auth.payload';
+export * from './event.payload';
 
 export class AuthenticatedUser {
   @Field(() => ID, {

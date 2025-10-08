@@ -15,7 +15,12 @@ import {
 import type { AuthenticatedUser } from '@/types';
 import { CurrentUser } from '@/utils/decorators';
 import { JwtAuthGuard } from '@/utils/guards';
-import { BoardFollowerEventPayload } from '@/types/graphql/board-follower-event-payload';
+import { createEventPayload } from '@/types/graphql';
+
+export const BoardFollowerEventPayload = createEventPayload(
+  'boardFollowerEvents',
+  BoardFollower,
+);
 
 @Resolver(() => BoardFollower)
 export class BoardFollowersResolver {
