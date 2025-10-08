@@ -8,7 +8,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
 import { AuthenticatedUser } from 'src/types/graphql';
-import { Role } from '@generated/prisma';
+import { Role } from 'generated/prisma';
 
 @Injectable()
 export class AdminOnlyGuard implements CanActivate {

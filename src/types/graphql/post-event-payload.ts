@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Post } from 'src/@generated/graphql';
+import { Post } from '@/generated/graphql';
 
 @ObjectType()
 export class PostEventPayload {

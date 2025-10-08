@@ -1,7 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
 import * as Scalars from 'graphql-scalars';
 import { IsOptional, IsStrongPassword } from 'class-validator';
-import { AtLeastOneField } from 'src/validators/at-least-one-field.validator';
+import { AtLeastOneField } from '@/validators/at-least-one-field.validator';
 
 @InputType()
 @AtLeastOneField<LoginInput>(['email', 'username', 'phoneNumber'])

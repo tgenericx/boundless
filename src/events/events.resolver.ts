@@ -7,7 +7,7 @@ import {
   UpdateOneEventArgs,
   DeleteOneEventArgs,
   Role,
-} from '@/@generated/graphql';
+} from '@/generated/graphql';
 import { EventsService } from './events.service';
 import {
   Inject,
@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@/types';
 import { EventEventPayload } from '@/types/graphql/event-event-payload';
-import { Prisma } from '@generated/prisma';
+import { Prisma } from 'generated/prisma';
 
 @Resolver(() => Event)
 export class EventsResolver {

@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User } from 'generated/prisma';
 import { IAccessTokenPayload, VerifiedToken } from 'src/types';
 
 @Injectable()

@@ -11,7 +11,7 @@ import {
   BoardFollower,
   FindManyBoardFollowerArgs,
   FindUniqueBoardFollowerArgs,
-} from '@/@generated/graphql';
+} from '@/generated/graphql';
 import type { AuthenticatedUser } from '@/types';
 import { CurrentUser } from '@/utils/decorators';
 import { JwtAuthGuard } from '@/utils/guards';

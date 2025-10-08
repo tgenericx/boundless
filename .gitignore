@@ -64,5 +64,6 @@ secrets
 generated
 */generated
 */@generated
+docs
 
 **/seed.ts
