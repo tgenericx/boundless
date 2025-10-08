@@ -3,7 +3,7 @@ import {
   UserFollow,
   FindManyUserFollowArgs,
   FindUniqueUserFollowArgs,
-} from '@/@generated/graphql';
+} from '@/generated/graphql';
 import { UserFollowsService } from './user-follows.service';
 import {
   BadRequestException,

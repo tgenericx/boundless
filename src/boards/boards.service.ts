@@ -1,5 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service';
-import { Board, Prisma } from '@generated/prisma';
+import { Board, Prisma } from 'generated/prisma';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()

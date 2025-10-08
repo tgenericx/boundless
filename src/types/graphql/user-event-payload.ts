@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { BoardFollower } from 'src/@generated/graphql';
+import { BoardFollower } from '@/generated/graphql';
 
 @ObjectType()
 export class FollowerEventPayload {

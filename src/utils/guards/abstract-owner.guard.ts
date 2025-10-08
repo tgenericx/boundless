@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { Role } from '@generated/prisma';
+import { Role } from 'generated/prisma';
 
 import type { AuthenticatedUser, IdArgs, OwnershipChain } from '@/types';
 

@@ -6,12 +6,12 @@ import {
   CreateOneCategoryArgs,
   UpdateOneCategoryArgs,
   DeleteOneCategoryArgs,
-} from '@/@generated/graphql';
+} from '@/generated/graphql';
 import { CategoriesService } from './categories.service';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { CategoryEventPayload } from '@/types/graphql/category-event-payload';
-import { Prisma } from '@generated/prisma';
+import { Prisma } from 'generated/prisma';
 import { AdminOnly } from '@/utils/decorators';
 
 @Resolver(() => Category)

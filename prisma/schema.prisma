@@ -16,9 +16,9 @@ datasource db {
 
 generator nestgraphql {
   provider               = "node node_modules/prisma-nestjs-graphql"
-  output                 = "../src/@generated/graphql"
+  output                 = "../src/generated/graphql"
   reExport               = "All"
-  prismaClientImport     = "@generated/prisma"
+  prismaClientImport     = "generated/prisma"
   purgeOutput            = true
   fields_Scalars_from    = "graphql-scalars"
   fields_Scalars_input   = true
@@ -29,7 +29,7 @@ generator nestgraphql {
 
 generator docs {
   provider = "node node_modules/prisma-docs-generator"
-  output   = "../src/@generated/docs"
+  output   = "../docs"
 }
 
 enum ResourceType {

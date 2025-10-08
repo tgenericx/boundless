@@ -14,7 +14,7 @@ import {
   UpdateOnePostArgs,
   DeleteOnePostArgs,
   Role,
-} from '@/@generated/graphql';
+} from '@/generated/graphql';
 import { PostsService } from './posts.service';
 import {
   Inject,
@@ -25,7 +25,7 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { PostEventPayload } from '@/types/graphql/post-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
-import { Prisma } from '@generated/prisma';
+import { Prisma } from 'generated/prisma';
 import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
 import { CurrentUser } from '@/utils/decorators';

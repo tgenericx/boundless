@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Category } from 'src/@generated/graphql';
+import { Category } from '@/generated/graphql';
 
 @ObjectType()
 export class CategoryEventPayload {

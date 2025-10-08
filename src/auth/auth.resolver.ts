@@ -6,8 +6,8 @@ import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../utils/guards';
 import { CurrentUser } from '../utils/decorators';
 import { PrismaSelect } from '@paljs/plugins';
-import { Prisma } from '@prisma/client';
-import { CreateOneUserArgs, User } from '@/@generated/graphql';
+import { Prisma } from 'generated/prisma';
+import { CreateOneUserArgs, User } from '@/generated/graphql';
 import { AuthPayload, LoginInput } from '@/types/graphql';
 import type { AuthenticatedUser } from '@/types';
 
