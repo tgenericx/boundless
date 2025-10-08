@@ -31,7 +31,7 @@ export class AdminOnlyGuard implements CanActivate {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    if (Array.isArray(user?.roles) && user.roles.includes(Role.ADMIN)) {
+    if (!Array.isArray(user?.roles) || !user.roles.includes(Role.ADMIN)) {
       throw new ForbiddenException('Admin access only');
     }
 
