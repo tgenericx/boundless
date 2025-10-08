@@ -191,14 +191,12 @@ model Category {
   /// Child categories
   children Category[] @relation("CategoryToParent")
 
-  events   Event[]
-  boards   BoardCategory[]
-  listings Listing[]
+  events      Event[]
+  boards      BoardCategory[]
+  listings    Listing[]
+  inventories Inventory[]
 
-  /// @ReadOnly()
   createdAt DateTime @default(now())
-
-  /// @ReadOnly()
   updatedAt DateTime @updatedAt
 
   @@unique([name, parentId])
@@ -432,10 +430,7 @@ model Listing {
 
   listingMedia ListingMedia[]
 
-  /// @ReadOnly()
   createdAt DateTime @default(now())
-
-  /// @ReadOnly()
   updatedAt DateTime @updatedAt
 
   /// @SoftDelete()
@@ -467,6 +462,9 @@ model Inventory {
 
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   inventoryMedia InventoryMedia[]
 
