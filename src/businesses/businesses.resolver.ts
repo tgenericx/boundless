@@ -71,7 +71,7 @@ export class BusinessesResolver {
     });
     if (!existing) throw new NotFoundException('Business not found');
 
-    const isOwner = existing.id === user.userId;
+    const isOwner = existing.userId === user.userId;
     const isAdmin = Array.isArray(user.roles) && user.roles.includes('ADMIN');
 
     if (!isOwner && !isAdmin) {
@@ -103,7 +103,7 @@ export class BusinessesResolver {
     });
     if (!existing) throw new NotFoundException('Business not found');
 
-    const isOwner = existing.id === user.userId;
+    const isOwner = existing.userId === user.userId;
     const isAdmin = Array.isArray(user.roles) && user.roles.includes('ADMIN');
 
     if (!isOwner && !isAdmin) {
@@ -130,7 +130,7 @@ export class BusinessesResolver {
     const isAdmin = Array.isArray(user.roles) && user.roles.includes('ADMIN');
 
     if (!isAdmin) {
-      args.where = { ...args.where, id: { equals: user.userId } };
+      args.where = { ...args.where, userId: { equals: user.userId } };
     }
 
     return this.businessesService.findMany(args);
