@@ -7,7 +7,7 @@ COPY package*.json pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 COPY prisma ./prisma
-RUN pnpm run prisma:generate
+RUN pnpm run db:generate
 
 COPY tsconfig*.json ./
 COPY src ./src
