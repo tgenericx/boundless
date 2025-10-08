@@ -16,6 +16,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerConfigService } from './mailer.config';
 import { BusinessesModule } from './businesses/businesses.module';
 import { InventoriesModule } from './inventories/inventories.module';
+import { ListingsModule } from './listings/listings.module';
+import { MediaRelationsModule } from './media-relations/media-relations.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { InventoriesModule } from './inventories/inventories.module';
     }),
     BusinessesModule,
     InventoriesModule,
+    ListingsModule,
+    MediaRelationsModule,
   ],
 })
 export class AppModule {}
