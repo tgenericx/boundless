@@ -28,7 +28,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: pnpm run prisma:generate
+        run: pnpm run db:generate
 
       - name: Build the project
         run: pnpm run build
