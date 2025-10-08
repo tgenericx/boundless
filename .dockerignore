@@ -27,4 +27,3 @@ logs/
 # Misc
 README.md
 eslint.config.mjs
-tsconfig.*
