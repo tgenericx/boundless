@@ -23,8 +23,10 @@ import { BoardsService } from './boards.service';
 import { CurrentUser, OwnerOrAdminNested } from '@/utils/decorators';
 import type { AuthenticatedUser } from '@/types';
 import { Role } from 'generated/prisma';
-import { BoardEventPayload } from '@/types/graphql/board-event-payload';
 import { JwtAuthGuard } from '@/utils/guards';
+import { createEventPayload } from '@/types/graphql';
+
+export const BoardEventPayload = createEventPayload('boardEvents', Board);
 
 @Resolver(() => Board)
 export class BoardsResolver {

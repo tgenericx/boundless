@@ -10,9 +10,14 @@ import {
 import { CategoriesService } from './categories.service';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { CategoryEventPayload } from '@/types/graphql/category-event-payload';
 import { Prisma } from 'generated/prisma';
 import { AdminOnly } from '@/utils/decorators';
+import { createEventPayload } from '@/types/graphql';
+
+export const CategoryEventPayload = createEventPayload(
+  'categoryEvents',
+  Category,
+);
 
 @Resolver(() => Category)
 export class CategoriesResolver {

@@ -23,13 +23,15 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { PostEventPayload } from '@/types/graphql/post-event-payload';
 import { JwtAuthGuard } from 'src/utils/guards';
 import { Prisma } from 'generated/prisma';
 import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
 import { CurrentUser } from '@/utils/decorators';
 import { type AuthenticatedUser } from '@/types';
+import { createEventPayload } from '@/types/graphql';
+
+export const PostEventPayload = createEventPayload('postEvents', Post);
 
 @Resolver(() => Post)
 export class PostsResolver {

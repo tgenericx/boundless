@@ -12,17 +12,22 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { UserFollowEventPayload } from '@/types/graphql/user-follow-event-payload';
 import { JwtAuthGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators';
 import { type AuthenticatedUser } from '@/types';
+import { createEventPayload } from '@/types/graphql';
+
+export const UserFollowEventPayload = createEventPayload(
+  'userFollowEvents',
+  UserFollow,
+);
 
 @Resolver(() => UserFollow)
 export class UserFollowsResolver {
   constructor(
     private readonly userFollowsService: UserFollowsService,
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => UserFollow)
