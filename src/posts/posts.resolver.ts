@@ -29,7 +29,7 @@ import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
 import { CurrentUser } from '@/utils/decorators';
 import { type AuthenticatedUser } from '@/types';
-import { createEventPayload } from '@/types/graphql';
+import { createEventPayload, TimelinePaginationArgs } from '@/types/graphql';
 
 export const PostEventPayload = createEventPayload('postEvents', Post);
 
@@ -140,6 +140,18 @@ export class PostsResolver {
     }
 
     return this.postsService.findMany(args);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Query(() => [Post])
+  feed(
+    @Args() args: TimelinePaginationArgs,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.postsService.feedPosts({
+      userId: user.userId,
+      ...args,
+    });
   }
 
   /**

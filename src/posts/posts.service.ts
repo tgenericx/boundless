@@ -20,6 +20,54 @@ export class PostsService {
     return post;
   }
 
+  async feedPosts(args: {
+    userId: string;
+    after?: string;
+    before?: string;
+    since?: Date;
+    limit?: number;
+  }): Promise<Post[]> {
+    const { userId, after, before, since, limit = 10 } = args;
+
+    const followingIds = (
+      await this.prisma.userFollow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      })
+    ).map((f) => f.followingId);
+
+    const where: Prisma.PostWhereInput = {
+      userId: { in: followingIds.length ? followingIds : ['_'] },
+    };
+
+    if (since) {
+      // fetch only newer posts than `since`
+      where.createdAt = { gt: since };
+    }
+
+    const cursor = after ? { id: after } : before ? { id: before } : undefined;
+
+    const orderBy: Prisma.PostOrderByWithRelationInput = before
+      ? { createdAt: 'asc' }
+      : { createdAt: 'desc' };
+
+    const posts = await this.prisma.post.findMany({
+      where,
+      cursor,
+      skip: cursor ? 1 : 0,
+      take: limit,
+      orderBy,
+      include: {
+        author: { select: { id: true, username: true, avatar: true } },
+        postMedia: { include: { media: true } },
+      },
+    });
+
+    const result = before ? posts.reverse() : posts;
+
+    return result;
+  }
+
   async update(args: Prisma.PostUpdateArgs): Promise<Post> {
     try {
       return await this.prisma.post.update(args);

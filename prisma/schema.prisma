@@ -67,7 +67,7 @@ model User {
   username String @unique
 
   /// @HideField()
-  /// @Validator.IsStrongPassword({ minLength: 8,})
+  /// @Validator.IsStrongPassword({ minLength: 8})
   password String
 
   /// User roles for RBAC
