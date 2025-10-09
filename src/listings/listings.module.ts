@@ -4,5 +4,6 @@ import { ListingsResolver } from './listings.resolver';
 
 @Module({
   providers: [ListingsResolver, ListingsService],
+  exports: [ListingsService],
 })
 export class ListingsModule {}

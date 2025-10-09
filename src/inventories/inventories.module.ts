@@ -4,5 +4,6 @@ import { InventoriesResolver } from './inventories.resolver';
 
 @Module({
   providers: [InventoriesResolver, InventoriesService],
+  exports: [InventoriesService],
 })
 export class InventoriesModule {}

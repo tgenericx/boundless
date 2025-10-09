@@ -4,5 +4,6 @@ import { PostsResolver } from './posts.resolver';
 
 @Module({
   providers: [PostsResolver, PostsService],
+  exports: [PostsService],
 })
 export class PostsModule {}
