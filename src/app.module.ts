@@ -18,7 +18,6 @@ import { BusinessesModule } from './businesses/businesses.module';
 import { InventoriesModule } from './inventories/inventories.module';
 import { ListingsModule } from './listings/listings.module';
 import { MediaRelationsModule } from './media-relations/media-relations.module';
-import { TimelineModule } from './timeline/timeline.module';
 
 @Module({
   imports: [
@@ -43,7 +42,6 @@ import { TimelineModule } from './timeline/timeline.module';
     InventoriesModule,
     ListingsModule,
     MediaRelationsModule,
-    TimelineModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
