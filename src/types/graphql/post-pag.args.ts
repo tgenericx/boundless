@@ -1,7 +1,8 @@
-import { ArgsType, Field, Int } from '@nestjs/graphql';
+import { ArgsType, Field, Int, ObjectType } from '@nestjs/graphql';
+import { Post } from '@/generated/graphql';
 
 @ArgsType()
-export class TimelinePaginationArgs {
+export class TimelinePagArgs {
   @Field({ nullable: true })
   after?: string;
 
@@ -13,4 +14,28 @@ export class TimelinePaginationArgs {
 
   @Field(() => Date, { nullable: true })
   since?: Date;
+}
+
+@ObjectType()
+export class PageInfo {
+  @Field({ nullable: true })
+  endCursor?: string;
+
+  @Field({ nullable: true })
+  startCursor?: string;
+
+  @Field()
+  hasNextPage: boolean;
+
+  @Field()
+  hasPreviousPage: boolean;
+}
+
+@ObjectType()
+export class TimelinePosts {
+  @Field(() => [Post])
+  items: Post[];
+
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
 }
