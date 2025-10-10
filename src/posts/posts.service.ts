@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Post, Prisma } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
+import { TimelinePagArgs } from '@/types/graphql';
 
 @Injectable()
 export class PostsService {
@@ -20,15 +21,21 @@ export class PostsService {
     return post;
   }
 
-  async feedPosts(args: {
-    userId: string;
-    after?: string;
-    before?: string;
-    since?: Date;
-    limit?: number;
-  }): Promise<Post[]> {
-    const { userId, after, before, since, limit = 10 } = args;
+  async feedPosts(
+    userId: string,
+    args: TimelinePagArgs,
+  ): Promise<{
+    items: Post[];
+    pageInfo: {
+      startCursor: string | undefined;
+      endCursor: string | undefined;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  }> {
+    const { after, before, since, limit = 10 } = args;
 
+    // get people you follow
     const followingIds = (
       await this.prisma.userFollow.findMany({
         where: { followerId: userId },
@@ -36,12 +43,14 @@ export class PostsService {
       })
     ).map((f) => f.followingId);
 
+    // feed filter
     const where: Prisma.PostWhereInput = {
-      userId: { in: followingIds.length ? followingIds : ['_'] },
+      userId: {
+        in: followingIds,
+      },
     };
 
     if (since) {
-      // fetch only newer posts than `since`
       where.createdAt = { gt: since };
     }
 
@@ -51,11 +60,13 @@ export class PostsService {
       ? { createdAt: 'asc' }
       : { createdAt: 'desc' };
 
+    const take = limit + 1;
+
     const posts = await this.prisma.post.findMany({
       where,
       cursor,
       skip: cursor ? 1 : 0,
-      take: limit,
+      take,
       orderBy,
       include: {
         author: { select: { id: true, username: true, avatar: true } },
@@ -65,7 +76,20 @@ export class PostsService {
 
     const result = before ? posts.reverse() : posts;
 
-    return result;
+    const hasNextPage = result.length > limit;
+    const hasPreviousPage = !!before;
+
+    const items = hasNextPage ? result.slice(0, limit) : result;
+
+    return {
+      items,
+      pageInfo: {
+        startCursor: items[0]?.id ?? null,
+        endCursor: items[items.length - 1]?.id ?? null,
+        hasNextPage,
+        hasPreviousPage,
+      },
+    };
   }
 
   async update(args: Prisma.PostUpdateArgs): Promise<Post> {
