@@ -24,7 +24,7 @@ import {
 } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { JwtAuthGuard } from 'src/utils/guards';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
 import { CurrentUser } from '@/utils/decorators';

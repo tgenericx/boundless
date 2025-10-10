@@ -24,7 +24,6 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/generated ./generated
 
 RUN pnpm install --prod --frozen-lockfile
 RUN pnpm prune --prod

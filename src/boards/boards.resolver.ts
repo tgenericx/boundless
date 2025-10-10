@@ -9,7 +9,7 @@ import {
 import { Inject, UseGuards } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { PrismaSelect } from '@paljs/plugins';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 import { type GraphQLResolveInfo } from 'graphql';
 import {
   Board,
@@ -22,7 +22,7 @@ import {
 import { BoardsService } from './boards.service';
 import { CurrentUser, OwnerOrAdminNested } from '@/utils/decorators';
 import type { AuthenticatedUser } from '@/types';
-import { Role } from 'generated/prisma';
+import { Role } from '@/generated/prisma';
 import { JwtAuthGuard } from '@/utils/guards';
 import { createEventPayload } from '@/types/graphql';
 

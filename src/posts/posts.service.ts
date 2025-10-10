@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Post, Prisma } from 'generated/prisma';
+import { Post, Prisma } from '@/generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 import { TimelinePagArgs } from '@/types/graphql';
 

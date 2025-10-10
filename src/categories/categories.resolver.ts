@@ -10,7 +10,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 import { AdminOnly } from '@/utils/decorators';
 import { createEventPayload } from '@/types/graphql';
 

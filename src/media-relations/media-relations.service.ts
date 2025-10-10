@@ -5,7 +5,7 @@ import {
   PostMedia,
   ListingMedia,
   InventoryMedia,
-} from 'generated/prisma';
+} from '@/generated/prisma';
 
 @Injectable()
 export class MediaRelationsService {
