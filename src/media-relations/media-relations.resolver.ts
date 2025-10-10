@@ -13,7 +13,7 @@ import {
 import { MediaRelationsService } from './media-relations.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/utils/guards';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 
 @Resolver()
 export class MediaRelationsResolver {

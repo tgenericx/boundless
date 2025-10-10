@@ -8,7 +8,7 @@ import {
 } from '@/generated/graphql';
 import { JwtAuthGuard } from '@/utils/guards';
 import { UseGuards } from '@nestjs/common';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 import { type GraphQLResolveInfo } from 'graphql';
 import { PrismaSelect } from '@paljs/plugins';
 

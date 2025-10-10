@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators';
 import { type AuthenticatedUser } from '@/types';
 import { PubSub } from 'graphql-subscriptions';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@/generated/prisma';
 import { createEventPayload } from '@/types/graphql';
 
 export const ListingEventPayload = createEventPayload('listingEvents', Listing);

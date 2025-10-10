@@ -1,6 +1,6 @@
 import { applyDecorators, Injectable, UseGuards, Type } from '@nestjs/common';
 import { JwtAuthGuard, AbstractOwnerGuard } from '@/utils/guards';
-import { Role } from 'generated/prisma';
+import { Role } from '@/generated/prisma';
 
 import type { IdArgs, OwnershipChain } from '@/types';
 

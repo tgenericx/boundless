@@ -1,4 +1,4 @@
-import { User } from 'generated/prisma';
+import { User } from '@/generated/prisma';
 
 export interface IAuthPayload {
   accessToken: string;

@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { Prisma, Role } from 'generated/prisma';
+import { Prisma, Role } from '@/generated/prisma';
 import { IAuthPayload } from 'src/types';
 import { MailerService } from '@nestjs-modules/mailer';
 import { emailVerificationTemplate } from 'src/utils/templates/email-verification.template';
