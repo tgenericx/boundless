@@ -26,7 +26,6 @@ import { CacheableMemory } from 'cacheable';
 
         return {
           stores: [
-            // 🧠 In-memory fast LRU cache
             new Keyv({
               store: new CacheableMemory({
                 ttl: 1000 * 60 * 5,
@@ -34,7 +33,6 @@ import { CacheableMemory } from 'cacheable';
               }),
             }),
 
-            // ☁️ Redis as distributed backend
             new KeyvRedis(redisUrl),
           ],
           ttl: 1000 * 60 * 10,
@@ -43,5 +41,6 @@ import { CacheableMemory } from 'cacheable';
       },
     }),
   ],
+  exports: [ 'CacheModule' ]
 })
 export class CacheConfigModule {}
