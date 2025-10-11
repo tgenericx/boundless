@@ -13,14 +13,20 @@ import { CacheableMemory } from 'cacheable';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const redisUrl: string =
-          config.get('REDIS_URL') ||
-          `redis://${config.get('REDIS_HOST') || 'localhost'}:${
-            config.get('REDIS_PORT') || 6379
-          }`;
+        const username = config.get<string>('REDIS_USERNAME', '');
+        const password = config.get<string>('REDIS_PASSWORD', '');
+        const host = config.get<string>('REDIS_HOST', 'localhost');
+        const port = config.get<number>('REDIS_PORT', 6379);
+        const env = config.get<string>('NODE_ENV', 'development').toLowerCase();
+
+        const redisUrl =
+          env === 'development'
+            ? `redis://${host}:${port}`
+            : `redis://${username}:${password}@${host}:${port}`;
 
         return {
           stores: [
+            // 🧠 In-memory fast LRU cache
             new Keyv({
               store: new CacheableMemory({
                 ttl: 1000 * 60 * 5,
@@ -28,6 +34,7 @@ import { CacheableMemory } from 'cacheable';
               }),
             }),
 
+            // ☁️ Redis as distributed backend
             new KeyvRedis(redisUrl),
           ],
           ttl: 1000 * 60 * 10,

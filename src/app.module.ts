@@ -30,33 +30,28 @@ import { CacheConfigModule } from './cache/cache.module';
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        throttlers: [
-          {
-            name: 'main',
-            ttl: seconds(60),
-            limit: 10,
-          },
-          {
-            name: 'short',
-            ttl: seconds(10),
-            limit: 3,
-          },
-          {
-            name: 'medium',
-            ttl: seconds(10),
-            limit: 10,
-          },
-          {
-            name: 'long',
-            ttl: seconds(60),
-            limit: 100,
-          },
-        ],
-        storage: new ThrottlerStorageRedisService(
-          `redis://${configService.get('REDIS_HOST') || '127.0.0.1'}:${configService.get('REDIS_PORT') || 6379}`,
-        ),
-      }),
+      useFactory: (config: ConfigService) => {
+        const username = config.get<string>('REDIS_USERNAME', '');
+        const password = config.get<string>('REDIS_PASSWORD', '');
+        const host = config.get<string>('REDIS_HOST', 'localhost');
+        const port = config.get<number>('REDIS_PORT', 6379);
+        const env = config.get<string>('NODE_ENV', 'development').toLowerCase();
+
+        const redisUrl =
+          env === 'development'
+            ? `redis://${host}:${port}`
+            : `redis://${username}:${password}@${host}:${port}`;
+
+        return {
+          throttlers: [
+            { name: 'main', ttl: seconds(60), limit: 10 },
+            { name: 'short', ttl: seconds(10), limit: 3 },
+            { name: 'medium', ttl: seconds(30), limit: 10 },
+            { name: 'long', ttl: seconds(120), limit: 100 },
+          ],
+          storage: new ThrottlerStorageRedisService(redisUrl),
+        };
+      },
     }),
     CacheConfigModule,
     GqlModule,
