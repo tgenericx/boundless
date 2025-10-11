@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { seconds, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { GqlModule } from './gql/gql.module';
 import { UsersModule } from './users/users.module';
@@ -27,7 +27,6 @@ import { CacheConfigModule } from './cache/cache.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    CacheConfigModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -35,22 +34,22 @@ import { CacheConfigModule } from './cache/cache.module';
         throttlers: [
           {
             name: 'main',
-            ttl: 60,
+            ttl: seconds(60),
             limit: 10,
           },
           {
             name: 'short',
-            ttl: 1000,
+            ttl: seconds(10),
             limit: 3,
           },
           {
             name: 'medium',
-            ttl: 10000,
-            limit: 20,
+            ttl: seconds(10),
+            limit: 10,
           },
           {
             name: 'long',
-            ttl: 60000,
+            ttl: seconds(60),
             limit: 100,
           },
         ],
@@ -59,6 +58,7 @@ import { CacheConfigModule } from './cache/cache.module';
         ),
       }),
     }),
+    CacheConfigModule,
     GqlModule,
     UsersModule,
     AuthModule,
