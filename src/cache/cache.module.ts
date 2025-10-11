@@ -1,15 +1,16 @@
 import { Module, Global } from '@nestjs/common';
-import { Cacheable } from 'cacheable';
-import KeyvRedis from '@keyv/redis';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheService } from './cache.service';
+import { Keyv } from 'keyv';
+import KeyvRedis from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
 
 @Global()
 @Module({
-  imports: [ConfigModule],
-  providers: [
-    {
-      provide: 'CACHE_INSTANCE',
+  imports: [
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const redisUrl: string =
@@ -18,13 +19,22 @@ import { CacheService } from './cache.service';
             config.get('REDIS_PORT') || 6379
           }`;
 
-        const secondary = new KeyvRedis(redisUrl);
+        return {
+          stores: [
+            new Keyv({
+              store: new CacheableMemory({
+                ttl: 1000 * 60 * 5,
+                lruSize: 5000,
+              }),
+            }),
 
-        return new Cacheable({ secondary, ttl: '4h' });
+            new KeyvRedis(redisUrl),
+          ],
+          ttl: 1000 * 60 * 10,
+          max: 10000,
+        };
       },
-    },
-    CacheService,
+    }),
   ],
-  exports: ['CACHE_INSTANCE', CacheService],
 })
-export class CacheModule {}
+export class CacheConfigModule {}

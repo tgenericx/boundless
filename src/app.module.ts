@@ -20,14 +20,14 @@ import { BusinessesModule } from './businesses/businesses.module';
 import { InventoriesModule } from './inventories/inventories.module';
 import { ListingsModule } from './listings/listings.module';
 import { MediaRelationsModule } from './media-relations/media-relations.module';
-import { CacheModule } from './cache/cache.module';
+import { CacheConfigModule } from './cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    CacheModule,
+    CacheConfigModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -79,7 +79,6 @@ import { CacheModule } from './cache/cache.module';
     InventoriesModule,
     ListingsModule,
     MediaRelationsModule,
-    CacheModule,
   ],
 })
 export class AppModule {}
