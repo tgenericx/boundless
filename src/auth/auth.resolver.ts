@@ -38,7 +38,7 @@ export class AuthResolver {
     return this.authService.login(input);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RefreshJwtGuard)
   @Mutation(() => AuthPayload)
   async refresh(@Args('refreshToken') token: string): Promise<AuthPayload> {
     return await this.authService.refreshToken(token);
@@ -67,7 +67,6 @@ export class AuthResolver {
     return foundUser;
   }
 
-  @UseGuards(RefreshJwtGuard)
   @Mutation(() => GraphQLBoolean)
   async verifyEmail(
     @Args('refreshToken') refreshToken: string,
