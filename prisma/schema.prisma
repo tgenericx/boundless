@@ -80,10 +80,6 @@ model User {
   phone           String? @unique
   phoneIsVerified Boolean @default(false)
 
-  /// All refresh tokens associated with this user
-  /// @Auth(roles: ["USER", "ADMIN"])
-  refreshTokens RefreshToken[]
-
   /// Scheduled items created by the user
   events Event[]
 
@@ -112,6 +108,16 @@ model User {
 
   /// @ReadOnly()
   updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  jtiHash   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Business {
@@ -153,25 +159,6 @@ model UserFollow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
-}
-
-model RefreshToken {
-  id String @id @default(cuid())
-
-  /// @Sensitive()
-  /// @Unique()
-  token String @unique
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  /// Token expiry
-  expiresAt DateTime
-
-  /// @ReadOnly()
-  createdAt DateTime @default(now())
-
-  @@index([userId])
 }
 
 model Category {
