@@ -11,6 +11,11 @@ export interface IAccessTokenPayload {
   roles: User['roles'];
 }
 
+export interface IRefreshTokenPayload {
+  sub: User['id'];
+  jti: string;
+}
+
 export type VerifiedToken<T = unknown> = {
   iat?: number;
   exp?: number;
