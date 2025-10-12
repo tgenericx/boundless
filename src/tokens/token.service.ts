@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -12,7 +13,7 @@ import { IAccessTokenPayload, VerifiedToken } from 'src/types';
 export class TokenService {
   private readonly logger = new Logger(TokenService.name);
 
-  constructor(private readonly jwt: JwtService) {}
+  constructor(@Inject('ACCESS_JWT_SERVICE') private readonly jwt: JwtService) {}
 
   generateAccessToken(user: Pick<User, 'id' | 'roles'>): string {
     try {
@@ -27,7 +28,7 @@ export class TokenService {
     }
   }
 
-  generateToken(user: Pick<User, 'id'>): string {
+  generateVerificationToken(user: Pick<User, 'id'>): string {
     try {
       const payload = {
         sub: user.id,
@@ -36,8 +37,8 @@ export class TokenService {
         expiresIn: '24h',
       });
     } catch (error) {
-      this.logger.error('Failed to generate access token', error);
-      throw new InternalServerErrorException('Failed to generate access token');
+      this.logger.error('Failed to generate token', error);
+      throw new InternalServerErrorException('Failed to generate token');
     }
   }
 
@@ -47,15 +48,6 @@ export class TokenService {
     } catch (error) {
       this.logger.error('Token verification failed', error);
       throw new UnauthorizedException('Invalid or expired token');
-    }
-  }
-
-  decode<T = IAccessTokenPayload>(token: string): VerifiedToken<T> | null {
-    try {
-      return this.jwt.decode(token);
-    } catch (error) {
-      this.logger.error('Token decoding failed', error);
-      throw new UnauthorizedException('Invalid token');
     }
   }
 }
