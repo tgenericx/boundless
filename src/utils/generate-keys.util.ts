@@ -4,37 +4,30 @@ import * as path from 'path';
 import { findRoot } from './find-root.util';
 
 /**
- * Generates and saves RSA private and public keys for JWT authentication.
+ * Generates and saves RSA private and public keys.
  *
- * - Keys are stored in the `secrets/` directory at the project root.
- * - By default, the function is idempotent: if keys already exist, they are preserved.
- * - You can override this behavior by passing `force = true` to regenerate the keys.
- * - File permissions for the private key are restricted (`0600`) for security.
+ * Keys are stored under: <project-root>/secrets/<subDir>/<prefix>private.pem
  *
- * @param force - If `true`, existing keys will be overwritten. Default is `false`.
- * @returns void
- *
- * @example
- * ```ts
- * // Generate keys if they don't exist
- * generateAndSaveKeys();
- *
- * // Force regeneration of keys
- * generateAndSaveKeys(true);
- * ```
+ * @param prefix - Optional prefix for filenames, e.g. 'access-' or 'refresh-'
+ * @param subDir - Optional subdirectory under secrets (e.g. orgId)
+ * @param force  - If true overwrites existing keys
  */
-export function generateAndSaveKeys(force = false): void {
-  const root = findRoot(__dirname);
-  const secretsDir = path.join(root, 'secrets');
+export function generateAndSaveKeys(
+  prefix = '',
+  subDir = '',
+  force = false,
+): void {
+  const root = findRoot(process.cwd());
+  const secretsBase = path.join(root, 'secrets');
+  const targetDir = subDir ? path.join(secretsBase, subDir) : secretsBase;
 
-  if (!fs.existsSync(secretsDir)) {
-    fs.mkdirSync(secretsDir, { recursive: true });
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
   }
 
-  const privatePath = path.join(secretsDir, 'private.pem');
-  const publicPath = path.join(secretsDir, 'public.pem');
+  const privatePath = path.join(targetDir, `${prefix}private.pem`);
+  const publicPath = path.join(targetDir, `${prefix}public.pem`);
 
-  // Skip generation if keys already exist (unless force = true)
   if (!force && fs.existsSync(privatePath) && fs.existsSync(publicPath)) {
     console.log('⚠️ Keys already exist, skipping generation.');
     console.log(`🔐 Private Key: ${privatePath}`);
