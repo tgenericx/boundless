@@ -1,10 +1,10 @@
 import { Resolver, Mutation, Args, Query, Info } from '@nestjs/graphql';
 import { GraphQLBoolean, type GraphQLResolveInfo } from 'graphql';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '@/users/users.service';
 import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../utils/guards';
-import { CurrentUser } from '../utils/decorators';
+import { JwtAuthGuard, RefreshJwtGuard } from '@/utils/guards';
+import { CurrentUser } from '@/utils/decorators';
 import { PrismaSelect } from '@paljs/plugins';
 import { Prisma } from '@/generated/prisma';
 import { CreateOneUserArgs, User } from '@/generated/graphql';
@@ -67,9 +67,12 @@ export class AuthResolver {
     return foundUser;
   }
 
+  @UseGuards(RefreshJwtGuard)
   @Mutation(() => GraphQLBoolean)
-  async verifyEmail(@Args('token') token: string): Promise<boolean> {
-    return await this.authService.verifyEmail(token);
+  async verifyEmail(
+    @Args('refreshToken') refreshToken: string,
+  ): Promise<boolean> {
+    return await this.authService.verifyEmail(refreshToken);
   }
 
   @Mutation(() => GraphQLBoolean)

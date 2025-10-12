@@ -41,6 +41,6 @@ import { CacheableMemory } from 'cacheable';
       },
     }),
   ],
-  exports: [ 'CacheModule' ]
+  exports: [CacheModule],
 })
 export class CacheConfigModule {}
