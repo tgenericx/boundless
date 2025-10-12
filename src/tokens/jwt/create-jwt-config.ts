@@ -1,20 +1,16 @@
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { loadOrGenerateKeys } from './jwt-utils';
-
-export type TimeUnit = `${number}${'s' | 'm' | 'h' | 'd'}`;
+import { JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
 export interface JwtKeyConfig {
   privateKey: string;
   publicKey: string;
-  signOptions: {
-    algorithm: 'RS256';
-    expiresIn: TimeUnit | number;
-  };
-  verifyOptions: {
-    algorithms: ['RS256'];
-  };
+  signOptions: JwtSignOptions;
+  verifyOptions: JwtVerifyOptions;
 }
+
+export type TimeUnit = `${number}${'s' | 'm' | 'h' | 'd'}`;
 
 /**
  * Creates a reusable factory for generating JWT configs.
