@@ -40,8 +40,10 @@ export class AuthResolver {
 
   @UseGuards(RefreshJwtGuard)
   @Mutation(() => AuthPayload)
-  async refresh(@Args('refreshToken') token: string): Promise<AuthPayload> {
-    return await this.authService.refreshToken(token);
+  async refresh(
+    @Args('refreshToken') refreshToken: string,
+  ): Promise<AuthPayload> {
+    return await this.authService.refreshToken(refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -69,9 +71,9 @@ export class AuthResolver {
 
   @Mutation(() => GraphQLBoolean)
   async verifyEmail(
-    @Args('refreshToken') refreshToken: string,
+    @Args('verificationToken') verificationToken: string,
   ): Promise<boolean> {
-    return await this.authService.verifyEmail(refreshToken);
+    return await this.authService.verifyEmail(verificationToken);
   }
 
   @Mutation(() => GraphQLBoolean)

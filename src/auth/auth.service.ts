@@ -73,7 +73,7 @@ export class AuthService {
     });
 
     const emailToken = this.tokenService.generateVerificationToken(user);
-    const verificationUrl = `${APP_URL}/auth/verify-email?token=${emailToken}`;
+    const verificationUrl = `${APP_URL}/auth/verify-email?verificationToken=${emailToken}`;
 
     const html = emailVerificationTemplate(
       user.email.split('@')[0],
