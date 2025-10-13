@@ -11,6 +11,7 @@ import { Queue, QueueEvents } from 'bullmq';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const logger = new Logger(RedisModule.name);
+
         const redisOptions: RedisOptions = {
           host: config.get<string>('REDIS_HOST', 'localhost'),
           port: config.get<number>('REDIS_PORT', 6379),
@@ -64,7 +65,7 @@ import { Queue, QueueEvents } from 'bullmq';
       useFactory: (redis: IORedis) => {
         const logger = new Logger(RedisModule.name);
         logger.log('📡 Subscribing to feed queue events...');
-        return new QueueEvents('feed', { connection: redis });
+        return new QueueEvents('feed', { connection: redis.duplicate() });
       },
     },
   ],
