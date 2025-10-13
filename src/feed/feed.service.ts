@@ -1,6 +1,7 @@
 import { Post } from '@/generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 import { TimelinePagArgs } from '@/types/graphql';
+import { getFeedPage } from '@/utils/getFeed.util';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
@@ -64,17 +65,17 @@ export class FeedService {
       hasPreviousPage: boolean;
     };
   }> {
-    const { after, limit = 10 } = args;
+    const { after, before, limit = 10 } = args;
     const key = this.feedKey(userId);
     const ttl = this.config.get<number>('FEED_CACHE_TTL', 60 * 10);
 
-    let start = 0;
-    if (after) {
-      const rank = await this.redis.zrevrank(key, after);
-      start = rank !== null ? rank + 1 : 0;
-    }
-
-    const ids = await this.redis.zrevrange(key, start, start + limit - 1);
+    const { ids, pageInfo } = await getFeedPage({
+      redis: this.redis,
+      key,
+      limit,
+      after,
+      before,
+    });
 
     if (!ids.length) {
       this.logger.verbose(`Cache miss for user:${userId}, fetching from DB...`);
@@ -121,7 +122,6 @@ export class FeedService {
     }
 
     this.logger.verbose(`Cache hit for user:${userId} with ${ids.length} IDs`);
-
     const posts = await this.prisma.post.findMany({
       where: { id: { in: ids } },
       include: {
@@ -134,14 +134,6 @@ export class FeedService {
       .map((id) => posts.find((p) => p.id === id))
       .filter(Boolean) as Post[];
 
-    return {
-      items: orderedPosts,
-      pageInfo: {
-        startCursor: ids[0],
-        endCursor: ids.at(-1),
-        hasNextPage: (await this.redis.zcard(key)) > start + limit,
-        hasPreviousPage: !!after,
-      },
-    };
+    return { items: orderedPosts, pageInfo };
   }
 }

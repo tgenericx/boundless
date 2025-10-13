@@ -12,7 +12,7 @@ export class FeedResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => TimelinePosts)
-  async feed(
+  async feedPosts(
     @Args() args: TimelinePagArgs,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<TimelinePosts> {
