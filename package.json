@@ -7,7 +7,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.15.0",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && cp -r src/generated/prisma dist/generated",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"**/*.md\"",
     "start": "nest start",
     "dev": "nest start --watch",
@@ -58,6 +58,7 @@
     "class-validator": "^0.14.2",
     "cloudinary": "^2.7.0",
     "graphql": "^16.11.0",
+    "graphql-redis-subscriptions": "^2.7.0",
     "graphql-scalars": "^1.24.2",
     "graphql-subscriptions": "^3.0.0",
     "graphql-type-json": "^0.3.2",
