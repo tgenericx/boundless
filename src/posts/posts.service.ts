@@ -1,14 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Post, Prisma } from '@/generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
-import { TimelinePagArgs } from '@/types/graphql';
+import { FeedService } from '@/feed/feed.service';
 
 @Injectable()
 export class PostsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly feedService: FeedService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async create(args: Prisma.PostCreateArgs): Promise<Post> {
-    return this.prisma.post.create(args);
+  async create(data: Prisma.PostCreateInput): Promise<Post> {
+    const post = await this.prisma.post.create({ data });
+    await this.feedService
+      .fanOutPost({
+        id: post.id,
+        authorId: post.userId,
+      })
+      .catch(console.error);
+    return post;
   }
 
   async findOne(args: Prisma.PostFindUniqueArgs): Promise<Post> {
@@ -19,77 +29,6 @@ export class PostsService {
     }
 
     return post;
-  }
-
-  async feedPosts(
-    userId: string,
-    args: TimelinePagArgs,
-  ): Promise<{
-    items: Post[];
-    pageInfo: {
-      startCursor: string | undefined;
-      endCursor: string | undefined;
-      hasNextPage: boolean;
-      hasPreviousPage: boolean;
-    };
-  }> {
-    const { after, before, since, limit = 10 } = args;
-
-    // get people you follow
-    const followingIds = (
-      await this.prisma.userFollow.findMany({
-        where: { followerId: userId },
-        select: { followingId: true },
-      })
-    ).map((f) => f.followingId);
-
-    // feed filter
-    const where: Prisma.PostWhereInput = {
-      userId: {
-        in: followingIds,
-      },
-    };
-
-    if (since) {
-      where.createdAt = { gt: since };
-    }
-
-    const cursor = after ? { id: after } : before ? { id: before } : undefined;
-
-    const orderBy: Prisma.PostOrderByWithRelationInput = before
-      ? { createdAt: 'asc' }
-      : { createdAt: 'desc' };
-
-    const take = limit + 1;
-
-    const posts = await this.prisma.post.findMany({
-      where,
-      cursor,
-      skip: cursor ? 1 : 0,
-      take,
-      orderBy,
-      include: {
-        author: { select: { id: true, username: true, avatar: true } },
-        postMedia: { include: { media: true } },
-      },
-    });
-
-    const result = before ? posts.reverse() : posts;
-
-    const hasNextPage = result.length > limit;
-    const hasPreviousPage = !!before;
-
-    const items = hasNextPage ? result.slice(0, limit) : result;
-
-    return {
-      items,
-      pageInfo: {
-        startCursor: items[0]?.id ?? null,
-        endCursor: items[items.length - 1]?.id ?? null,
-        hasNextPage,
-        hasPreviousPage,
-      },
-    };
   }
 
   async update(args: Prisma.PostUpdateArgs): Promise<Post> {

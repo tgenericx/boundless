@@ -8,9 +8,9 @@ import {
 } from '@nestjs/graphql';
 import {
   Post,
+  PostCreateInput,
   FindManyPostArgs,
   FindUniquePostArgs,
-  CreateOnePostArgs,
   UpdateOnePostArgs,
   DeleteOnePostArgs,
   Role,
@@ -29,11 +29,7 @@ import { PrismaSelect } from '@paljs/plugins';
 import { type GraphQLResolveInfo } from 'graphql';
 import { CurrentUser } from '@/utils/decorators';
 import { type AuthenticatedUser } from '@/types';
-import {
-  createEventPayload,
-  TimelinePagArgs,
-  TimelinePosts,
-} from '@/types/graphql';
+import { createEventPayload } from '@/types/graphql';
 
 export const PostEventPayload = createEventPayload('postEvents', Post);
 
@@ -50,17 +46,16 @@ export class PostsResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Post)
   async createPost(
-    @Args() args: CreateOnePostArgs,
+    @Args('data') data: PostCreateInput,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     const post = await this.postsService.create({
-      data: {
-        ...args.data,
-        createdBy: {
-          connect: { id: user.userId },
-        },
-      } as unknown as Prisma.PostCreateInput,
-    });
+      ...data,
+      author: {
+        connect: { id: user.userId },
+      },
+    } as unknown as Prisma.PostCreateInput
+    );
 
     await this.pubSub.publish('postEvents', {
       postEvents: { type: 'CREATED', post },
@@ -144,15 +139,6 @@ export class PostsResolver {
     }
 
     return this.postsService.findMany(args);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Query(() => TimelinePosts)
-  async feed(
-    @Args() args: TimelinePagArgs,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<TimelinePosts> {
-    return this.postsService.feedPosts(user.userId, args);
   }
 
   /**

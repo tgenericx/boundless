@@ -21,6 +21,8 @@ import { InventoriesModule } from './inventories/inventories.module';
 import { ListingsModule } from './listings/listings.module';
 import { MediaRelationsModule } from './media-relations/media-relations.module';
 import { CacheConfigModule } from './cache/cache.module';
+import { FeedModule } from './feed/feed.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -74,6 +76,8 @@ import { CacheConfigModule } from './cache/cache.module';
     InventoriesModule,
     ListingsModule,
     MediaRelationsModule,
+    FeedModule,
+    RedisModule,
   ],
 })
 export class AppModule {}
