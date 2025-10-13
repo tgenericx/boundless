@@ -13,6 +13,7 @@ COPY tsconfig*.json ./
 COPY src ./src
 
 RUN pnpm run build
+RUN cp -r src/generated/prisma ./dist/generated
 
 # ---- Runtime Stage ----
 FROM node:22-alpine AS runner
@@ -26,7 +27,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
 RUN pnpm install --prod --frozen-lockfile
-RUN pnpm prune --prod
 
 EXPOSE 3000
 CMD ["pnpm", "run", "start:prod"]
