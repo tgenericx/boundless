@@ -44,21 +44,42 @@ export async function getFeedPage({
     }
   }
 
-  let ids = await redis.zrevrange(key, start, stop);
+  const ids = await redis.zrevrange(key, start, stop);
+  const total = await redis.zcard(key);
 
-  if (before) {
-    ids = ids.reverse();
+  if (!ids.length) {
+    return {
+      ids: [],
+      pageInfo: {
+        startCursor: undefined,
+        endCursor: undefined,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
   }
 
-  const total = await redis.zcard(key);
+  const startCursor = ids[0];
+  const endCursor = ids.at(-1);
+
+  const [startRank, endRank] =
+    startCursor && endCursor
+      ? await Promise.all([
+          redis.zrevrank(key, startCursor),
+          redis.zrevrank(key, endCursor),
+        ])
+      : [null, null];
+
+  const hasPreviousPage = startRank !== null && startRank > 0;
+  const hasNextPage = endRank !== null && endRank < total - 1;
 
   return {
     ids,
     pageInfo: {
-      startCursor: ids[0],
-      endCursor: ids.at(-1),
-      hasNextPage: stop < total - 1,
-      hasPreviousPage: start > 0,
+      startCursor,
+      endCursor,
+      hasNextPage,
+      hasPreviousPage,
     },
   };
 }
