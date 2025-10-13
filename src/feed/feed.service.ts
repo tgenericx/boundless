@@ -2,6 +2,7 @@ import { Post } from '@/generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 import { TimelinePagArgs } from '@/types/graphql';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
@@ -12,6 +13,7 @@ export class FeedService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: IORedis,
     @Inject('FEED_QUEUE') private readonly feedQueue: Queue,
+    private readonly config: ConfigService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -64,6 +66,7 @@ export class FeedService {
   }> {
     const { after, limit = 10 } = args;
     const key = this.feedKey(userId);
+    const ttl = this.config.get<number>('FEED_CACHE_TTL', 60 * 10);
 
     let start = 0;
     if (after) {
@@ -74,6 +77,8 @@ export class FeedService {
     const ids = await this.redis.zrevrange(key, start, start + limit - 1);
 
     if (!ids.length) {
+      this.logger.verbose(`Cache miss for user:${userId}, fetching from DB...`);
+
       const followingIds = (
         await this.prisma.userFollow.findMany({
           where: { followerId: userId },
@@ -91,6 +96,19 @@ export class FeedService {
         },
       });
 
+      if (posts.length) {
+        const pipeline = this.redis.pipeline();
+        for (const post of posts) {
+          pipeline.zadd(key, post.createdAt.getTime(), post.id);
+        }
+        pipeline.expire(key, ttl);
+        await pipeline.exec();
+
+        this.logger.debug(
+          `🧠 Cached ${posts.length} posts for user:${userId} (TTL ${ttl}s)`,
+        );
+      }
+
       return {
         items: posts,
         pageInfo: {
@@ -102,17 +120,22 @@ export class FeedService {
       };
     }
 
+    this.logger.verbose(`Cache hit for user:${userId} with ${ids.length} IDs`);
+
     const posts = await this.prisma.post.findMany({
       where: { id: { in: ids } },
-      orderBy: { createdAt: 'desc' },
       include: {
         author: { select: { id: true, username: true, avatar: true } },
         postMedia: { include: { media: true } },
       },
     });
 
+    const orderedPosts = ids
+      .map((id) => posts.find((p) => p.id === id))
+      .filter(Boolean) as Post[];
+
     return {
-      items: posts,
+      items: orderedPosts,
       pageInfo: {
         startCursor: ids[0],
         endCursor: ids.at(-1),
