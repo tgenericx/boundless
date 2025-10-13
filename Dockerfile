@@ -13,7 +13,6 @@ COPY tsconfig*.json ./
 COPY src ./src
 
 RUN pnpm run build
-RUN cp -r src/generated/prisma ./dist/generated
 
 # ---- Runtime Stage ----
 FROM node:22-alpine AS runner
