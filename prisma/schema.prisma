@@ -319,13 +319,26 @@ model Post {
   createdAt DateTime @default(now())
 
   /// @ReadOnly()
-  updatedAt DateTime @updatedAt
+  updatedAt    DateTime      @updatedAt
+  feedDelivery FeedDelivery?
 
   @@index([userId])
   @@index([boardId])
   @@index([eventId])
   @@index([parentId])
   @@index([createdAt])
+}
+
+model FeedDelivery {
+  id        String   @id @default(cuid())
+  postId    String   @unique
+  delivered Boolean  @default(false)
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post Post @relation(fields: [postId], references: [id])
 }
 
 model Media {
