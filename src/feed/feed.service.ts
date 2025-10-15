@@ -1,11 +1,12 @@
-import { Post } from '@/generated/prisma';
-import { PrismaService } from '@/prisma/prisma.service';
-import { TimelinePagArgs } from '@/types/graphql';
-import { getFeedPage } from '@/utils/getFeed.util';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Post } from '@/generated/prisma';
+import { TimelinePagArgs } from '@/types/graphql';
+import { getFeedPage } from '@/utils/getFeed.util';
+import { computeFanoutTargets } from './feed.utils';
 
 @Injectable()
 export class FeedService {
@@ -18,22 +19,17 @@ export class FeedService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async fanoutPost(postId: string, followerIds: string[], createdAt: number) {
-    await this.feedQueue.add('fanout', { postId, followerIds, createdAt });
-    this.logger.log(`📬 Queued fan-out for post ${postId}`);
-  }
-
+  /**
+   * Trigger fan-out for a post — queues a job that distributes
+   * the post to all follower feeds (including the author’s own).
+   */
   async fanOutPost(post: { id: string; authorId: string }): Promise<void> {
-    const followers = await this.prisma.userFollow.findMany({
-      where: { followingId: post.authorId },
-      select: { followerId: true },
-    });
+    const followerIds = await computeFanoutTargets(this.prisma, post.authorId);
 
-    const followerIds = [
-      ...new Set([...followers.map((f) => f.followerId), post.authorId]),
-    ];
-
-    if (!followerIds.length) return;
+    if (!followerIds.length) {
+      this.logger.warn(`No followers found for author ${post.authorId}`);
+      return;
+    }
 
     await this.feedQueue.add('fanout', {
       postId: post.id,
@@ -47,8 +43,19 @@ export class FeedService {
   }
 
   /**
-   * Fetch paginated feed from Redis.
-   * If cache is empty, fallback to DB.
+   * Add a post directly to a single user's feed.
+   */
+  async addToFeed(userId: string, postId: string, createdAt: number) {
+    const key = this.feedKey(userId);
+    await this.redis.zadd(key, createdAt, postId);
+  }
+
+  private feedKey(userId: string): string {
+    return `feed:${userId}`;
+  }
+
+  /**
+   * Fetch paginated feed items from Redis (with DB fallback).
    */
   async feedPosts(
     userId: string,
