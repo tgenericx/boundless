@@ -6,6 +6,7 @@ import { FeedProcessor } from './feed.processor';
 import IORedis from 'ioredis';
 import { FeedQueueMonitor } from './feed.monitor';
 import { BoardsModule } from '@/boards/boards.module';
+import { FeedRepairService } from './feed.repair.service';
 
 @Module({
   imports: [
@@ -17,7 +18,13 @@ import { BoardsModule } from '@/boards/boards.module';
     }),
     BoardsModule,
   ],
-  providers: [FeedService, FeedResolver, FeedProcessor, FeedQueueMonitor],
+  providers: [
+    FeedService,
+    FeedResolver,
+    FeedProcessor,
+    FeedQueueMonitor,
+    FeedRepairService,
+  ],
   exports: [FeedService],
 })
 export class FeedModule {}
