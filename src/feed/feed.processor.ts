@@ -1,3 +1,4 @@
+import { PrismaService } from '@/prisma/prisma.service';
 import {
   Injectable,
   Logger,
@@ -7,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
+import { FeedRepairService } from './feed.repair.service';
+import { Cron } from '@nestjs/schedule';
 
 export interface FanoutPayload {
   postId: string;
@@ -24,7 +27,11 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly BATCH_INTERVAL = 100;
   private readonly MAX_FEED_SIZE = 1000;
 
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+    private readonly prisma: PrismaService,
+    private readonly feedRepairService: FeedRepairService,
+  ) {}
 
   onModuleInit(): void {
     this.worker = new Worker<FanoutPayload>(
@@ -85,19 +92,36 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await pipeline.exec();
+      const execRes = await pipeline.exec();
+
+      const failedCmds = execRes?.filter(([, err]) => err);
+      if (failedCmds?.length) {
+        this.logger.warn(`⚠️ Some Redis commands failed: ${failedCmds.length}`);
+      }
+
+      const postIds = this.batch.map((b: FanoutPayload) => b.postId);
+
+      await this.prisma.feedDelivery.updateMany({
+        where: { postId: { in: postIds } },
+        data: { delivered: true, attempts: { increment: 1 } },
+      });
+
       this.logger.verbose(`📦 Flushed ${totalJobs} fanout jobs to Redis`);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        this.logger.error(
-          `❌ Redis pipeline failed: ${err.message}`,
-          err.stack,
-        );
-      } else {
-        this.logger.error(`❌ Redis pipeline failed: ${JSON.stringify(err)}`);
-      }
-    } finally {
-      this.batch = [];
+      const postIds = this.batch.map((b: FanoutPayload) => b.postId);
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+
+      await this.prisma.feedDelivery.updateMany({
+        where: { postId: { in: postIds } },
+        data: { attempts: { increment: 1 }, lastError: errorMsg },
+      });
+
+      this.logger.error(`❌ Redis pipeline failed: ${errorMsg}`);
     }
+  }
+
+  @Cron('0 * * * *')
+  async handleCron() {
+    await this.feedRepairService.repair(500);
   }
 }

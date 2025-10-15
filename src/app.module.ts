@@ -23,6 +23,7 @@ import { MediaRelationsModule } from './media-relations/media-relations.module';
 import { CacheConfigModule } from './cache/cache.module';
 import { FeedModule } from './feed/feed.module';
 import { RedisModule } from './redis/redis.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { RedisModule } from './redis/redis.module';
     MediaRelationsModule,
     FeedModule,
     RedisModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}

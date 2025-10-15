@@ -37,12 +37,7 @@ export class FeedService {
     const { context, boardId } = options ?? {};
 
     if (context === 'board') {
-      if (!boardId) {
-        throw new BadRequestException(
-          'boardId is required when posting to a board',
-        );
-      }
-
+      if (!boardId) throw new BadRequestException('boardId required');
       await this.boardPermissionService.ensureCanInteract(
         post.authorId,
         boardId,
@@ -54,11 +49,15 @@ export class FeedService {
       post.authorId,
       options,
     );
-
     if (!followerIds.length) {
-      this.logger.warn(`No targets found for post ${post.id}`);
-      return;
+      this.logger.warn(`No targets for post ${post.id}`);
     }
+
+    await this.prisma.feedDelivery.upsert({
+      where: { postId: post.id },
+      create: { postId: post.id },
+      update: { attempts: 0, lastError: null },
+    });
 
     await this.feedQueue.add('fanout', {
       postId: post.id,
@@ -120,8 +119,10 @@ export class FeedService {
         })
       ).map((f) => f.followingId);
 
+      const targetIds = [...new Set([userId, ...followingIds])];
+
       const posts = await this.prisma.post.findMany({
-        where: { userId: { in: followingIds } },
+        where: { userId: { in: targetIds } },
         orderBy: { createdAt: 'desc' },
         take: limit,
         include: {
@@ -137,10 +138,6 @@ export class FeedService {
         }
         pipeline.expire(key, ttl);
         await pipeline.exec();
-
-        this.logger.debug(
-          `🧠 Cached ${posts.length} posts for user:${userId} (TTL ${ttl}s)`,
-        );
       }
 
       return {
