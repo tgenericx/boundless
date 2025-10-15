@@ -86,7 +86,6 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
 
     for (const { postId, followerIds, createdAt } of currentBatch) {
       const timestamp = createdAt ?? Date.now();
-
       for (const followerId of followerIds) {
         if (!feedsMap.has(followerId)) feedsMap.set(followerId, []);
         feedsMap.get(followerId)!.push({ postId, timestamp });
@@ -95,21 +94,31 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
 
     for (const [followerId, posts] of feedsMap.entries()) {
       const key = `feed:${followerId}`;
-
       const zaddArgs = posts.flatMap((p) => [p.timestamp, p.postId]);
       pipeline.zadd(key, ...zaddArgs);
-
       pipeline.zremrangebyrank(key, 0, -(this.MAX_FEED_SIZE + 1));
     }
+
+    const postIds = currentBatch.map((b) => b.postId);
 
     try {
       const execRes = await pipeline.exec();
       const failedCmds = execRes?.filter(([, err]) => err);
+
       if (failedCmds?.length) {
-        this.logger.warn(`⚠️ Some Redis commands failed: ${failedCmds.length}`);
+        const errorCount = failedCmds.length;
+        this.logger.warn(`⚠️ Some Redis commands failed: ${errorCount}`);
+
+        await this.prisma.feedDelivery.updateMany({
+          where: { postId: { in: postIds } },
+          data: {
+            attempts: { increment: 1 },
+            lastError: `Redis batch failed: ${errorCount} errors`,
+          },
+        });
+        return;
       }
 
-      const postIds = currentBatch.map((b) => b.postId);
       await this.prisma.feedDelivery.updateMany({
         where: { postId: { in: postIds } },
         data: { delivered: true, attempts: { increment: 1 } },
@@ -117,7 +126,6 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
 
       this.logger.verbose(`📦 Flushed ${totalJobs} fanout jobs to Redis`);
     } catch (err: unknown) {
-      const postIds = currentBatch.map((b) => b.postId);
       const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
 
       await this.prisma.feedDelivery.updateMany({
