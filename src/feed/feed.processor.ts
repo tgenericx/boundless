@@ -78,29 +78,38 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
   private async flushBatch(): Promise<void> {
     if (!this.batch.length) return;
 
+    const currentBatch = this.batch.splice(0, this.batch.length);
     const pipeline = this.redis.pipeline();
-    const totalJobs = this.batch.length;
+    const totalJobs = currentBatch.length;
 
-    for (const { postId, followerIds, createdAt } of this.batch) {
+    const feedsMap = new Map<string, { postId: string; timestamp: number }[]>();
+
+    for (const { postId, followerIds, createdAt } of currentBatch) {
       const timestamp = createdAt ?? Date.now();
 
       for (const followerId of followerIds) {
-        const key = `feed:${followerId}`;
-        pipeline.zadd(key, timestamp, postId);
-        pipeline.zremrangebyrank(key, 0, -(this.MAX_FEED_SIZE + 1));
+        if (!feedsMap.has(followerId)) feedsMap.set(followerId, []);
+        feedsMap.get(followerId)!.push({ postId, timestamp });
       }
+    }
+
+    for (const [followerId, posts] of feedsMap.entries()) {
+      const key = `feed:${followerId}`;
+
+      const zaddArgs = posts.flatMap((p) => [p.timestamp, p.postId]);
+      pipeline.zadd(key, ...zaddArgs);
+
+      pipeline.zremrangebyrank(key, 0, -(this.MAX_FEED_SIZE + 1));
     }
 
     try {
       const execRes = await pipeline.exec();
-
       const failedCmds = execRes?.filter(([, err]) => err);
       if (failedCmds?.length) {
         this.logger.warn(`⚠️ Some Redis commands failed: ${failedCmds.length}`);
       }
 
-      const postIds = this.batch.map((b: FanoutPayload) => b.postId);
-
+      const postIds = currentBatch.map((b) => b.postId);
       await this.prisma.feedDelivery.updateMany({
         where: { postId: { in: postIds } },
         data: { delivered: true, attempts: { increment: 1 } },
@@ -108,7 +117,7 @@ export class FeedProcessor implements OnModuleInit, OnModuleDestroy {
 
       this.logger.verbose(`📦 Flushed ${totalJobs} fanout jobs to Redis`);
     } catch (err: unknown) {
-      const postIds = this.batch.map((b: FanoutPayload) => b.postId);
+      const postIds = currentBatch.map((b) => b.postId);
       const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
 
       await this.prisma.feedDelivery.updateMany({
