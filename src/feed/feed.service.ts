@@ -56,7 +56,7 @@ export class FeedService {
     await this.prisma.feedDelivery.upsert({
       where: { postId: post.id },
       create: { postId: post.id },
-      update: { attempts: 0, lastError: null },
+      update: { lastError: null },
     });
 
     await this.feedQueue.add('fanout', {
