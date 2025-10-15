@@ -1,4 +1,9 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
@@ -6,7 +11,8 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Post } from '@/generated/prisma';
 import { TimelinePagArgs } from '@/types/graphql';
 import { getFeedPage } from '@/utils/getFeed.util';
-import { computeFanoutTargets } from './feed.utils';
+import { computeFanoutTargets, FanoutContext } from './feed.utils';
+import { BoardsService } from '@/boards/boards.service';
 
 @Injectable()
 export class FeedService {
@@ -15,6 +21,7 @@ export class FeedService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: IORedis,
     @Inject('FEED_QUEUE') private readonly feedQueue: Queue,
+    private readonly boardPermissionService: BoardsService,
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
   ) {}
@@ -23,11 +30,33 @@ export class FeedService {
    * Trigger fan-out for a post — queues a job that distributes
    * the post to all follower feeds (including the author’s own).
    */
-  async fanOutPost(post: { id: string; authorId: string }): Promise<void> {
-    const followerIds = await computeFanoutTargets(this.prisma, post.authorId);
+  async fanOutPost(
+    post: { id: string; authorId: string },
+    options?: { context?: FanoutContext; boardId?: string },
+  ): Promise<void> {
+    const { context, boardId } = options ?? {};
+
+    if (context === 'board') {
+      if (!boardId) {
+        throw new BadRequestException(
+          'boardId is required when posting to a board',
+        );
+      }
+
+      await this.boardPermissionService.ensureCanInteract(
+        post.authorId,
+        boardId,
+      );
+    }
+
+    const followerIds = await computeFanoutTargets(
+      this.prisma,
+      post.authorId,
+      options,
+    );
 
     if (!followerIds.length) {
-      this.logger.warn(`No followers found for author ${post.authorId}`);
+      this.logger.warn(`No targets found for post ${post.id}`);
       return;
     }
 
