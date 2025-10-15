@@ -23,30 +23,27 @@ export class FeedService {
     this.logger.log(`📬 Queued fan-out for post ${postId}`);
   }
 
-  async addToFeed(userId: string, postId: string, createdAt: number) {
-    const key = `feed:${userId}`;
-    await this.redis.zadd(key, createdAt, postId);
-  }
-
-  private feedKey(userId: string): string {
-    return `feed:${userId}`;
-  }
-
   async fanOutPost(post: { id: string; authorId: string }): Promise<void> {
     const followers = await this.prisma.userFollow.findMany({
       where: { followingId: post.authorId },
       select: { followerId: true },
     });
 
-    if (!followers.length) return;
+    const followerIds = [
+      ...new Set([...followers.map((f) => f.followerId), post.authorId]),
+    ];
+
+    if (!followerIds.length) return;
 
     await this.feedQueue.add('fanout', {
       postId: post.id,
-      followerIds: followers.map((f) => f.followerId),
+      followerIds,
       createdAt: Date.now(),
     });
 
-    this.logger.log(`Queued fan-out for post ${post.id}`);
+    this.logger.log(
+      `📬 Queued fan-out for post ${post.id} to ${followerIds.length} feeds`,
+    );
   }
 
   /**
