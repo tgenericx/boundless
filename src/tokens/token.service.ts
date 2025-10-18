@@ -45,9 +45,20 @@ export class TokenService {
   verify<T = IAccessTokenPayload>(token: string): VerifiedToken<T> {
     try {
       return this.jwt.verify(token);
-    } catch (error) {
-      this.logger.error('Token verification failed', error);
-      throw new UnauthorizedException('Invalid or expired token');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.name === 'TokenExpiredError') {
+          throw new UnauthorizedException('Expired token');
+        } else if (error.name === 'JsonWebTokenError') {
+          throw new UnauthorizedException('Invalid token');
+        }
+
+        this.logger.error('Token verification failed', error);
+        throw new UnauthorizedException('Token verification error');
+      }
+
+      this.logger.error('Unknown token verification failure', error);
+      throw new UnauthorizedException('Token verification error');
     }
   }
 }
