@@ -8,7 +8,6 @@ const logger = new Logger('RefreshTokenExtractor');
  * - GraphQL variables (req.body.variables.refreshToken)
  * - REST request body (req.body.refreshToken)
  * - Headers (x-refresh-token specifically)
- * - Query parameters (?refreshToken=...)
  *
  * Explicitly ignores Bearer tokens and access token locations.
  */
@@ -44,15 +43,6 @@ export const refreshTokenExtractor = (req: Request): string | null => {
       logger.log('✅ Extracted refresh token from body.variables.refreshToken');
       return vars.refreshToken;
     }
-  }
-
-  const queryRefreshToken = (req.query as Record<string, unknown>)
-    ?.refreshToken;
-  if (typeof queryRefreshToken === 'string') {
-    logger.log(
-      '✅ Extracted refresh token from query parameter (?refreshToken=...)',
-    );
-    return queryRefreshToken;
   }
 
   logger.error('❌ No refresh token found in request. Extraction failed.');
