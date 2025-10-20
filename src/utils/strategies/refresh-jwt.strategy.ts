@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { IRefreshTokenPayload } from '@/types';
 import { loadOrGenerateKeys } from '@/tokens/jwt/jwt-utils';
-import { universalJwtExtractor } from './universal-jwt-extractor';
+import { refreshTokenExtractor } from './refresh-jwt-extractor';
 
 /**
  * Strategy for validating refresh tokens signed with the refresh keypair.
@@ -18,7 +18,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     const { publicKey } = loadOrGenerateKeys(logger, 'refresh-');
 
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([universalJwtExtractor]),
+      jwtFromRequest: ExtractJwt.fromExtractors([refreshTokenExtractor]),
       secretOrKey: publicKey,
       algorithms: ['RS256'],
       ignoreExpiration: false,
