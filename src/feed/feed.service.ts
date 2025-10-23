@@ -128,7 +128,11 @@ export class FeedService {
         include: {
           author: { select: { id: true, username: true, avatar: true } },
           postMedia: { include: { media: true } },
-          _count: true,
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
         },
       });
 
@@ -158,7 +162,11 @@ export class FeedService {
       include: {
         author: { select: { id: true, username: true, avatar: true } },
         postMedia: { include: { media: true } },
-        _count: true,
+        _count: {
+          select: {
+            replies: true,
+          },
+        },
       },
     });
 
