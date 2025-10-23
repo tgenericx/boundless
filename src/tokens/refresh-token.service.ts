@@ -129,11 +129,44 @@ export class RefreshTokenService {
 
   /** Rotate the token — revoke old and issue a new one */
   async rotateToken(oldToken: string): Promise<string> {
-    const { valid, userId, jti } = await this.isValid(oldToken);
-    if (!valid || !userId || !jti)
+    let payload: { sub: string; jti: string };
+    try {
+      payload = await this.refreshJwt.verifyAsync(oldToken);
+    } catch (error) {
+      this.logger.warn('refresh JWT verify failed', error);
       throw new UnauthorizedException('Invalid refresh token');
+    }
 
-    await this.revokeByJti(jti);
-    return this.generateRefreshToken(userId);
+    if (!payload?.sub || !payload?.jti) {
+      throw new UnauthorizedException('Invalid refresh token payload');
+    }
+
+    try {
+      const deletedToken = await this.prisma.refreshToken.delete({
+        where: { jti: payload.jti },
+      });
+
+      if (deletedToken.expiresAt < new Date()) {
+        throw new UnauthorizedException('Expired refresh token');
+      }
+
+      return this.generateRefreshToken(payload.sub);
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        // P2025: Record to delete not found.
+        this.logger.warn(
+          `Refresh token with jti=${payload.jti} not found. Possible replay attempt.`,
+        );
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      this.logger.error('Unexpected error rotating token', error);
+      throw new InternalServerErrorException('Failed to rotate token');
+    }
   }
 }
