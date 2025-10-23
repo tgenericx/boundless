@@ -1,16 +1,14 @@
 import {
-  Inject,
   Injectable,
   Logger,
-  NotFoundException,
   UnauthorizedException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import * as argon2 from 'argon2';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaClientKnownRequestError } from '@/generated/prisma/runtime/library';
 
 @Injectable()
 export class RefreshTokenService {
@@ -20,21 +18,21 @@ export class RefreshTokenService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
-    @Inject('REFRESH_JWT_SERVICE') private readonly refreshJwt: JwtService,
+    private readonly refreshJwt: JwtService,
   ) {
     const days =
       Number(this.config.get<number>('REFRESH_TOKEN_EXPIRES_IN_DAYS', 7)) || 7;
     this.refreshTokenTtlMs = days * 24 * 60 * 60 * 1000;
   }
 
+  /** Generate and persist a new refresh token for a user */
   async generateRefreshToken(userId: string): Promise<string> {
     const jti = randomUUID();
     const expiresAt = new Date(Date.now() + this.refreshTokenTtlMs);
-    const jtiHash = await argon2.hash(jti);
 
     try {
       await this.prisma.refreshToken.create({
-        data: { userId, jtiHash, expiresAt },
+        data: { userId, jti, expiresAt },
       });
 
       const signed = await this.refreshJwt.signAsync({
@@ -43,6 +41,7 @@ export class RefreshTokenService {
         type: 'refresh',
       });
 
+      // occasional cleanup of expired tokens
       if (Math.random() < 0.1)
         this.cleanupExpiredTokens(userId).catch((err) =>
           this.logger.warn('cleanupExpiredTokens failed', err),
@@ -50,94 +49,71 @@ export class RefreshTokenService {
 
       return signed;
     } catch (error) {
-      this.logger.error(
-        `Failed to generate refresh token for user ${userId}`,
-        error,
-      );
-      throw new InternalServerErrorException(
-        'Failed to generate refresh token',
-      );
+      this.logger.error(`Failed to generate refresh token`, error);
+      throw new InternalServerErrorException('Could not create refresh token');
     }
   }
 
-  async rotateToken(oldToken: string): Promise<string> {
-    const info = await this.extractTokenInfo(oldToken);
-    if (!info) throw new UnauthorizedException('Invalid refresh token');
-
-    await this.revokeByJti(info.jti);
-    return this.generateRefreshToken(info.sub);
-  }
-
-  async revokeToken(providedToken: string): Promise<void> {
-    const info = await this.extractTokenInfo(providedToken);
-    if (!info) throw new NotFoundException('Refresh token not found');
-
-    await this.revokeByJti(info.jti);
-  }
-
+  /** Validate a given refresh token */
   async isValid(
     providedToken: string,
-  ): Promise<{ valid: boolean; userId?: string }> {
-    try {
-      const info = await this.extractTokenInfo(providedToken);
-      if (!info) return { valid: false };
-
-      const tokenRow = await this.findRowByJti(info.jti, info.sub);
-      if (!tokenRow) return { valid: false };
-
-      return { valid: true, userId: info.sub };
-    } catch (error) {
-      this.logger.error('Token validation failed', error);
-      return { valid: false };
-    }
-  }
-
-  private async extractTokenInfo(
-    token: string,
-  ): Promise<{ sub: string; jti: string } | null> {
+  ): Promise<{ valid: boolean; userId?: string; jti?: string }> {
     try {
       const payload = await this.refreshJwt.verifyAsync<{
         sub: string;
         jti: string;
-      }>(token);
-      if (!payload?.sub || !payload?.jti) return null;
-      return { sub: payload.sub, jti: payload.jti };
-    } catch (err) {
-      this.logger.warn('refresh JWT verify failed', err);
-      return null;
-    }
-  }
+      }>(providedToken);
 
-  private async findRowByJti(jti: string, userId?: string) {
-    const rows = await this.prisma.refreshToken.findMany({
-      where: {
-        expiresAt: { gt: new Date() },
-        ...(userId ? { userId } : {}),
-      },
-    });
+      if (!payload?.sub || !payload?.jti) return { valid: false };
 
-    for (const r of rows) {
-      try {
-        if (r.jtiHash && (await argon2.verify(r.jtiHash, jti))) return r;
-      } catch (err) {
-        this.logger.warn(`argon2 verify error: ${err}`);
-      }
-    }
-    return null;
-  }
+      const tokenRow = await this.prisma.refreshToken.findUnique({
+        where: { jti: payload.jti },
+      });
 
-  private async revokeByJti(jti: string): Promise<void> {
-    const row = await this.findRowByJti(jti);
-    if (!row) throw new NotFoundException('Refresh token not found');
+      if (!tokenRow) return { valid: false };
+      if (tokenRow.expiresAt < new Date()) return { valid: false };
 
-    try {
-      await this.prisma.refreshToken.delete({ where: { id: row.id } });
+      return { valid: true, userId: payload.sub, jti: payload.jti };
     } catch (error) {
-      this.logger.error('Failed to revoke token', error);
+      this.logger.warn('refresh JWT verify failed', error);
+      return { valid: false };
+    }
+  }
+
+  /** Revoke a single refresh token by its raw token value */
+  async revokeToken(providedToken: string): Promise<void> {
+    try {
+      const payload = await this.refreshJwt.verifyAsync<{
+        jti: string;
+      }>(providedToken);
+      if (!payload?.jti) throw new UnauthorizedException('Invalid token');
+      await this.revokeByJti(payload.jti);
+    } catch (error) {
+      this.logger.warn('Failed to revoke token', error);
+    }
+  }
+
+  /** Revoke by JTI safely (idempotent) */
+  private async revokeByJti(jti: string): Promise<void> {
+    try {
+      await this.prisma.refreshToken.delete({ where: { jti } });
+    } catch (error: any) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        this.logger.warn(
+          `Token with jti=${jti} already deleted (idempotent revoke)`,
+        );
+        return;
+      }
+
+      this.logger.error('Unexpected error revoking token', error);
       throw new InternalServerErrorException('Failed to revoke token');
     }
   }
 
+  /** Delete expired refresh tokens (background cleanup) */
   private async cleanupExpiredTokens(userId: string): Promise<void> {
     try {
       await this.prisma.refreshToken.deleteMany({
@@ -145,9 +121,19 @@ export class RefreshTokenService {
       });
     } catch (error) {
       this.logger.error(
-        `Failed to cleanup expired tokens for user ${userId}`,
+        `Failed to cleanup expired tokens for ${userId}`,
         error,
       );
     }
+  }
+
+  /** Rotate the token — revoke old and issue a new one */
+  async rotateToken(oldToken: string): Promise<string> {
+    const { valid, userId, jti } = await this.isValid(oldToken);
+    if (!valid || !userId || !jti)
+      throw new UnauthorizedException('Invalid refresh token');
+
+    await this.revokeByJti(jti);
+    return this.generateRefreshToken(userId);
   }
 }
