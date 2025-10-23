@@ -26,12 +26,12 @@ import { CacheableMemory } from 'cacheable';
 
         return {
           stores: [
-            new Keyv({
-              store: new CacheableMemory({
-                ttl: 1000 * 60 * 5,
-                lruSize: 5000,
-              }),
-            }),
+            // new Keyv({
+            //   store: new CacheableMemory({
+            //     ttl: 1000 * 60 * 5,
+            //     lruSize: 5000,
+            //   }),
+            // }),
 
             new KeyvRedis(redisUrl),
           ],
@@ -43,4 +43,4 @@ import { CacheableMemory } from 'cacheable';
   ],
   exports: [CacheModule],
 })
-export class CacheConfigModule {}
+export class CacheConfigModule { }
