@@ -147,6 +147,9 @@ export class AuthService {
     return { accessToken, refreshToken, user };
   }
 
+  /**
+   * Refreshes access + refresh tokens using a valid refresh token.
+   */
   async refreshToken(refreshToken: string): Promise<IAuthPayload> {
     const { valid, userId } =
       await this.refreshTokenService.isValid(refreshToken);
@@ -156,12 +159,9 @@ export class AuthService {
     const user = await this.usersService.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    await this.refreshTokenService.revokeToken(refreshToken);
-
+    const newRefreshToken =
+      await this.refreshTokenService.rotateToken(refreshToken);
     const newAccessToken = this.tokenService.generateAccessToken(user);
-    const newRefreshToken = await this.refreshTokenService.generateRefreshToken(
-      user.id,
-    );
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken, user };
   }
