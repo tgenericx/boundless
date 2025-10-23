@@ -86,9 +86,14 @@ export class RefreshTokenService {
       const payload = await this.refreshJwt.verifyAsync<{
         jti: string;
       }>(providedToken);
-      if (!payload?.jti) throw new UnauthorizedException('Invalid token');
+      if (!payload?.jti) throw new UnauthorizedException('Invalid token payload');
       await this.revokeByJti(payload.jti);
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      // Log other errors but don't rethrow, as the goal is just to revoke.
+      // A valid JWT that fails revocation for other reasons is an edge case.
       this.logger.warn('Failed to revoke token', error);
     }
   }
