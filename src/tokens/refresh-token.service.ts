@@ -19,6 +19,7 @@ export class RefreshTokenService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly refreshJwt: JwtService,
+    @Inject('REFRESH_JWT_SERVICE') private readonly refreshJwt: JwtService,
   ) {
     const days =
       Number(this.config.get<number>('REFRESH_TOKEN_EXPIRES_IN_DAYS', 7)) || 7;
