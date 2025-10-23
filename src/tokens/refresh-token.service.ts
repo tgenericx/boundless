@@ -18,7 +18,6 @@ export class RefreshTokenService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
-    private readonly refreshJwt: JwtService,
     @Inject('REFRESH_JWT_SERVICE') private readonly refreshJwt: JwtService,
   ) {
     const days =
