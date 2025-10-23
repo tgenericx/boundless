@@ -80,6 +80,9 @@ model User {
   phone           String? @unique
   phoneIsVerified Boolean @default(false)
 
+  /// @HideField({ output: true, input: true })
+  refreshTokens RefreshToken[]
+
   /// Scheduled items created by the user
   events Event[]
 
@@ -113,11 +116,11 @@ model User {
 model RefreshToken {
   id        String   @id @default(cuid())
   userId    String
-  jtiHash   String
+  jti       String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  @@index([userId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Business {
