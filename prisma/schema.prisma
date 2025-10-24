@@ -110,7 +110,8 @@ model User {
   createdAt DateTime @default(now())
 
   /// @ReadOnly()
-  updatedAt DateTime @updatedAt
+  updatedAt     DateTime       @updatedAt
+  campusProfile CampusProfile?
 }
 
 model RefreshToken {
@@ -475,4 +476,33 @@ model Inventory {
   updatedAt DateTime @updatedAt
 
   @@index([businessId])
+}
+
+model Faculty {
+  id            String          @id @default(cuid())
+  name          String          @unique
+  code          String?         @unique
+  departments   Department[]
+  campusProfile CampusProfile[]
+}
+
+model Department {
+  id            String          @id @default(cuid())
+  name          String
+  facultyId     String
+  faculty       Faculty         @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  campusProfile CampusProfile[]
+}
+
+model CampusProfile {
+  id           String      @id @default(cuid())
+  userId       String      @unique
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facultyId    String?
+  faculty      Faculty?    @relation(fields: [facultyId], references: [id])
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  level        Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
