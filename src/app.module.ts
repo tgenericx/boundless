@@ -25,6 +25,7 @@ import { FeedModule } from './feed/feed.module';
 import { RedisModule } from './redis/redis.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FacultiesModule } from './faculties/faculties.module';
+import { DepartmentsModule } from './departments/departments.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { FacultiesModule } from './faculties/faculties.module';
     RedisModule,
     ScheduleModule.forRoot(),
     FacultiesModule,
+    DepartmentsModule,
   ],
 })
 export class AppModule {}
