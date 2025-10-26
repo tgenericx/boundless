@@ -489,6 +489,7 @@ model Faculty {
 model Department {
   id            String          @id @default(cuid())
   name          String
+  code          String          @unique
   facultyId     String
   faculty       Faculty         @relation(fields: [facultyId], references: [id], onDelete: Cascade)
   campusProfile CampusProfile[]
