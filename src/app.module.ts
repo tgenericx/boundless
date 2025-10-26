@@ -24,6 +24,7 @@ import { CacheConfigModule } from './cache/cache.module';
 import { FeedModule } from './feed/feed.module';
 import { RedisModule } from './redis/redis.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FacultiesModule } from './faculties/faculties.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     FeedModule,
     RedisModule,
     ScheduleModule.forRoot(),
+    FacultiesModule,
   ],
 })
 export class AppModule {}
