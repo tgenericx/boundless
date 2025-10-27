@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCampusProfileInput } from './dto/create-campus-profile.input';
-import { UpdateCampusProfileInput } from './dto/update-campus-profile.input';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma } from '@/generated/prisma';
 
 @Injectable()
 export class CampusProfilesService {
-  create(createCampusProfileInput: CreateCampusProfileInput) {
-    return 'This action adds a new campusProfile';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(args: Prisma.CampusProfileCreateArgs) {
+    return this.prisma.campusProfile.create(args);
   }
 
-  findAll() {
-    return `This action returns all campusProfiles`;
+  async findAll(args?: Prisma.CampusProfileFindManyArgs) {
+    return this.prisma.campusProfile.findMany(args);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} campusProfile`;
+  async findOne(args: Prisma.CampusProfileFindUniqueArgs) {
+    return this.prisma.campusProfile.findUnique(args);
   }
 
-  update(id: number, updateCampusProfileInput: UpdateCampusProfileInput) {
-    return `This action updates a #${id} campusProfile`;
+  async update(args: Prisma.CampusProfileUpdateArgs) {
+    return this.prisma.campusProfile.update(args);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} campusProfile`;
+  async remove(args: Prisma.CampusProfileDeleteArgs) {
+    return this.prisma.campusProfile.delete(args);
+  }
+
+  async findByUser(userId: string) {
+    return this.prisma.campusProfile.findUnique({
+      where: { userId },
+      include: {
+        faculty: true,
+        department: true,
+      },
+    });
   }
 }
