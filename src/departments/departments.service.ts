@@ -1,26 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDepartmentInput } from './dto/create-department.input';
-import { UpdateDepartmentInput } from './dto/update-department.input';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma } from '@/generated/prisma';
 
 @Injectable()
 export class DepartmentsService {
-  create(createDepartmentInput: CreateDepartmentInput) {
-    return 'This action adds a new department';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(args: Prisma.DepartmentCreateArgs) {
+    return this.prisma.department.create(args);
   }
 
-  findAll() {
-    return `This action returns all departments`;
+  async findAll(args?: Prisma.DepartmentFindManyArgs) {
+    return this.prisma.department.findMany(args);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} department`;
+  async findOne(args: Prisma.DepartmentFindUniqueArgs) {
+    return this.prisma.department.findUnique(args);
   }
 
-  update(id: number, updateDepartmentInput: UpdateDepartmentInput) {
-    return `This action updates a #${id} department`;
+  async update(args: Prisma.DepartmentUpdateArgs) {
+    return this.prisma.department.update(args);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} department`;
+  async remove(args: Prisma.DepartmentDeleteArgs) {
+    return this.prisma.department.delete(args);
   }
 }
