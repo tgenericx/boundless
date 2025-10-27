@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFacultyInput } from './dto/create-faculty.input';
-import { UpdateFacultyInput } from './dto/update-faculty.input';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma } from '@/generated/prisma';
 
 @Injectable()
 export class FacultiesService {
-  create(createFacultyInput: CreateFacultyInput) {
-    return 'This action adds a new faculty';
+  constructor(private readonly prisma: PrismaService) {}
+  async create(args: Prisma.FacultyCreateArgs) {
+    return await this.prisma.faculty.create(args);
   }
 
-  findAll() {
-    return `This action returns all faculties`;
+  async findAll(args?: Prisma.FacultyFindManyArgs) {
+    return await this.prisma.faculty.findMany(args);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} faculty`;
+  async findOne(args: Prisma.FacultyFindUniqueArgs) {
+    return await this.prisma.faculty.findUnique(args);
   }
 
-  update(id: number, updateFacultyInput: UpdateFacultyInput) {
-    return `This action updates a #${id} faculty`;
+  async update(args: Prisma.FacultyUpdateArgs) {
+    return await this.prisma.faculty.update(args);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} faculty`;
+  async remove(args: Prisma.FacultyDeleteArgs) {
+    return this.prisma.faculty.delete(args);
   }
 }
