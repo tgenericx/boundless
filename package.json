@@ -5,7 +5,7 @@
   "author": "tgenericx",
   "private": true,
   "license": "ISC",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.17.0",
   "scripts": {
     "build": "nest build && cp -r src/generated/prisma dist/generated",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"**/*.md\"",
