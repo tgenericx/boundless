@@ -1,35 +1,46 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Mutation, Query, Args } from '@nestjs/graphql';
+import { Faculty, UpdateOneFacultyArgs } from '@/generated/graphql';
+import { AdminOnly } from '@/utils/decorators';
 import { FacultiesService } from './faculties.service';
-import { Faculty } from './entities/faculty.entity';
-import { CreateFacultyInput } from './dto/create-faculty.input';
-import { UpdateFacultyInput } from './dto/update-faculty.input';
+import { Prisma } from '@/generated/prisma';
 
 @Resolver(() => Faculty)
 export class FacultiesResolver {
-  constructor(private readonly facultiesService: FacultiesService) {}
+  constructor(private readonly faculty: FacultiesService) {}
 
+  @Query(() => [Faculty])
+  async faculties() {
+    return await this.faculty.findAll({
+      include: { departments: true },
+    });
+  }
+
+  @Query(() => Faculty, { nullable: true })
+  async oneFaculty(@Args('id') id: string) {
+    return await this.faculty.findOne({
+      where: { id },
+      include: { departments: true },
+    });
+  }
+
+  @AdminOnly()
   @Mutation(() => Faculty)
-  createFaculty(@Args('createFacultyInput') createFacultyInput: CreateFacultyInput) {
-    return this.facultiesService.create(createFacultyInput);
+  async createFaculty(
+    @Args('name') name: string,
+    @Args('code', { nullable: true }) code?: string,
+  ) {
+    return this.faculty.create({ data: { name, code } });
   }
 
-  @Query(() => [Faculty], { name: 'faculties' })
-  findAll() {
-    return this.facultiesService.findAll();
-  }
-
-  @Query(() => Faculty, { name: 'faculty' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.facultiesService.findOne(id);
-  }
-
+  @AdminOnly()
   @Mutation(() => Faculty)
-  updateFaculty(@Args('updateFacultyInput') updateFacultyInput: UpdateFacultyInput) {
-    return this.facultiesService.update(updateFacultyInput.id, updateFacultyInput);
+  async updateFaculty(@Args() args: UpdateOneFacultyArgs) {
+    return this.faculty.update(args as unknown as Prisma.FacultyUpdateArgs);
   }
 
+  @AdminOnly()
   @Mutation(() => Faculty)
-  removeFaculty(@Args('id', { type: () => Int }) id: number) {
-    return this.facultiesService.remove(id);
+  async deleteFaculty(@Args('id') id: string) {
+    return this.faculty.remove({ where: { id } });
   }
 }
