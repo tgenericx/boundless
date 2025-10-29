@@ -7,8 +7,8 @@ import { JwtAuthGuard, RefreshJwtGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators';
 import { PrismaSelect } from '@paljs/plugins';
 import { Prisma } from '@/generated/prisma';
-import { CreateOneUserArgs, User } from '@/generated/graphql';
-import { AuthPayload, LoginInput } from '@/types/graphql';
+import { User } from '@/generated/graphql';
+import { AuthPayload, CreateUserInput, LoginInput } from '@/types/graphql';
 import type { AuthenticatedUser } from '@/types';
 
 @Resolver()
@@ -26,9 +26,9 @@ export class AuthResolver {
   }
 
   @Mutation(() => AuthPayload)
-  async createUser(@Args() input: CreateOneUserArgs): Promise<AuthPayload> {
+  async createUser(@Args() input: CreateUserInput): Promise<AuthPayload> {
     return this.authService.signup({
-      data: input.data as unknown as Prisma.UserCreateInput,
+      data: input,
     });
   }
 
