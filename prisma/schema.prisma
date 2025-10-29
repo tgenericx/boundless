@@ -505,9 +505,9 @@ model CampusProfile {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   facultyId    String
-  faculty      Faculty    @relation(fields: [facultyId], references: [id])
+  faculty      Faculty    @relation(fields: [facultyId], references: [id], onDelete: Cascade)
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   level        Int?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
