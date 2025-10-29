@@ -5,6 +5,7 @@ export * from './login.input';
 export * from './auth.payload';
 export * from './event.payload';
 export * from './post-pag.args';
+export * from './create-user.input';
 
 export class AuthenticatedUser {
   @Field(() => ID, {
