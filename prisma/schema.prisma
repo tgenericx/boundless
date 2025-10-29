@@ -314,7 +314,6 @@ model Post {
   eventId String?
   event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
-  /// @HideField({ input: true, output:  false})
   parentId String?
   parent   Post?   @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Post[]  @relation("Thread")
