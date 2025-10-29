@@ -426,6 +426,7 @@ model Listing {
 
   /// @HideField({ input: true, output: false })
   userId String
+  /// @HideField({ input: true, output:  false})
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// Category link (e.g. Gadgets, Furniture, Hostel Spaces)
@@ -496,14 +497,18 @@ model Department {
 }
 
 model CampusProfile {
-  id           String      @id @default(cuid())
-  userId       String      @unique
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  facultyId    String?
-  faculty      Faculty?    @relation(fields: [facultyId], references: [id])
-  departmentId String?
-  department   Department? @relation(fields: [departmentId], references: [id])
+  id String @id @default(cuid())
+
+  /// @HideField({ input: true, output:  false})
+  userId String @unique
+  /// @HideField({ input: true, output:  false})
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  facultyId    String
+  faculty      Faculty    @relation(fields: [facultyId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
   level        Int?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
