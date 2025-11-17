@@ -263,8 +263,6 @@ model Media {
   bytes        Int
   resourceType ResourceType
   duration     Float?
-  playbackUrl  String?
-  eager        Json?
   createdAt    DateTime     @default(now())
 
   avatarOwner User?   @relation("UserAvatar", fields: [userId], references: [id], onDelete: Cascade)
