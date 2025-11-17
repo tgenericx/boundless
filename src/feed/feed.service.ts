@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Post, Prisma } from '@/generated/prisma';
+import { Post } from '@/generated/prisma';
 import { TimelinePagArgs } from '@/types/graphql';
 import { getFeedPage } from '@/utils/getFeed.util';
 import { computeFanoutTargets, FanoutContext } from './feed.utils';
@@ -127,7 +127,7 @@ export class FeedService {
         take: limit,
         include: {
           author: { select: { id: true, username: true, avatar: true } },
-          postMedia: { include: { media: true } },
+          postMedia: true,
           _count: {
             select: {
               replies: true,
@@ -161,7 +161,7 @@ export class FeedService {
       where: { id: { in: ids } },
       include: {
         author: { select: { id: true, username: true, avatar: true } },
-        postMedia: { include: { media: true } },
+        postMedia: true,
         _count: {
           select: {
             replies: true,
