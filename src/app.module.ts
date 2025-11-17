@@ -19,7 +19,6 @@ import { MailerConfigService } from './mailer.config';
 import { BusinessesModule } from './businesses/businesses.module';
 import { InventoriesModule } from './inventories/inventories.module';
 import { ListingsModule } from './listings/listings.module';
-import { MediaRelationsModule } from './media-relations/media-relations.module';
 import { CacheConfigModule } from './cache/cache.module';
 import { FeedModule } from './feed/feed.module';
 import { RedisModule } from './redis/redis.module';
@@ -79,7 +78,6 @@ import { CampusProfilesModule } from './campus-profiles/campus-profiles.module';
     BusinessesModule,
     InventoriesModule,
     ListingsModule,
-    MediaRelationsModule,
     FeedModule,
     RedisModule,
     ScheduleModule.forRoot(),
