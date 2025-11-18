@@ -52,6 +52,120 @@ enum Currency {
   NGN
 }
 
+model Media {
+  id           String       @id @default(cuid())
+  publicId     String       @unique
+  secureUrl    String
+  format       String
+  bytes        Int
+  resourceType ResourceType
+  duration     Float?
+  createdAt    DateTime     @default(now())
+
+  avatarOwner User?   @relation("UserAvatar", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String? @unique
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  inventoryId String?
+  inventory   Inventory? @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([listingId])
+  @@index([inventoryId])
+  @@index([eventId])
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum OrganizerRole {
+  OWNER
+  CO_ORGANIZER
+  CONTRIBUTOR
+}
+
+model Event {
+  id String @id @default(cuid())
+
+  /// @Validator.MinLength(3)
+  /// @Example "Team Standup"
+  title String
+
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+
+  /// Event status for lifecycle management
+  status EventStatus @default(DRAFT)
+
+  /// Public visibility
+  isPublic Boolean @default(true)
+
+  eventMedia Media[]
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  /// Primary creator (owner) of the event
+  /// @HideField({ input: true, output: false})
+  userId    String
+  /// @HideField({ input: true, output: false})
+  createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Multiple organizers/collaborators
+  organizers EventOrganizer[]
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
+
+  /// @ReadOnly()
+  createdAt DateTime @default(now())
+
+  /// @ReadOnly()
+  updatedAt DateTime @updatedAt
+
+  @@index([boardId])
+  @@index([categoryId])
+  @@index([startTime])
+  @@index([status])
+  @@index([userId])
+}
+
+model EventOrganizer {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role OrganizerRole @default(CO_ORGANIZER)
+
+  /// When they were added as organizer
+  addedAt DateTime @default(now())
+
+  /// Who added this organizer (optional tracking)
+  addedById String?
+
+  @@unique([eventId, userId])
+  @@index([userId])
+  @@index([eventId])
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -83,8 +197,11 @@ model User {
   /// @HideField({ output: true, input: true })
   refreshTokens RefreshToken[]
 
-  /// Scheduled items created by the user
+  /// Events created by the user (as primary owner)
   events Event[]
+
+  /// Events where user is an organizer/collaborator
+  organizingEvents EventOrganizer[]
 
   /// Boards created by the user
   boards Board[]
@@ -112,6 +229,35 @@ model User {
   /// @ReadOnly()
   updatedAt     DateTime       @updatedAt
   campusProfile CampusProfile?
+}
+
+model Category {
+  id String @id @default(cuid())
+
+  /// @Validator.MinLength(3)
+  /// @Example "Health"
+  name String
+
+  /// Optional category description
+  description String?
+
+  /// Parent category (self-relation)
+  parentId String?
+  parent   Category? @relation("CategoryToParent", fields: [parentId], references: [id], onDelete: SetNull)
+
+  /// Child categories
+  children Category[] @relation("CategoryToParent")
+
+  events      Event[]
+  boards      BoardCategory[]
+  listings    Listing[]
+  inventories Inventory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, parentId])
+  @@index([parentId])
 }
 
 model RefreshToken {
@@ -163,35 +309,6 @@ model UserFollow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
-}
-
-model Category {
-  id String @id @default(cuid())
-
-  /// @Validator.MinLength(3)
-  /// @Example "Health"
-  name String
-
-  /// Optional category description
-  description String?
-
-  /// Parent category (self-relation)
-  parentId String?
-  parent   Category? @relation("CategoryToParent", fields: [parentId], references: [id], onDelete: SetNull)
-
-  /// Child categories
-  children Category[] @relation("CategoryToParent")
-
-  events      Event[]
-  boards      BoardCategory[]
-  listings    Listing[]
-  inventories Inventory[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([name, parentId])
-  @@index([parentId])
 }
 
 model Board {
@@ -255,75 +372,6 @@ model BoardFollower {
   @@index([userId])
 }
 
-model Media {
-  id           String       @id @default(cuid())
-  publicId     String       @unique
-  secureUrl    String
-  format       String
-  bytes        Int
-  resourceType ResourceType
-  duration     Float?
-  createdAt    DateTime     @default(now())
-
-  avatarOwner User?   @relation("UserAvatar", fields: [userId], references: [id], onDelete: Cascade)
-  userId      String? @unique
-
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  listingId String?
-  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  inventoryId String?
-  inventory   Inventory? @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-
-  eventId String?
-  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@index([listingId])
-  @@index([inventoryId])
-  @@index([eventId])
-}
-
-model Event {
-  id String @id @default(cuid())
-
-  /// @Validator.MinLength(3)
-  /// @Example "Team Standup"
-  title String
-
-  description String?
-  startTime   DateTime
-  endTime     DateTime
-  location    String
-
-  eventMedia Media[]
-
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  /// @HideField({ input: true, output:  false})
-  userId    String
-  /// @HideField({ input: true, output:  false})
-  createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  boardId String?
-  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
-
-  post Post[]
-
-  /// @ReadOnly()
-  createdAt DateTime @default(now())
-
-  /// @ReadOnly()
-  updatedAt DateTime @updatedAt
-
-  @@index([boardId])
-  @@index([categoryId])
-  @@index([startTime])
-}
-
 model Post {
   id String @id @default(cuid())
 
@@ -341,9 +389,6 @@ model Post {
   boardId String?
   board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
 
-  eventId String?
-  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
-
   parentId String?
   parent   Post?   @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Post[]  @relation("Thread")
@@ -357,7 +402,6 @@ model Post {
 
   @@index([userId])
   @@index([boardId])
-  @@index([eventId])
   @@index([parentId])
   @@index([createdAt])
 }
