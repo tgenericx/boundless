@@ -1,77 +1,119 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import {
   Event,
   EventCreateInput,
+  EventOrganizer,
   EventStatus,
   EventUpdateInput,
+  OrganizerRole,
 } from '@/generated/graphql';
-import { Prisma } from '@/generated/prisma';
-import { EventFilter, EventsService } from './events.service';
+import { EventsService } from './events.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/utils/guards';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@/types';
 import { createEventPayload } from '@/types/graphql';
-import { Pagination } from './events.repository';
+import { EventFilterInput, PaginationInput } from './dto/event.input';
 
 export const EventEventPayload = createEventPayload('eventEvents', Event);
 
 @Resolver(() => Event)
 export class EventsResolver {
-  constructor(private service: EventsService) {}
+  constructor(private readonly eventsService: EventsService) {}
 
-  @Query(() => [Event])
-  events(
-    @Args('filter', { nullable: true }) filter: EventFilter,
-    @Args('pagination', { nullable: true }) pagination: Pagination,
-  ) {
-    return this.service.list(filter, pagination);
+  @Query(() => [Event], {
+    name: 'events',
+    description: 'List all events with optional filters',
+  })
+  async getEvents(
+    @Args('filter', { nullable: true }) filter?: EventFilterInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+  ): Promise<Event[]> {
+    return this.eventsService.findAll(filter, pagination);
   }
 
-  @Query(() => Event, { nullable: true })
-  event(@Args('id', { type: () => ID }) id: string) {
-    return this.service.get(id);
+  @Query(() => Event, {
+    name: 'event',
+    nullable: true,
+    description: 'Get a single event by ID',
+  })
+  async getEvent(@Args('id') id: string): Promise<Event> {
+    return this.eventsService.findOne(id);
   }
 
-  @Mutation(() => Event)
+  @Query(() => [Event], {
+    name: 'myEvents',
+    description: 'Get events created or organized by current user',
+  })
   @UseGuards(JwtAuthGuard)
-  createEvent(
+  async getMyEvents(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args('role', { type: () => OrganizerRole, nullable: true })
+    role?: OrganizerRole,
+  ): Promise<Event[]> {
+    return this.eventsService.findMyEvents(user.userId, role);
+  }
+
+  @Mutation(() => Event, { description: 'Create a new event' })
+  @UseGuards(JwtAuthGuard)
+  async createEvent(
     @Args('input') input: EventCreateInput,
     @CurrentUser() user: AuthenticatedUser,
-  ) {
-    return this.service.create(
-      input as unknown as Prisma.EventCreateInput,
-      user.userId,
-    );
+  ): Promise<Event> {
+    return this.eventsService.create(input, user.userId);
   }
 
-  @Mutation(() => Event)
+  @Mutation(() => Event, { description: 'Update an existing event' })
   @UseGuards(JwtAuthGuard)
-  updateEvent(
-    @Args('id', { type: () => ID }) id: string,
+  async updateEvent(
+    @Args('id') id: string,
     @Args('input') input: EventUpdateInput,
     @CurrentUser() user: AuthenticatedUser,
-  ) {
-    return this.service.update(
-      id,
-      input as unknown as Prisma.EventUpdateInput,
-      user.userId,
-    );
+  ): Promise<Event> {
+    return this.eventsService.update(id, input, user.userId);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Event, {
+    description: 'Update event status (publish, cancel, complete)',
+  })
   @UseGuards(JwtAuthGuard)
-  deleteEvent(@Args('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.service.remove(id, user.userId);
-  }
-
-  @Mutation(() => Event)
-  @UseGuards(JwtAuthGuard)
-  updateEventStatus(
+  async updateEventStatus(
     @Args('id') id: string,
-    @Args('status') status: EventStatus,
+    @Args('status', { type: () => EventStatus }) status: EventStatus,
     @CurrentUser() user: AuthenticatedUser,
-  ) {
-    return this.service.updateStatus(id, status, user.userId);
+  ): Promise<Event> {
+    return this.eventsService.updateStatus(id, status, user.userId);
+  }
+
+  @Mutation(() => Boolean, { description: 'Delete an event (creator only)' })
+  @UseGuards(JwtAuthGuard)
+  async deleteEvent(
+    @Args('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<boolean> {
+    return this.eventsService.delete(id, user.userId);
+  }
+
+  @Mutation(() => EventOrganizer, {
+    description: 'Add an organizer to an event',
+  })
+  @UseGuards(JwtAuthGuard)
+  async addOrganizer(
+    @Args('eventId') eventId: string,
+    @Args('userId') userId: string,
+    @Args('role', { type: () => OrganizerRole }) role: OrganizerRole,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<EventOrganizer> {
+    return this.eventsService.addOrganizer(eventId, userId, role, user.userId);
+  }
+
+  @Mutation(() => Boolean, { description: 'Remove an organizer from an event' })
+  @UseGuards(JwtAuthGuard)
+  async removeOrganizer(
+    @Args('eventId') eventId: string,
+    @Args('userId') userId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<boolean> {
+    return this.eventsService.removeOrganizer(eventId, userId, user.userId);
   }
 }
