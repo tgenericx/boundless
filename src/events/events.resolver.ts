@@ -28,8 +28,9 @@ export class EventsResolver {
   async getEvents(
     @Args('filter', { nullable: true }) filter?: EventFilterInput,
     @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<Event[]> {
-    return this.eventsService.findAll(filter, pagination);
+    return this.eventsService.findAll(filter, pagination, user?.userId);
   }
 
   @Query(() => Event, {
@@ -37,8 +38,11 @@ export class EventsResolver {
     nullable: true,
     description: 'Get a single event by ID',
   })
-  async getEvent(@Args('id') id: string): Promise<Event> {
-    return this.eventsService.findOne(id);
+  async getEvent(
+    @Args('id') id: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<Event> {
+    return this.eventsService.findOne(id, user?.userId);
   }
 
   @Query(() => [Event], {
