@@ -7,14 +7,26 @@ import {
 import { EventStatus, OrganizerRole, Prisma } from '@/generated/prisma';
 import { EventFilterInput, PaginationInput } from './dto/event.input';
 import { PrismaService } from '@/prisma/prisma.service';
-import { EventCreateInput, EventUpdateInput } from '@/generated/graphql';
+import {
+  EventStatus as GQLEventStatus,
+  EventCreateInput,
+  EventUpdateInput,
+} from '@/generated/graphql';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-  async findAll(filter?: EventFilterInput, pagination?: PaginationInput) {
-    const where = this.buildFilter(filter);
+  async findAll(
+    filter?: EventFilterInput,
+    pagination?: PaginationInput,
+    userId?: string,
+  ) {
+    const where = this.buildFilter(filter, userId);
 
     return this.prisma.event.findMany({
       where,
@@ -30,7 +42,7 @@ export class EventsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -42,6 +54,11 @@ export class EventsService {
     });
 
     if (!event) {
+      throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+
+    // Draft events are only visible to their creator
+    if (event.status === EventStatus.DRAFT && event.userId !== userId) {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
@@ -137,7 +154,10 @@ export class EventsService {
   }
 
   async delete(id: string, userId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id } });
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      include: { eventMedia: true },
+    });
 
     if (!event) {
       throw new NotFoundException(`Event with ID ${id} not found`);
@@ -147,6 +167,14 @@ export class EventsService {
       throw new UnauthorizedException(
         'Only event creator can delete the event',
       );
+    }
+
+    for (const m of event.eventMedia) {
+      try {
+        await this.cloudinaryService.deleteFile(m.publicId);
+      } catch (err) {
+        console.error(`Failed to delete Cloudinary media: ${m.publicId}`, err);
+      }
     }
 
     await this.prisma.event.delete({ where: { id } });
@@ -266,12 +294,40 @@ export class EventsService {
     }
   }
 
-  private buildFilter(filter?: EventFilterInput): Prisma.EventWhereInput {
+  private buildFilter(
+    filter?: EventFilterInput,
+    userId?: string,
+  ): Prisma.EventWhereInput {
     const where: Prisma.EventWhereInput = {};
+
+    // Exclude drafts unless viewing your own
+    if (userId) {
+      where.OR = [
+        { status: { not: EventStatus.DRAFT } },
+        { userId, status: EventStatus.DRAFT },
+      ];
+    } else {
+      // Anonymous users never see drafts
+      where.status = { not: EventStatus.DRAFT };
+    }
 
     if (!filter) return where;
 
-    if (filter.status) where.status = filter.status;
+    if (filter.status) {
+      // If user explicitly filters by DRAFT, they should only see their own
+      if (filter.status === GQLEventStatus.DRAFT) {
+        if (userId) {
+          where.AND = [{ status: EventStatus.DRAFT }, { userId }];
+          delete where.OR;
+        } else {
+          // Anonymous users requesting drafts get empty results
+          where.id = 'impossible-id';
+        }
+      } else {
+        where.status = filter.status;
+      }
+    }
+
     if (filter.categoryId) where.categoryId = filter.categoryId;
     if (filter.isPublic !== undefined) where.isPublic = filter.isPublic;
 
