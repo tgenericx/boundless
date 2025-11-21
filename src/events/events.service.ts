@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { EventStatus, OrganizerRole, Prisma } from '@/generated/prisma';
 import { EventFilterInput, PaginationInput } from './dto/event.input';
@@ -169,14 +170,27 @@ export class EventsService {
       );
     }
 
-    const deletePromises = event.eventMedia.map((m) =>
-      this.cloudinaryService.deleteFile(m.publicId).catch((err) => {
-        console.error(`Failed to delete Cloudinary media: ${m.publicId}`, err);
-        return null; // Resolve to avoid Promise.all rejection
-      }),
-    );
+    try {
+      const deletePromises = event.eventMedia.map((m) =>
+        this.cloudinaryService.deleteFile(m.publicId).catch((err) => {
+          console.error(
+            `Failed to delete Cloudinary media: ${m.publicId}`,
+            err,
+          );
+          return null;
+        }),
+      );
 
-    await Promise.all(deletePromises);
+      await Promise.all(deletePromises);
+    } catch (err) {
+      console.error(
+        'Failed to delete associated media. Aborting event deletion.',
+        err,
+      );
+      throw new InternalServerErrorException(
+        'Failed to delete associated media.',
+      );
+    }
 
     await this.prisma.event.delete({ where: { id } });
     return true;
