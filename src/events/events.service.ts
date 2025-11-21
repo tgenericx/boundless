@@ -169,13 +169,14 @@ export class EventsService {
       );
     }
 
-    for (const m of event.eventMedia) {
-      try {
-        await this.cloudinaryService.deleteFile(m.publicId);
-      } catch (err) {
+    const deletePromises = event.eventMedia.map((m) =>
+      this.cloudinaryService.deleteFile(m.publicId).catch((err) => {
         console.error(`Failed to delete Cloudinary media: ${m.publicId}`, err);
-      }
-    }
+        return null; // Resolve to avoid Promise.all rejection
+      }),
+    );
+
+    await Promise.all(deletePromises);
 
     await this.prisma.event.delete({ where: { id } });
     return true;
