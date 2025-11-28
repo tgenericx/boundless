@@ -166,6 +166,115 @@ model EventOrganizer {
   @@index([eventId])
 }
 
+enum VenueStatus {
+  ACTIVE
+  MAINTENANCE
+  CLOSED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model Venue {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  location    String
+  capacity    Int
+  hourlyRate  Decimal?    @db.Decimal(10, 2)
+  status      VenueStatus @default(ACTIVE)
+  imageUrl    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  managedById    String
+  managedBy      User                 @relation(fields: [managedById], references: [id])
+  facilities     VenueFacility[]
+  availability   VenueAvailability[]
+  blockedPeriods VenueBlockedPeriod[]
+  bookings       Booking[]
+
+  @@map("venues")
+}
+
+model VenueFacility {
+  id   String @id @default(uuid())
+  name String
+
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_facilities")
+}
+
+model VenueAvailability {
+  id            String @id @default(uuid())
+  dayOfWeek     Int // 0 = Sunday, 6 = Saturday
+  availableFrom String // "08:00" - using string for time
+  availableTo   String // "18:00"
+
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_availability")
+}
+
+model VenueBlockedPeriod {
+  id        String   @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime
+  reason    String?
+
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_blocked_periods")
+}
+
+model Booking {
+  id                String        @id @default(uuid())
+  eventName         String
+  eventDescription  String?
+  expectedAttendees Int
+  startTime         DateTime
+  endTime           DateTime
+  status            BookingStatus @default(PENDING)
+  rejectionReason   String?
+  createdAt         DateTime      @default(now())
+  reviewedAt        DateTime?
+
+  // Relations
+  venueId       String
+  venue         Venue   @relation(fields: [venueId], references: [id])
+  requestedById String
+  requestedBy   User    @relation("BookingRequester", fields: [requestedById], references: [id])
+  reviewedById  String?
+  reviewedBy    User?   @relation("BookingReviewer", fields: [reviewedById], references: [id])
+
+  notifications Notification[]
+
+  @@map("bookings")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -229,6 +338,13 @@ model User {
   /// @ReadOnly()
   updatedAt     DateTime       @updatedAt
   campusProfile CampusProfile?
+
+  managedVenues     Venue[]
+  bookingsRequested Booking[]      @relation("BookingRequester")
+  bookingsReviewed  Booking[]      @relation("BookingReviewer")
+  notifications     Notification[]
+
+  @@map("users")
 }
 
 model Category {
