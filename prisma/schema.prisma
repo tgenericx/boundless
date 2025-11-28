@@ -128,16 +128,12 @@ model Event {
   /// Multiple organizers/collaborators
   organizers EventOrganizer[]
 
-  boardId String?
-  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
-
   /// @ReadOnly()
   createdAt DateTime @default(now())
 
   /// @ReadOnly()
   updatedAt DateTime @updatedAt
 
-  @@index([boardId])
   @@index([categoryId])
   @@index([startTime])
   @@index([status])
@@ -312,9 +308,6 @@ model User {
   /// Events where user is an organizer/collaborator
   organizingEvents EventOrganizer[]
 
-  /// Boards created by the user
-  boards Board[]
-
   /// Posts authored by the user
   posts Post[]
 
@@ -328,9 +321,6 @@ model User {
   /// Users following this user
   /// @Relation(name: "Followers")
   followers UserFollow[] @relation("Followers")
-
-  /// Boards this user is following
-  followedBoards BoardFollower[]
 
   /// @ReadOnly()
   createdAt DateTime @default(now())
@@ -365,7 +355,6 @@ model Category {
   children Category[] @relation("CategoryToParent")
 
   events      Event[]
-  boards      BoardCategory[]
   listings    Listing[]
   inventories Inventory[]
 
@@ -427,67 +416,6 @@ model UserFollow {
   @@index([followingId])
 }
 
-model Board {
-  id String @id @default(cuid())
-
-  /// @Validator.MinLength(3)
-  /// @Example "Weekly Planning"
-  name String
-
-  /// Optional board description
-  description String?
-
-  categories BoardCategory[]
-  followers  BoardFollower[]
-  events     Event[]
-  posts      Post[]
-
-  /// @HideField({ input: true, output:  false})
-  userId    String
-  /// @HideField({ input: true, output:  false})
-  createdBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  /// @ReadOnly()
-  createdAt DateTime @default(now())
-
-  /// @ReadOnly()
-  updatedAt DateTime @updatedAt
-
-  @@unique([name, userId])
-  @@index([userId])
-}
-
-model BoardCategory {
-  boardId    String
-  categoryId String
-
-  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@id([boardId, categoryId])
-  @@index([boardId])
-  @@index([categoryId])
-}
-
-model BoardFollower {
-  id String @id @default(cuid())
-
-  boardId String
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-
-  /// @HideField({ input: true, output:  false})
-  userId String
-  /// @HideField({ input: true, output:  false})
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  /// @ReadOnly()
-  createdAt DateTime @default(now())
-
-  @@unique([boardId, userId])
-  @@index([boardId])
-  @@index([userId])
-}
-
 model Post {
   id String @id @default(cuid())
 
@@ -502,9 +430,6 @@ model Post {
   /// @HideField({ input: true, output:  false})
   author User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  boardId String?
-  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
-
   parentId String?
   parent   Post?   @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Post[]  @relation("Thread")
@@ -517,7 +442,6 @@ model Post {
   feedDelivery FeedDelivery?
 
   @@index([userId])
-  @@index([boardId])
   @@index([parentId])
   @@index([createdAt])
 }
