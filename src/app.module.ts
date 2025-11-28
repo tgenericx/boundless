@@ -8,9 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { EventsModule } from './events/events.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
-import { BoardsModule } from './boards/boards.module';
 import { PostsModule } from './posts/posts.module';
-import { BoardFollowersModule } from './board-followers/board-followers.module';
 import { UserFollowsModule } from './user-follows/user-follows.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -65,9 +63,7 @@ import { CampusProfilesModule } from './campus-profiles/campus-profiles.module';
     CategoriesModule,
     EventsModule,
     PubSubModule,
-    BoardsModule,
     PostsModule,
-    BoardFollowersModule,
     UserFollowsModule,
     PrismaModule,
     CloudinaryModule,

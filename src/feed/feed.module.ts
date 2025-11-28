@@ -5,7 +5,6 @@ import { FeedResolver } from './feed.resolver';
 import { FeedProcessor } from './feed.processor';
 import IORedis from 'ioredis';
 import { FeedQueueMonitor } from './feed.monitor';
-import { BoardsModule } from '@/boards/boards.module';
 import { FeedRepairService } from './feed.repair.service';
 
 @Module({
@@ -16,7 +15,6 @@ import { FeedRepairService } from './feed.repair.service';
         connection: redis,
       }),
     }),
-    BoardsModule,
   ],
   providers: [
     FeedService,
